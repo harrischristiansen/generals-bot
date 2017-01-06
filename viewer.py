@@ -10,10 +10,11 @@ import threading
 import time
 
 # Color Definitions
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
+BLACK = (0,0,0)
+GRAY_DARK = (110,110,110)
+GRAY = (160,160,160)
+WHITE = (255,255,255)
+PLAYER_COLORS = [(0,255,0), (255,0,0), (0,0,255), (255,255,10), (255,10,255), (170,0,170), (0,0,190), (5,190,190)]
 
 # Table Properies
 CELL_WIDTH = 20
@@ -77,20 +78,25 @@ class GeneralsViewer(object):
 		# Draw Grid
 		for row in range(len(self._grid)):
 			for column in range(len(self._grid[row])):
-				# Determine Color
+				# Determine BG Color
 				color = WHITE
-				if self._grid[row][column] == 1:
-					color = GREEN
-				elif self._grid[row][column] > 1:
-					color = RED
+				if self._grid[row][column] == -2: # Mountain
+					color = BLACK
+				elif self._grid[row][column] == -3: # Fog
+					color = GRAY
+				elif self._grid[row][column] == -4: # Obstacle
+					color = GRAY_DARK
+				elif self._grid[row][column] >= 0: # Player
+					color = PLAYER_COLORS[self._grid[row][column]]
 
 				# Draw Rect
 				pos_left = (CELL_MARGIN + CELL_WIDTH) * column + CELL_MARGIN
 				pos_top = (CELL_MARGIN + CELL_HEIGHT) * row + CELL_MARGIN
 				pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
 
-				# Draw Value
-				self._screen.blit(self._font.render(str(self._armies[row][column]), True, BLACK), (pos_left+2, pos_top+2))
+				# Draw Text Value
+				if (self._grid[row][column] >= -2 and self._armies[row][column] != 0): # Don't draw on fog
+					self._screen.blit(self._font.render(str(self._armies[row][column]), True, BLACK), (pos_left+2, pos_top+2))
 	 
 		# Limit to 60 frames per second
 		self._clock.tick(60)
