@@ -2,6 +2,7 @@
 import logging
 from pprint import pprint
 import random
+import threading
 
 import client.generals as generals
 
@@ -14,18 +15,23 @@ DISTRIBUTE_GREATER = 5
 class GeneralsBot(object):
 	def __init__(self):
 		# Create Game
-		#self._game = generals.Generals('GeneralsTest', 'GeneralsTest', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		self._game = generals.Generals('GeneralsTest', 'GeneralsTest', '1v1') # 1v1
-		#self._game = generals.Generals('GeneralsTest', 'GeneralsTest', 'ffa') # FFA
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
-		self._start_update_loop()
+		_create_thread(self._start_update_loop)
+
+		while (True):
+			msg = input('Send Msg:')
+			print("Sending MSG: " + msg)
+			# TODO: Send msg
 
 	def _start_update_loop(self):
 		for update in self._game.get_updates():
 			if (self._set_update(update)):
 				break
 
-			pprint(update['army_grid'])
+			#pprint(update['army_grid'])
 			self._move();
 
 	def _set_update(self, update):
@@ -39,6 +45,19 @@ class GeneralsBot(object):
 		self._rows = update['rows']
 		self._cols = update['cols']
 
+		scores = sorted(update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
+		lands = sorted(update['lands'], reverse=True)
+		armies = sorted(update['armies'], reverse=True)
+
+		print(" -------- Scores --------") # Print Scores
+		for score in scores:
+			pos_lands = lands.index(score['tiles'])
+			pos_armies = armies.index(score['total'])
+
+			if (score['i'] == self._pi):
+				print("SELF: ")
+			print('Land: %d (%4d), Army: %d (%4d) / %d' % (pos_lands+1, score['tiles'], pos_armies+1, score['total'], len(scores)))
+
 		return False
 
 	def _move(self):
@@ -47,7 +66,7 @@ class GeneralsBot(object):
 			for y in _shuffle(range(self._rows)):
 				source_tile = self._update['tile_grid'][y][x]
 				source_army = self._update['army_grid'][y][x]
-				if (source_tile == self._pi and source_army > 2): # Find One With Armies
+				if (source_tile == self._pi and source_army >= 2): # Find One With Armies
 					for dy, dx in self._explore_moves(x,y):
 						if (self._validPosition(x+dx,y+dy)):
 							dest_tile = self._update['tile_grid'][y+dy][x+dx]
@@ -93,6 +112,11 @@ class GeneralsBot(object):
 
 	def _validPosition(self, x, y):
 		return 0 <= y < self._rows and 0 <= x < self._cols and self._update['tile_grid'][y][x] != generals.MOUNTAIN
+
+def _create_thread(f):
+	t = threading.Thread(target=f)
+	#t.daemon = True
+	t.start()
 
 def _shuffle(seq):
 	shuffled = list(seq)
