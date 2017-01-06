@@ -3,6 +3,7 @@ import logging
 from pprint import pprint
 import random
 import threading
+import time
 
 import client.generals as generals
 
@@ -27,12 +28,17 @@ class GeneralsBot(object):
 			# TODO: Send msg
 
 	def _start_update_loop(self):
+		firstUpdate = True
+
 		for update in self._game.get_updates():
 			if (self._set_update(update)):
 				break
 
+			if (firstUpdate):
+				_create_thread(self._start_moves)
+				firstUpdate = False
+
 			#pprint(update['army_grid'])
-			self._move();
 
 	def _set_update(self, update):
 		self._update = update
@@ -60,35 +66,38 @@ class GeneralsBot(object):
 
 		return False
 
-	def _move(self):
-		# Expand Outward
-		for x in _shuffle(range(self._cols)): # Check Each Square
-			for y in _shuffle(range(self._rows)):
-				source_tile = self._update['tile_grid'][y][x]
-				source_army = self._update['army_grid'][y][x]
-				if (source_tile == self._pi and source_army >= 2): # Find One With Armies
-					for dy, dx in self._explore_moves(x,y):
-						if (self._validPosition(x+dx,y+dy)):
-							dest_tile = self._update['tile_grid'][y+dy][x+dx]
-							dest_army = self._update['army_grid'][y+dy][x+dx]
-							if (dest_army > 0):
-								dest_army += 2
-							if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
-								self._place_move(y, x, y+dy, x+dx)
+	def _start_moves(self):
+		while True:
+			# Expand Outward
+			for x in _shuffle(range(self._cols)): # Check Each Square
+				for y in _shuffle(range(self._rows)):
+					source_tile = self._update['tile_grid'][y][x]
+					source_army = self._update['army_grid'][y][x]
+					if (source_tile == self._pi and source_army >= 2): # Find One With Armies
+						for dy, dx in self._explore_moves(x,y):
+							if (self._validPosition(x+dx,y+dy)):
+								dest_tile = self._update['tile_grid'][y+dy][x+dx]
+								dest_army = self._update['army_grid'][y+dy][x+dx]
+								if (dest_army > 0):
+									dest_army += 2
+								if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
+									self._place_move(y, x, y+dy, x+dx)
 
-		# Distribute Armies
-		for x in _shuffle(range(self._cols)): # Check Each Square
-			for y in _shuffle(range(self._rows)):
-				source_tile = self._update['tile_grid'][y][x]
-				source_army = self._update['army_grid'][y][x]
-				if (source_tile == self._pi and source_army > DISTRIBUTE_MIN): # Find One With Armies
-					for dy, dx in _shuffle([(0, 1), (0, -1), (1, 0), (-1, 0)]):
-						if (self._validPosition(x+dx,y+dy)):
-							dest_tile = self._update['tile_grid'][y+dy][x+dx]
-							dest_army = self._update['army_grid'][y+dy][x+dx]
-							if (source_army > (dest_army + DISTRIBUTE_GREATER)): # Position has less army count
-								if (self._place_move(y, x, y+dy, x+dx, move_half=True)):
-									return
+			# Distribute Armies
+			for x in _shuffle(range(self._cols)): # Check Each Square
+				for y in _shuffle(range(self._rows)):
+					source_tile = self._update['tile_grid'][y][x]
+					source_army = self._update['army_grid'][y][x]
+					if (source_tile == self._pi and source_army > DISTRIBUTE_MIN): # Find One With Armies
+						for dy, dx in self._distribute_moves(x,y):
+							if (self._validPosition(x+dx,y+dy)):
+								dest_tile = self._update['tile_grid'][y+dy][x+dx]
+								dest_army = self._update['army_grid'][y+dy][x+dx]
+								if (source_army > (dest_army + DISTRIBUTE_GREATER)): # Position has less army count
+									if (self._place_move(y, x, y+dy, x+dx, move_half=True)):
+										break
+
+			time.sleep(0.1)
 
 	def _explore_moves(self, x, y):
 		positions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -103,6 +112,21 @@ class GeneralsBot(object):
 
 		first_positions.extend(_shuffle(positions))
 		return first_positions
+
+	def _distribute_moves(self, x, y):
+		king_y, king_x = self._update['generals'][self._pi]
+
+		if y > king_y:
+			if x > king_x: # dy=1, dx=1
+				return [(1, 0), (0, 1), (-1, 0), (0, -1)]
+			else: # dy=1, dx=-1
+				return [(1, 0), (0, -1), (-1, 0), (0, 1)]
+		else:
+			if x > king_x: # dy=-1, dx=1
+				return [(-1, 0), (0, 1), (1, 0), (0, -1)]
+			else: # dy=-1, dx=-1
+				return [(-1, 0), (0, -1), (1, 0), (0, 1)]
+
 
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
