@@ -38,7 +38,7 @@ class GeneralsBot(object):
 				_create_thread(self._start_moves)
 				firstUpdate = False
 
-			#pprint(update['army_grid'])
+			pprint(update['army_grid'])
 
 	def _set_update(self, update):
 		self._update = update
@@ -51,11 +51,16 @@ class GeneralsBot(object):
 		self._rows = update['rows']
 		self._cols = update['cols']
 
+		#self._print_scores()
+
+		return False
+
+	def _print_scores(self):
 		scores = sorted(update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
 		lands = sorted(update['lands'], reverse=True)
 		armies = sorted(update['armies'], reverse=True)
 
-		print(" -------- Scores --------") # Print Scores
+		print(" -------- Scores --------")
 		for score in scores:
 			pos_lands = lands.index(score['tiles'])
 			pos_armies = armies.index(score['total'])
@@ -64,10 +69,8 @@ class GeneralsBot(object):
 				print("SELF: ")
 			print('Land: %d (%4d), Army: %d (%4d) / %d' % (pos_lands+1, score['tiles'], pos_armies+1, score['total'], len(scores)))
 
-		return False
-
 	def _start_moves(self):
-		while True:
+		while (not self._update['complete']):
 			# Expand Outward
 			for x in _shuffle(range(self._cols)): # Check Each Square
 				for y in _shuffle(range(self._rows)):
