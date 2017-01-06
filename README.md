@@ -10,7 +10,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Setup
 
-- [ ] `pip install -r client/requirements.txt`
+- [ ] `pip install -r requirements.txt`
 
 ## Features
 

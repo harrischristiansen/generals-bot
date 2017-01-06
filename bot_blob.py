@@ -1,11 +1,17 @@
+'''
+	@ Harris Christiansen (Harris@HarrisChristiansen.com)
+	January 2016
+	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
+	Bot_blob: Creates a blob of troops.
+'''
 
 import logging
-from pprint import pprint
 import random
 import threading
 import time
 
 import client.generals as generals
+from viewer import GeneralsViewer
 
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
@@ -15,11 +21,20 @@ DISTRIBUTE_GREATER = 5
 
 class GeneralsBot(object):
 	def __init__(self):
+		# Start Game Loop
+		_create_thread(self._start_game_loop)
+
+		# Start Game Viewer
+		self._viewer = GeneralsViewer()
+		self._viewer.mainViewerLoop()
+
+	def _start_game_loop(self):
 		# Create Game
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
 		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
+		# Start Game Update Loop
 		_create_thread(self._start_update_loop)
 
 		while (True):
@@ -31,14 +46,16 @@ class GeneralsBot(object):
 		firstUpdate = True
 
 		for update in self._game.get_updates():
-			if (self._set_update(update)):
+			if (self._set_update(update)): # Returns True when Game Over
 				break
 
 			if (firstUpdate):
 				_create_thread(self._start_moves)
 				firstUpdate = False
 
-			pprint(update['army_grid'])
+			# Update GeneralsViewer Grid
+			if '_viewer' in dir(self):
+				self._viewer.updateGrid(self._update['tile_grid'], self._update['army_grid'])
 
 	def _set_update(self, update):
 		self._update = update
@@ -51,14 +68,14 @@ class GeneralsBot(object):
 		self._rows = update['rows']
 		self._cols = update['cols']
 
-		#self._print_scores()
+		self._print_scores()
 
 		return False
 
 	def _print_scores(self):
-		scores = sorted(update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
-		lands = sorted(update['lands'], reverse=True)
-		armies = sorted(update['armies'], reverse=True)
+		scores = sorted(self._update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
+		lands = sorted(self._update['lands'], reverse=True)
+		armies = sorted(self._update['armies'], reverse=True)
 
 		print(" -------- Scores --------")
 		for score in scores:
@@ -142,7 +159,7 @@ class GeneralsBot(object):
 
 def _create_thread(f):
 	t = threading.Thread(target=f)
-	#t.daemon = True
+	t.daemon = True
 	t.start()
 
 def _shuffle(seq):
