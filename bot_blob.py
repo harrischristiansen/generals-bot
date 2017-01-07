@@ -187,7 +187,7 @@ class GeneralsBot(object):
 					self._place_move(y, x, y+dy, x+dx)
 					return self._distribute_square(path, x+dx, y+dy)
 
-	######################### Move Placement Helpers #########################
+	######################### Movement Controllers #########################
 	
 	def _explore_moves(self, x, y):
 		positions = self._directional_moves(x,y)
@@ -204,10 +204,36 @@ class GeneralsBot(object):
 		return first_positions
 
 	def _directional_moves(self, x, y):
-		if (self._opponent_position != None):
-			return self._toward_opponent_moves(x,y)
-		
-		return self._away_king_moves(x,y)
+		return self._toward_closest_moves(x,y)
+
+	def _toward_closest_moves(self, origin_x, origin_y):
+		closest_target = None
+		closest_target_distance = 1000
+
+		current_army = self._update['army_grid'][origin_y][origin_x]
+
+		for x in range(self._cols): # Check Each Square, Find Closest Optimal Target
+			for y in range(self._rows):
+				dest_tile = self._update['tile_grid'][y][x]
+				dest_army = self._update['army_grid'][y][x]
+				if (dest_tile >= 0 and dest_tile != self._pi): # Other Player
+					distance = abs(x-origin_x) + abs(y-origin_y)
+					if (distance < closest_target_distance):
+						closest_target = (x,y)
+						closest_target_distance = distance
+
+				if (dest_tile != self._pi and (y,x) in self._update['cities'] and current_army > (.75 * dest_army)): # Other Cities
+					distance = abs(x-origin_x) + abs(y-origin_y)
+					if (distance < (closest_target_distance * 1.5)):
+						closest_target = (x,y)
+						closest_target_distance = distance * 0.7
+
+
+		if (closest_target == None):
+			return self._away_king_moves(x,y)
+
+		self._opponent_position = closest_target
+		return self._toward_opponent_moves(origin_x,origin_y)
 
 
 	def _toward_opponent_moves(self, x, y):
@@ -264,12 +290,18 @@ class GeneralsBot(object):
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
 			self._game.move(y1, x1, y2, x2, move_half)
-			time.sleep(0.5) # Wait for next move
+
+			# Calculate Remaining Army
+			army_remaining = 1
+			if move_half:
+				army_remaining = self._update['army_grid'][y1][x1] / 2
 
 			# Update Current Board
-			#self._update['tile_grid'][y2][x2] = self._pi
-			#self._update['army_grid'][y2][x2] = self._update['army_grid'][y1][x1] - self._update['army_grid'][y2][x2] - 1
-			#self._update['army_grid'][y1][x1] = 1
+			self._update['tile_grid'][y2][x2] = self._pi
+			self._update['army_grid'][y2][x2] = self._update['army_grid'][y1][x1] - self._update['army_grid'][y2][x2] - army_remaining
+			self._update['army_grid'][y1][x1] = army_remaining
+
+			time.sleep(0.45) # Wait for next move
 			return True
 		return False
 
