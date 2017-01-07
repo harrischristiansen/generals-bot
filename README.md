@@ -14,7 +14,9 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Features
 
-- [ ] Feature 1
+- [X] Expand Blob
+- [X] Dumb Army Distribution
+- [X] Run Large Armies Outward. Prioritize Opponents and Cities
 
 ## Contributors
 
