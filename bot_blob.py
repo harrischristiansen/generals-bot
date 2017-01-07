@@ -7,7 +7,6 @@
 
 import logging
 import random
-import sys
 import threading
 import time
 
@@ -28,9 +27,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		_create_thread(self._start_update_loop)
@@ -60,7 +59,8 @@ class GeneralsBot(object):
 
 	def _set_update(self, update):
 		if (update['complete']):
-			sys.exit("!!!! Game Complete. Result = " + str(update['result']) + " !!!!")
+			print("!!!! Game Complete. Result = " + str(update['result']) + " !!!!")
+			return
 
 		self._update = update
 		self._pi = update['player_index']
@@ -86,8 +86,8 @@ class GeneralsBot(object):
 	def _start_moves(self):
 		while (not self._update['complete']):
 			self._expand_blob()
-			#self._dumb_distribute()
 			self._run_chains_distribution()
+			self._dumb_distribute()
 
 	######################### Expand Blob #########################
 
@@ -126,20 +126,31 @@ class GeneralsBot(object):
 	######################### Run Chains Distribution #########################
 
 	def _run_chains_distribution(self):
+		distribution_path = []
+
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
 				source_tile = self._update['tile_grid'][y][x]
 				source_army = self._update['army_grid'][y][x]
 				if (source_tile == self._pi and source_army > 12): # Find One With Armies
-					self._distribute_square([], x, y)
+					distribution_path = self._distribute_square(distribution_path, x, y)
 
 	def _distribute_square(self, path, x, y):
+		if (not self._validPosition(x,y)):
+			return path
+
 		source_tile = self._update['tile_grid'][y][x]
 		source_army = self._update['army_grid'][y][x]
-		path.append((x,y))
 
 		if (source_army < 3):
-			return
+			return path
+
+		if (path == None):
+			path = []
+
+		if ((x,y) in path):
+			return path
+		path.append((x,y))
 
 		for dy, dx in self._explore_moves(x,y):
 			if (self._validPosition(x+dx,y+dy)):
@@ -153,10 +164,9 @@ class GeneralsBot(object):
 					return self._distribute_square(path, x+dx, y+dy)
 
 				if (source_army > (dest_army + 2)): # Position has less army count
-					if (not (x+dx,y+dy) in path):
-						self._place_move(y, x, y+dy, x+dx)
-						time.sleep(1) # Wait for next move
-						return self._distribute_square(path, x+dx, y+dy)
+					self._place_move(y, x, y+dy, x+dx)
+					time.sleep(1) # Wait for next move
+					return self._distribute_square(path, x+dx, y+dy)
 
 	######################### Move Placement Helpers #########################
 	
@@ -178,7 +188,7 @@ class GeneralsBot(object):
 		king_y, king_x = self._update['generals'][self._pi]
 
 		if (y == king_y and x == king_x): # Moving from king
-			return random.sample([(1, 0), (-1, 0), (0, 1), (0, -1)], 4)
+			return self._moves_random()
 
 		if y > king_y:
 			if x > king_x: # dy=1, dx=1
@@ -202,6 +212,10 @@ class GeneralsBot(object):
 				moves.extend(random.sample([(1, 0), (0, 1)],2))
 				return moves
 				#return [(0, -1), (-1, 0), (1, 0), (0, 1)]
+
+
+	def _moves_random(self):
+		return random.sample([(1, 0), (-1, 0), (0, 1), (0, -1)], 4)
 
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
