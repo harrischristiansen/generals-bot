@@ -64,8 +64,11 @@ class GeneralsBot(object):
 
 		self._update = update
 		self._pi = update['player_index']
+		self._opponent_position = None
 		self._rows = update['rows']
 		self._cols = update['cols']
+
+		self._record_opponent_position()
 
 	def _print_scores(self):
 		scores = sorted(self._update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
@@ -88,6 +91,21 @@ class GeneralsBot(object):
 			self._expand_blob()
 			self._run_chains_distribution()
 			self._dumb_distribute()
+
+	######################### Record Opponent Position #########################
+
+	def _record_opponent_position(self):
+		largestArmy = 0
+
+		for x in _shuffle(range(self._cols)): # Check Each Square
+			for y in _shuffle(range(self._rows)):
+				source_tile = self._update['tile_grid'][y][x]
+				source_army = self._update['army_grid'][y][x]
+				if (source_tile >= 0 and source_tile != self._pi and source_army > largestArmy): # Find Opponent with largest armies
+					self._opponent_position = (x,y)
+					print("Found Opponent: "+str(self._opponent_position))
+					largestArmy = source_army
+					
 
 	######################### Expand Blob #########################
 
@@ -120,7 +138,7 @@ class GeneralsBot(object):
 							dest_army = self._update['army_grid'][y+dy][x+dx]
 							if (source_army > (dest_army * 2)): # Position has less army count
 								if (self._place_move(y, x, y+dy, x+dx, move_half=True)):
-									break
+									return
 
 
 	######################### Run Chains Distribution #########################
@@ -160,18 +178,18 @@ class GeneralsBot(object):
 					dest_army += 2
 				if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
 					self._place_move(y, x, y+dy, x+dx)
-					time.sleep(1) # Wait for next move
+					#time.sleep(1) # Wait for next move
 					return self._distribute_square(path, x+dx, y+dy)
 
 				if (source_army > (dest_army + 2)): # Position has less army count
 					self._place_move(y, x, y+dy, x+dx)
-					time.sleep(1) # Wait for next move
+					#time.sleep(1) # Wait for next move
 					return self._distribute_square(path, x+dx, y+dy)
 
 	######################### Move Placement Helpers #########################
 	
 	def _explore_moves(self, x, y):
-		positions = self._away_king_moves(x,y)
+		positions = self._directional_moves(x,y)
 		first_positions = []
 		for dy, dx in positions:
 			if (self._validPosition(x+dx,y+dy)):
@@ -184,6 +202,36 @@ class GeneralsBot(object):
 		first_positions.extend(positions)
 		return first_positions
 
+	def _directional_moves(self, x, y):
+		if (self._opponent_position != None):
+			return self._toward_opponent_moves(x,y)
+		
+		return self._away_king_moves(x,y)
+
+
+	def _toward_opponent_moves(self, x, y):
+		opp_x, opp_y = self._opponent_position
+		print("Moving Toward Opponent")
+
+		if y > opp_y:
+			if x > opp_x: # dy=-1, dx=-1
+				moves = random.sample([(-1, 0), (0, -1)],2)
+				moves.extend(random.sample([(1, 0), (0, 1)],2))
+				return moves
+			else: # dy=-1, dx=1
+				moves = random.sample([(0, 1), (-1, 0)],2)
+				moves.extend(random.sample([(1, 0), (0, -1)],2))
+				return moves
+		else:
+			if x > opp_x: # dy=1, dx=-1
+				moves = random.sample([(1, 0), (0, -1)],2)
+				moves.extend(random.sample([(-1, 0), (0, 1)],2))
+				return moves
+			else: # dy=1, dx=1
+				moves = random.sample([(0, 1), (1, 0)],2)
+				moves.extend(random.sample([(-1, 0), (0, -1)],2))
+				return moves
+
 	def _away_king_moves(self, x, y):
 		king_y, king_x = self._update['generals'][self._pi]
 
@@ -195,23 +243,19 @@ class GeneralsBot(object):
 				moves = random.sample([(1, 0), (0, 1)],2)
 				moves.extend(random.sample([(-1, 0), (0, -1)],2))
 				return moves
-				#return [(1, 0), (0, 1), (-1, 0), (0, -1)]
 			else: # dy=1, dx=-1
 				moves = random.sample([(0, -1), (1, 0)],2)
 				moves.extend(random.sample([(-1, 0), (0, 1)],2))
 				return moves
-				#return [(0, -1), (1, 0), (-1, 0), (0, 1)]
 		else:
 			if x > king_x: # dy=-1, dx=1
 				moves = random.sample([(-1, 0), (0, 1)],2)
 				moves.extend(random.sample([(1, 0), (0, -1)],2))
 				return moves
-				#return [(-1, 0), (0, 1), (1, 0), (0, -1)]
 			else: # dy=-1, dx=-1
 				moves = random.sample([(0, -1), (-1, 0)],2)
 				moves.extend(random.sample([(1, 0), (0, 1)],2))
 				return moves
-				#return [(0, -1), (-1, 0), (1, 0), (0, 1)]
 
 
 	def _moves_random(self):
@@ -220,6 +264,8 @@ class GeneralsBot(object):
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
 			self._game.move(y1, x1, y2, x2, move_half)
+			print(str(time.time())+" - Made Move")
+			time.sleep(0.8)
 
 			# Update Current Board
 			#self._update['tile_grid'][y2][x2] = self._pi
