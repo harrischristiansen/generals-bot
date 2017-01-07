@@ -28,8 +28,8 @@ class GeneralsBot(object):
 	def _start_game_loop(self):
 		# Create Game
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
@@ -193,7 +193,7 @@ class GeneralsBot(object):
 	######################### Movement Controllers #########################
 	
 	def _explore_moves(self, x, y):
-		positions = self._directional_moves(x,y)
+		positions = self._toward_target_moves(x,y)
 		first_positions = []
 		for dy, dx in positions:
 			if (self._validPosition(x+dx,y+dy)):
@@ -206,10 +206,7 @@ class GeneralsBot(object):
 		first_positions.extend(positions)
 		return first_positions
 
-	def _directional_moves(self, x, y):
-		return self._toward_closest_moves(x,y)
-
-	def _toward_closest_moves(self, origin_x, origin_y):
+	def _toward_target_moves(self, origin_x, origin_y):
 		closest_target = None
 		closest_target_distance = 1000
 
@@ -300,8 +297,11 @@ class GeneralsBot(object):
 				army_remaining = self._update['army_grid'][y1][x1] / 2
 
 			# Update Current Board
+			if (self._update['tile_grid'][y2][x2] == self._pi): # Owned By Self
+				self._update['army_grid'][y2][x2] = self._update['army_grid'][y1][x1] + self._update['army_grid'][y2][x2] - army_remaining
+			else:
+				self._update['army_grid'][y2][x2] = self._update['army_grid'][y1][x1] - self._update['army_grid'][y2][x2] - army_remaining
 			self._update['tile_grid'][y2][x2] = self._pi
-			self._update['army_grid'][y2][x2] = self._update['army_grid'][y1][x1] - self._update['army_grid'][y2][x2] - army_remaining
 			self._update['army_grid'][y1][x1] = army_remaining
 
 			time.sleep(0.45) # Wait for next move
