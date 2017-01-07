@@ -28,13 +28,14 @@ class GeneralsBot(object):
 	def _start_game_loop(self):
 		# Create Game
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
+		self._running = True
 		_create_thread(self._start_update_loop)
 
-		while (True):
+		while (self._running):
 			msg = input('Send Msg:')
 			print("Sending MSG: " + msg)
 			# TODO: Send msg
@@ -47,6 +48,9 @@ class GeneralsBot(object):
 		for update in self._game.get_updates():
 			self._set_update(update)
 
+			if (not self._running):
+				return
+
 			#self._print_scores()
 
 			if (firstUpdate):
@@ -55,7 +59,7 @@ class GeneralsBot(object):
 
 			# Update GeneralsViewer Grid
 			if '_viewer' in dir(self):
-				self._viewer.updateGrid(self._update['tile_grid'], self._update['army_grid'])
+				self._viewer.updateGrid(self._update['tile_grid'], self._update['army_grid'], self._update['cities'], self._update['generals'])
 
 	def _set_update(self, update):
 		if (update['complete']):
@@ -87,7 +91,7 @@ class GeneralsBot(object):
 	######################### Thread: Make Moves #########################
 
 	def _start_moves(self):
-		while (not self._update['complete']):
+		while (self._running and not self._update['complete']):
 			self._expand_blob()
 			self._run_chains_distribution()
 			self._dumb_distribute()
@@ -178,12 +182,10 @@ class GeneralsBot(object):
 					dest_army += 2
 				if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
 					self._place_move(y, x, y+dy, x+dx)
-					#time.sleep(1) # Wait for next move
 					return self._distribute_square(path, x+dx, y+dy)
 
 				if (source_army > (dest_army + 2)): # Position has less army count
 					self._place_move(y, x, y+dy, x+dx)
-					#time.sleep(1) # Wait for next move
 					return self._distribute_square(path, x+dx, y+dy)
 
 	######################### Move Placement Helpers #########################
@@ -211,7 +213,6 @@ class GeneralsBot(object):
 
 	def _toward_opponent_moves(self, x, y):
 		opp_x, opp_y = self._opponent_position
-		print("Moving Toward Opponent")
 
 		if y > opp_y:
 			if x > opp_x: # dy=-1, dx=-1
@@ -264,8 +265,7 @@ class GeneralsBot(object):
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
 			self._game.move(y1, x1, y2, x2, move_half)
-			print(str(time.time())+" - Made Move")
-			time.sleep(0.8)
+			time.sleep(0.8) # Wait for next move
 
 			# Update Current Board
 			#self._update['tile_grid'][y2][x2] = self._pi

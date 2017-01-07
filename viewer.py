@@ -14,7 +14,7 @@ BLACK = (0,0,0)
 GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
-PLAYER_COLORS = [(0,255,0), (255,0,0), (0,0,255), (255,255,10), (255,10,255), (170,0,170), (0,0,190), (5,190,190)]
+PLAYER_COLORS = [(0,255,0), (255,0,0), (0,0,255), (255,255,10), (255,10,255), (170,0,170), (0,0,220), (5,190,190)]
 
 # Table Properies
 CELL_WIDTH = 20
@@ -25,9 +25,11 @@ class GeneralsViewer(object):
 	def __init__(self):
 		self._receivedUpdate = False
 
-	def updateGrid(self, grid, armies):
+	def updateGrid(self, grid, armies, cities, generals):
 		self._grid = grid
 		self._armies = armies
+		self._cities = cities
+		self._generals = generals
 		self._receivedUpdate = True
 
 	def _initViewier(self):
@@ -89,10 +91,16 @@ class GeneralsViewer(object):
 				elif self._grid[row][column] >= 0: # Player
 					color = PLAYER_COLORS[self._grid[row][column]]
 
-				# Draw Rect
 				pos_left = (CELL_MARGIN + CELL_WIDTH) * column + CELL_MARGIN
 				pos_top = (CELL_MARGIN + CELL_HEIGHT) * row + CELL_MARGIN
-				pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
+				if ((row,column) in self._cities or (row,column) in self._generals): # City
+					# Draw Circle
+					pos_left_circle = pos_left + (CELL_WIDTH/2)
+					pos_top_circle = pos_top + (CELL_HEIGHT/2)
+					pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], CELL_WIDTH/2)
+				else:
+					# Draw Rect
+					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
 
 				# Draw Text Value
 				if (self._grid[row][column] >= -2 and self._armies[row][column] != 0): # Don't draw on fog
@@ -110,10 +118,10 @@ class GeneralsViewer(object):
 	t.start()
 
 def _fakeUpdates():
-	viewer.updateGrid(grid,grid)
+	viewer.updateGrid(grid,grid,[],[])
 	time.sleep(1)
 	grid[1][8] = 2
-	viewer.updateGrid(grid,grid)
+	viewer.updateGrid(grid,grid,[],[])
 
 grid = []
 for row in range(10):
