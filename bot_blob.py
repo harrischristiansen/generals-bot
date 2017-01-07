@@ -163,7 +163,7 @@ class GeneralsBot(object):
 		source_tile = self._update['tile_grid'][y][x]
 		source_army = self._update['army_grid'][y][x]
 
-		if (source_army < 3):
+		if (source_army < 2):
 			return path
 
 		if (path == None):
@@ -184,8 +184,11 @@ class GeneralsBot(object):
 					return self._distribute_square(path, x+dx, y+dy)
 
 				if (source_army > (dest_army + 2)): # Position has less army count
-					self._place_move(y, x, y+dy, x+dx)
-					return self._distribute_square(path, x+dx, y+dy)
+					if ((x+dx,y+dy) not in path): # Not Traveled Before
+						self._place_move(y, x, y+dy, x+dx)
+						return self._distribute_square(path, x+dx, y+dy)
+
+		return path
 
 	######################### Movement Controllers #########################
 	
