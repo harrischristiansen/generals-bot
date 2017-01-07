@@ -59,7 +59,7 @@ class GeneralsBot(object):
 
 			# Update GeneralsViewer Grid
 			if '_viewer' in dir(self):
-				self._viewer.updateGrid(self._update['tile_grid'], self._update['army_grid'], self._update['cities'], self._update['generals'])
+				self._viewer.updateGrid(self._update)
 
 	def _set_update(self, update):
 		if (update['complete']):
@@ -107,7 +107,6 @@ class GeneralsBot(object):
 				source_army = self._update['army_grid'][y][x]
 				if (source_tile >= 0 and source_tile != self._pi and source_army > largestArmy): # Find Opponent with largest armies
 					self._opponent_position = (x,y)
-					print("Found Opponent: "+str(self._opponent_position))
 					largestArmy = source_army
 					
 
@@ -265,7 +264,7 @@ class GeneralsBot(object):
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):
 			self._game.move(y1, x1, y2, x2, move_half)
-			time.sleep(0.8) # Wait for next move
+			time.sleep(0.5) # Wait for next move
 
 			# Update Current Board
 			#self._update['tile_grid'][y2][x2] = self._pi

@@ -25,24 +25,26 @@ class GeneralsViewer(object):
 	def __init__(self):
 		self._receivedUpdate = False
 
-	def updateGrid(self, grid, armies, cities, generals):
-		self._grid = grid
-		self._armies = armies
-		self._cities = cities
-		self._generals = generals
+	def updateGrid(self, update):
+		self._grid = update['tile_grid']
+		self._armies = update['army_grid']
+		self._cities = update['cities']
+		self._generals = update['generals']
+		self._turn = update['turn']
 		self._receivedUpdate = True
 
 	def _initViewier(self):
 		pygame.init()
 
 		# Set Window Size
-		window_height = len(self._grid) * (CELL_HEIGHT + CELL_MARGIN) + CELL_MARGIN
+		window_height = len(self._grid) * (CELL_HEIGHT + CELL_MARGIN) + CELL_MARGIN + 25
 		window_width = len(self._grid[0]) * (CELL_WIDTH + CELL_MARGIN) + CELL_MARGIN
 		self._window_size = [window_width, window_height]
 		self._screen = pygame.display.set_mode(self._window_size)
 
 		pygame.display.set_caption("Generals IO Bot")
 		self._font = pygame.font.SysFont('Arial', CELL_HEIGHT-10)
+		self._fontLrg = pygame.font.SysFont('Arial', CELL_HEIGHT)
 
 		self._clock = pygame.time.Clock()
 
@@ -76,6 +78,10 @@ class GeneralsViewer(object):
 
 	def _drawGrid(self):
 		self._screen.fill(BLACK) # Set BG Color
+
+		# Draw Score
+		self._screen.blit(self._fontLrg.render("Turn: "+str(self._turn), True, WHITE), (10, self._window_size[1]-25))
+		
 	 
 		# Draw Grid
 		for row in range(len(self._grid)):
