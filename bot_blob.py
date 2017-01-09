@@ -28,8 +28,8 @@ class GeneralsBot(object):
 	def _start_game_loop(self):
 		# Create Game
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
@@ -121,9 +121,7 @@ class GeneralsBot(object):
 					for dy, dx in self._explore_moves(x,y):
 						if (self._validPosition(x+dx,y+dy)):
 							dest_tile = self._update['tile_grid'][y+dy][x+dx]
-							dest_army = self._update['army_grid'][y+dy][x+dx]
-							if (dest_army > 0):
-								dest_army += 2
+							dest_army = self._update['army_grid'][y+dy][x+dx] + 1
 							if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
 								self._place_move(y, x, y+dy, x+dx)
 
@@ -163,7 +161,7 @@ class GeneralsBot(object):
 		source_tile = self._update['tile_grid'][y][x]
 		source_army = self._update['army_grid'][y][x]
 
-		if (source_army < 2):
+		if (source_army < 2 or source_tile != self._pi):
 			return path
 
 		if (path == None):
@@ -176,9 +174,7 @@ class GeneralsBot(object):
 		for dy, dx in self._explore_moves(x,y):
 			if (self._validPosition(x+dx,y+dy)):
 				dest_tile = self._update['tile_grid'][y+dy][x+dx]
-				dest_army = self._update['army_grid'][y+dy][x+dx]
-				if (dest_army > 0):
-					dest_army += 2
+				dest_army = self._update['army_grid'][y+dy][x+dx] + 1
 				if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
 					self._place_move(y, x, y+dy, x+dx)
 					return self._distribute_square(path, x+dx, y+dy)
@@ -192,7 +188,7 @@ class GeneralsBot(object):
 
 	######################### Movement Controllers #########################
 	
-	def _explore_and_attack_moves(self, x, y):
+	def _explore_moves(self, x, y):
 		positions = self._toward_target_moves(x,y)
 		first_positions = []
 		smallest_opponent = 9999
@@ -201,6 +197,7 @@ class GeneralsBot(object):
 			if (self._validPosition(x+dx,y+dy)):
 				dest_tile = self._update['tile_grid'][y+dy][x+dx]
 				dest_army = self._update['army_grid'][y+dy][x+dx]
+
 				if (dest_tile >= 0 and dest_tile != self._pi): # Other Players
 					if (dest_army < smallest_opponent):
 						smallest_opponent = dest_army
@@ -208,7 +205,8 @@ class GeneralsBot(object):
 					else:
 						first_positions.append((dy,dx))
 					positions.remove((dy,dx))
-				if (dest_tile != self._pi and ((y,x) in self._update['cities'] or (y,x) in self._update['generals'])): # Other Cities
+
+				elif (dest_tile != self._pi and ((y,x) in self._update['cities'] or (y,x) in self._update['generals'])): # Other Cities
 					first_positions.insert(0,(dy,dx))
 					positions.remove((dy,dx))
 
