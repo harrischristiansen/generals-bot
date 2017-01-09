@@ -116,7 +116,8 @@ class GeneralsBot(object):
 		if (self._target_position != None and self._update['tile_grid'][self._target_position[0]][self._target_position[1]] == self._pi): # Aquired Target
 			self._clear_target()
 
-		min_city_size = self._update['armies'][self._pi] / 2
+		king_y, king_x = self._update['generals'][self._pi]
+		max_city_size = self._update['tile_grid'][king_y][king_x] * 1.5
 
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
@@ -132,7 +133,7 @@ class GeneralsBot(object):
 						return True
 
 				if (self._target_type <= OPP_CITY): # Search for Smallest Cities
-					if (source_tile != self._pi and source_army < min_city_size and source_pos in self._update['cities']):
+					if (source_tile != self._pi and source_army < max_city_size and source_pos in self._update['cities']):
 						if (self._target_type < OPP_CITY or self._target_army > source_army):
 							self._target_position = source_pos
 							self._target_type = OPP_CITY
@@ -190,30 +191,33 @@ class GeneralsBot(object):
 
 		# Find Next Move
 		try:
-			x2, y2 = self._path_move(x,y)
+			x2, y2 = self._next_path_step(x,y)
 			self._find_path_step(x2, y2)
 		except TypeError:
 			print("!!!!! ERROR: No Next Path Move!!!!!")
 
-	def _path_move(self, x, y):
+	def _next_path_step(self, x, y):
 		bestTarget = None
 		bestTarget_type = OPP_EMPTY - 1
+
+		king_y, king_x = self._update['generals'][self._pi]
+		max_attack_size = self._update['tile_grid'][king_y][king_x] * 1.5
 
 		for dy, dx in self._toward_dest_moves(x,y):
 			if (self._validPosition(x+dx,y+dy)):
 				dest_tile = self._update['tile_grid'][y+dy][x+dx]
 				dest_army = self._update['army_grid'][y+dy][x+dx]
 				if (self._path[y+dy][x+dx] == 0): # Never Visited
-					if ((y+dy,x+dx) in self._update['generals']): # Target General
+					if ((y+dy,x+dx) in self._update['generals'] and dest_tile != self._pi): # Target General
 						bestTarget = (x+dx,y+dy)
 						bestTarget_type = OPP_GENERAL
-					elif (bestTarget_type < OPP_CITY and (y+dy,x+dx) in self._update['cities']): # Target Cities
+					elif (bestTarget_type < OPP_CITY and (y+dy,x+dx) in self._update['cities'] and (dest_tile == self._pi or dest_army < max_attack_size)): # Target Cities
 						bestTarget = (x+dx,y+dy)
 						bestTarget_type = OPP_CITY
-					elif (bestTarget_type < OPP_ARMY and dest_tile >= 0 and dest_tile != self._pi): # Target Opponents
+					elif (bestTarget_type < OPP_ARMY and dest_tile >= 0 and dest_tile != self._pi and dest_army < max_attack_size): # Target Opponents
 						bestTarget = (x+dx,y+dy)
 						bestTarget_type = OPP_ARMY
-					elif (bestTarget_type < OPP_EMPTY): # Target Empties
+					elif (bestTarget_type < OPP_EMPTY and dest_army < max_attack_size): # Target Empties
 						bestTarget = (x+dx,y+dy)
 						bestTarget_type = OPP_EMPTY
 				elif (self._path[y+dy][x+dx] > 0): # Backtracing
@@ -238,7 +242,6 @@ class GeneralsBot(object):
 			print("Path Error: Out of Army (%d,%d,%d)" % (self._path_position, source_tile, source_army))
 			return self._restart_path()
 
-		print("Path Move (%d)" % (self._path_position))
 		try:
 			x2,y2 = self._path_coordinates(self._path_position+1) # Determine Destination
 			dest_tile = self._update['tile_grid'][y2][x2]

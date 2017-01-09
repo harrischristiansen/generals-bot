@@ -14,14 +14,17 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Features
 
-- [ ] Blob Bot
+- [X] Blob Bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
 	- [X] Run Large Armies Outward. Prioritize Opponents and Cities
 - [ ] Path Collect Bot
 	- [X] Primary Target Finding
-	- [ ] Path Finding
-	- [ ] Run Path Routine
+	- [X] Path Finding
+		- [ ] Support path generation for any X->Y
+		- [ ] Fix Bugs: Inefficient/Incorrect paths
+	- [X] Run Path Routine
+		- [ ] Fix Bugs: Some numbers in path may be removed.
 	- [ ] Collect Troops Routine
 	- [ ] Expand Outward Routine
 	- [ ] Sub-prioritize cities/etc
