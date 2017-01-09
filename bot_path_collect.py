@@ -70,11 +70,13 @@ class GeneralsBot(object):
 
 			# Update GeneralsViewer Grid
 			if '_viewer' in dir(self):
-				self._update['path'] = self._path
+				if '_path' in dir(self):
+					self._update['path'] = self._path
 				self._viewer.updateGrid(self._update)
 
 	def _received_first_update(self):
 		self._clear_target()
+		self._path = []
 		self._path_position = -1
 		return
 
@@ -106,8 +108,11 @@ class GeneralsBot(object):
 	######################### Move Generation #########################
 
 	def _make_move(self):
-		self._update_primary_target()
-		self._move_primary_path_forward()
+		if (self._update['turn'] % 2 == 0):
+			self._update_primary_target()
+			self._move_primary_path_forward()
+		else:
+			self._move_outward()
 		return
 
 	######################### Primary Target Finding #########################
@@ -284,7 +289,19 @@ class GeneralsBot(object):
 	######################### Move Outward #########################
 
 	def _move_outward(self):
-		return True
+		for x in _shuffle(range(self._cols)): # Check Each Square
+			for y in _shuffle(range(self._rows)):
+				source_tile = self._update['tile_grid'][y][x]
+				source_army = self._update['army_grid'][y][x]
+				if (source_tile == self._pi and source_army >= 2): # Find One With Armies
+					for dy, dx in self._toward_dest_moves(x,y):
+						if (self._validPosition(x+dx,y+dy)):
+							dest_tile = self._update['tile_grid'][y+dy][x+dx]
+							dest_army = self._update['army_grid'][y+dy][x+dx] + 1
+							if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
+								self._place_move(y, x, y+dy, x+dx)
+								return True
+		return False
 
 	######################### Collect To Path #########################
 
@@ -298,8 +315,7 @@ class GeneralsBot(object):
 	def _toward_dest_moves(self, source_x, source_y, dest_x=-1, dest_y=-1):
 		# Determine Destination
 		if (dest_x == -1):
-			dest_x = self._target_position[1]
-			dest_y = self._target_position[0]
+			dest_y, dest_x = self._target_position
 
 		# Compute X/y Directions
 		dir_y = 1
