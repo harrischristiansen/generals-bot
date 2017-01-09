@@ -15,6 +15,7 @@ GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
 PLAYER_COLORS = [(0,128,0), (255,0,0), (255,165,0), (128,0,0), (128,0,128), (0,128,128), (0,70,0), (0,0,255)]
+PATH_COLOR = (90,90,90)
 
 # Table Properies
 CELL_WIDTH = 20
@@ -27,6 +28,7 @@ class GeneralsViewer(object):
 
 	def updateGrid(self, update):
 		self._grid = update['tile_grid']
+		self._path = update['path']
 		self._armies = update['army_grid']
 		self._cities = update['cities']
 		self._generals = update['generals']
@@ -88,7 +90,7 @@ class GeneralsViewer(object):
 			for column in range(len(self._grid[row])):
 				# Determine BG Color
 				color = WHITE
-				color_font = BLACK
+				color_font = WHITE
 				if self._grid[row][column] == -2: # Mountain
 					color = BLACK
 				elif self._grid[row][column] == -3: # Fog
@@ -97,7 +99,8 @@ class GeneralsViewer(object):
 					color = GRAY_DARK
 				elif self._grid[row][column] >= 0: # Player
 					color = PLAYER_COLORS[self._grid[row][column]]
-					color_font = WHITE
+				else:
+					color_font = BLACK
 
 				pos_left = (CELL_MARGIN + CELL_WIDTH) * column + CELL_MARGIN
 				pos_top = (CELL_MARGIN + CELL_HEIGHT) * row + CELL_MARGIN
@@ -113,6 +116,10 @@ class GeneralsViewer(object):
 				# Draw Text Value
 				if (self._grid[row][column] >= -2 and self._armies[row][column] != 0): # Don't draw on fog
 					self._screen.blit(self._font.render(str(self._armies[row][column]), True, color_font), (pos_left+2, pos_top+2))
+
+				# Draw Path
+				if (self._path[row][column] > 0):
+					self._screen.blit(self._font.render("*", True, color_font), (pos_left+6, pos_top+6))
 	 
 		# Limit to 60 frames per second
 		self._clock.tick(60)
