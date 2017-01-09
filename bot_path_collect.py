@@ -156,7 +156,7 @@ class GeneralsBot(object):
 							newTarget = True
 
 				if (self._target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source_tile >= 0 and source_tile != self._pi and source_army > self._target_army):
+					if (source_tile >= 0 and source_tile != self._pi and source_army > self._target_army and source_pos not in self._update['cities']):
 						self._target_position = source_pos
 						self._target_type = OPP_ARMY
 						self._target_army = source_army
@@ -293,12 +293,12 @@ class GeneralsBot(object):
 			for y in _shuffle(range(self._rows)):
 				source_tile = self._update['tile_grid'][y][x]
 				source_army = self._update['army_grid'][y][x]
-				if (source_tile == self._pi and source_army >= 2): # Find One With Armies
+				if (source_tile == self._pi and source_army >= 2 and (x,y) not in self._path): # Find One With Armies
 					for dy, dx in self._toward_dest_moves(x,y):
 						if (self._validPosition(x+dx,y+dy)):
 							dest_tile = self._update['tile_grid'][y+dy][x+dx]
 							dest_army = self._update['army_grid'][y+dy][x+dx] + 1
-							if (dest_tile != self._pi and source_army > dest_army): # Capture Somewhere New
+							if ((dest_tile != self._pi and source_army > dest_army) or (x+dx,y+dy) in self._path): # Capture Somewhere New
 								self._place_move(y, x, y+dy, x+dx)
 								return True
 		return False
