@@ -38,8 +38,8 @@ class GeneralsBot(object):
 	def _start_game_loop(self):
 		# Create Game
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
@@ -223,7 +223,7 @@ class GeneralsBot(object):
 				if (current_tile == self._pi):
 					max_target_size_current += (current_army - 1)
 
-				if (max_target_size == 0 or current_tile == self._pi or current_army < max_target_size):
+				if (current_tile == self._pi or max_target_size == 0 or current_army < max_target_size):
 					neighbors.append((x+dx, y+dy, max_target_size_current))
 
 		return neighbors
@@ -337,7 +337,7 @@ class GeneralsBot(object):
 		return False
 
 	def _validPosition(self, x, y):
-		return 0 <= y < self._rows and 0 <= x < self._cols and self._update['tile_grid'][y][x] != generals.MOUNTAIN
+		return 0 <= y < self._rows and 0 <= x < self._cols and self._update['tile_grid'][y][x] != generals.MOUNTAIN and self._update['tile_grid'][y][x] != generals.OBSTACLE
 
 ######################### Global Helpers #########################
 
