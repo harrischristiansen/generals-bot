@@ -106,25 +106,28 @@ class GeneralsBot(object):
 	######################### Move Generation #########################
 
 	def _make_move(self):
-		if self._find_target():
-			old_x, old_y = (-1, -1)
-			if (self._path_position >= 0):
-				old_x, old_y = self._path_coordinates(self._path_position)
-			self._path = self._find_path()
-			self._restart_path(old_x, old_y)
-		self._move_path_forward()
+		self._update_primary_target()
+		self._move_primary_path_forward()
 		return
 
-	######################### Find Primary Target For Path #########################
+	######################### Primary Target Finding #########################
 
-	def _find_target(self):
+	def _update_primary_target(self):
+		if self._find_primary_target():
+			old_x, old_y = (-1, -1)
+			if (self._path_position >= 0): # Store old path position
+				old_x, old_y = self._path_coordinates(self._path_position)
+			self._path = self._find_path() # Find new path to target
+			self._restart_primary_path(old_x, old_y) # Check if old path position part of new path
+
+	def _find_primary_target(self):
 		newTarget = False
 
-		if (self._target_position != None and self._update['tile_grid'][self._target_position[0]][self._target_position[1]] == self._pi): # Aquired Target
+		if (self._target_position != None and self._update['tile_grid'][self._target_position[0]][self._target_position[1]] == self._pi): # Acquired Target
 			self._clear_target()
 
 		king_y, king_x = self._update['generals'][self._pi]
-		max_city_size = self._update['army_grid'][king_y][king_x] * 1.5
+		max_target_size = self._update['army_grid'][king_y][king_x] * 1.5
 
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
@@ -140,7 +143,7 @@ class GeneralsBot(object):
 						return True
 
 				if (self._target_type <= OPP_CITY): # Search for Smallest Cities
-					if (source_tile != self._pi and source_army < max_city_size and source_pos in self._update['cities']):
+					if (source_tile != self._pi and source_army < max_target_size and source_pos in self._update['cities']):
 						if (self._target_type < OPP_CITY or self._target_army > source_army):
 							self._target_position = source_pos
 							self._target_type = OPP_CITY
@@ -155,7 +158,7 @@ class GeneralsBot(object):
 						newTarget = True
 
 				if (self._target_type < OPP_EMPTY): # Search for Empty Squares
-					if (source_tile == generals.EMPTY and source_army < max_city_size):
+					if (source_tile == generals.EMPTY and source_army < max_target_size):
 						self._target_position = source_pos
 						self._target_type = OPP_EMPTY
 						self._target_army = source_army
@@ -233,19 +236,19 @@ class GeneralsBot(object):
 
 	######################### Move Forward Along Path #########################
 
-	def _move_path_forward(self):
+	def _move_primary_path_forward(self):
 		try:
 			x,y = self._path_coordinates(self._path_position)
 		except AttributeError, TypeError:
 			#logging.debug("Invalid Current Path Position")
-			return self._restart_path()
+			return self._restart_primary_path()
 
 		source_tile = self._update['tile_grid'][y][x]
 		source_army = self._update['army_grid'][y][x]
 
 		if (source_tile != self._pi or source_army < 2): # Out of Army, Restart Path
 			#logging.debug("Path Error: Out of Army (%d,%d)" % (source_tile, source_army))
-			return self._restart_path()
+			return self._restart_primary_path()
 
 		try:
 			x2,y2 = self._path_coordinates(self._path_position+1) # Determine Destination
@@ -255,10 +258,10 @@ class GeneralsBot(object):
 				self._place_move(y, x, y2, x2)
 			else:
 				#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (x,y,source_army,dest_army))
-				return self._restart_path()
+				return self._restart_primary_path()
 		except TypeError:
 			#logging.debug("Path Error: Invalid Target Destination")
-			return self._restart_path()
+			return self._restart_primary_path()
 
 		self._path_position = self._path_position + 1
 		return True
@@ -269,7 +272,7 @@ class GeneralsBot(object):
 		except IndexError:
 			return None
 
-	def _restart_path(self, old_x=-1, old_y=-1): # Always returns False
+	def _restart_primary_path(self, old_x=-1, old_y=-1): # Always returns False
 		self._path_position = 0
 		if (old_x >= 0):
 			for i, pos in enumerate(self._path):
