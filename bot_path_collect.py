@@ -37,8 +37,8 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
@@ -109,11 +109,15 @@ class GeneralsBot(object):
 
 	def _make_move(self):
 		if (self._update['turn'] % 2 == 0):
-			self._update_primary_target()
-			self._move_primary_path_forward()
+			self._make_primary_move()
 		else:
-			self._move_outward()
+			if not self._move_outward():
+				self._make_primary_move()
 		return
+
+	def _make_primary_move(self):
+		self._update_primary_target()
+		self._move_primary_path_forward()
 
 	######################### Primary Target Finding #########################
 

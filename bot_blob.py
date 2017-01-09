@@ -27,9 +27,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		self._game = generals.Generals('PurdueBot-Blob', 'PurdueBot-Blob', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
