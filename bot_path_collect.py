@@ -203,10 +203,13 @@ class GeneralsBot(object):
 		source = source[:2]
 		current = dest
 		path = [current]
-		while current != source:
-			current = came_from[current]
-			path.append(current)
-		path.append(source)
+		try:
+			while current != source:
+				current = came_from[current]
+				path.append(current)
+			path.append(source)
+		except KeyError:
+			None
 		path.reverse()
 
 		return path

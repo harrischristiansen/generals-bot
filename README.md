@@ -25,7 +25,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 		- [ ] Improve Path Selection (use army count and cities in selection)
 	- [X] Run Path Routine
 		- [ ] Continue running after reaching primary target
-	- [ ] Collect Troops Routine
+	- [ ] Collect Troops Routine (Run largest blob toward closest path point)
 	- [ ] Expand Outward Routine
 	- [ ] Sub-prioritize cities/etc
 - [ ] Improve Code Reuse / Modules
