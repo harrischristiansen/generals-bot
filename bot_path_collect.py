@@ -6,9 +6,11 @@
 '''
 
 import logging
+from Queue import Queue
 import random
 import threading
 import time
+from pprint import pprint
 
 import client.generals as generals
 from viewer import GeneralsViewer
@@ -18,6 +20,8 @@ OPP_EMPTY = 0
 OPP_ARMY = 1
 OPP_CITY = 2
 OPP_GENERAL = 3
+
+DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,9 +37,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
@@ -71,6 +75,7 @@ class GeneralsBot(object):
 
 	def _received_first_update(self):
 		self._clear_target()
+		self._path_position = -1
 		return
 
 	def _set_update(self, update):
@@ -102,9 +107,11 @@ class GeneralsBot(object):
 
 	def _make_move(self):
 		if self._find_target():
-			print("New Target: "+str(self._target_position))
-			self._restart_path()
-			self._find_path()
+			old_x, old_y = (-1, -1)
+			if (self._path_position >= 0):
+				old_x, old_y = self._path_coordinates(self._path_position)
+			self._path = self._find_path()
+			self._restart_path(old_x, old_y)
 		self._move_path_forward()
 		return
 
@@ -117,7 +124,7 @@ class GeneralsBot(object):
 			self._clear_target()
 
 		king_y, king_x = self._update['generals'][self._pi]
-		max_city_size = self._update['tile_grid'][king_y][king_x] * 1.5
+		max_city_size = self._update['army_grid'][king_y][king_x] * 1.5
 
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
@@ -148,7 +155,7 @@ class GeneralsBot(object):
 						newTarget = True
 
 				if (self._target_type < OPP_EMPTY): # Search for Empty Squares
-					if (source_tile == generals.EMPTY):
+					if (source_tile == generals.EMPTY and source_army < max_city_size):
 						self._target_position = source_pos
 						self._target_type = OPP_EMPTY
 						self._target_army = source_army
@@ -161,85 +168,80 @@ class GeneralsBot(object):
 		self._target_army = 0
 		self._target_type = OPP_EMPTY - 1
 
-	######################### Find Path To Primary Target #########################
+	######################### Pathfinding #########################
 
-	def _find_path(self):
-		king_y, king_x = self._update['generals'][self._pi]
+	def _find_path(self, x1=-1, y1=-1, x2=-1, y2=-1):
+		# Verify Source and Dest
+		if (x1 == -1 or not self._validPosition(x1,y1)): # No Source, Use King
+			y1, x1 = self._update['generals'][self._pi]
+		if (x2 == -1 or not self._validPosition(x2,y2)): # No Dest, Use Primary Target
+			y2, x2 = self._target_position
 
-		self._path = []
-		self._path_length = 1
-		for y in range(self._rows):
-			self._path.append([])
-			for x in range(self._cols):
-				self._path[y].append(0)
+		source = (x1, y1, self._update['army_grid'][y1][x1]-1)
+		dest = (x2,y2)
 
-		self._find_path_step(king_x, king_y)
-		return
+		# Determine Path To Destination
+		frontier = Queue()
+		frontier.put(source)
+		came_from = {}
+		came_from[source[:2]] = None
 
-	def _find_path_step(self, x, y):
-		# Record Path Step
-		if (self._path[y][x] > 0):
-			self._path[y][x] = -self._path[y][x]
-			self._path_length += -1
-		else:
-			self._path[y][x] = self._path_length
-			self._path_length += 1
+		while not frontier.empty():
+			current = frontier.get()
+			current_pos = current[:2]
 
-		# End Condition
-		if (self._target_position == (y,x)):
-			return
+			if current_pos == dest: # Found Destination
+				break
 
-		# Find Next Move
-		try:
-			x2, y2 = self._next_path_step(x,y)
-			self._find_path_step(x2, y2)
-		except TypeError:
-			print("!!!!! ERROR: No Next Path Move!!!!!")
+			for next in self._neighbors(current[0], current[1], current[2]):
+				next_pos = next[:2]
+				if next_pos not in came_from:
+					frontier.put(next)
+					came_from[next_pos] = current_pos # Remove Max Target Amount
 
-	def _next_path_step(self, x, y):
-		bestTarget = None
-		bestTarget_type = OPP_EMPTY - 1
+		# Create Path List
+		source = source[:2]
+		current = dest
+		path = [current]
+		while current != source:
+			current = came_from[current]
+			path.append(current)
+		path.append(source)
+		path.reverse()
 
-		king_y, king_x = self._update['generals'][self._pi]
-		max_attack_size = self._update['tile_grid'][king_y][king_x] * 1.5
+		return path
 
-		for dy, dx in self._toward_dest_moves(x,y):
-			if (self._validPosition(x+dx,y+dy)):
-				dest_tile = self._update['tile_grid'][y+dy][x+dx]
-				dest_army = self._update['army_grid'][y+dy][x+dx]
-				if (self._path[y+dy][x+dx] == 0): # Never Visited
-					if ((y+dy,x+dx) in self._update['generals'] and dest_tile != self._pi): # Target General
-						bestTarget = (x+dx,y+dy)
-						bestTarget_type = OPP_GENERAL
-					elif (bestTarget_type < OPP_CITY and (y+dy,x+dx) in self._update['cities'] and (dest_tile == self._pi or dest_army < max_attack_size)): # Target Cities
-						bestTarget = (x+dx,y+dy)
-						bestTarget_type = OPP_CITY
-					elif (bestTarget_type < OPP_ARMY and dest_tile >= 0 and dest_tile != self._pi and dest_army < max_attack_size): # Target Opponents
-						bestTarget = (x+dx,y+dy)
-						bestTarget_type = OPP_ARMY
-					elif (bestTarget_type < OPP_EMPTY and dest_army < max_attack_size): # Target Empties
-						bestTarget = (x+dx,y+dy)
-						bestTarget_type = OPP_EMPTY
-				elif (self._path[y+dy][x+dx] > 0): # Backtracing
-					if (bestTarget_type < OPP_EMPTY):
-						bestTarget = (x+dx,y+dy)
+	def _neighbors(self, x, y, max_target_size=0):
+		neighbors = []
 
-		return bestTarget
+		for dy, dx in DIRECTIONS:
+			if (self._validPosition(x+dx, y+dy)):
+				current_tile = self._update['tile_grid'][y][x]
+				current_army = self._update['army_grid'][y][x]
+
+				max_target_size_current = max_target_size
+				if (current_tile == self._pi):
+					max_target_size_current += (current_army - 1)
+
+				if (max_target_size == 0 or current_tile == self._pi or current_army < max_target_size):
+					neighbors.append((x+dx, y+dy, max_target_size_current))
+
+		return neighbors
 
 	######################### Move Forward Along Path #########################
 
 	def _move_path_forward(self):
 		try:
 			x,y = self._path_coordinates(self._path_position)
-		except TypeError:
-			print("Invalid Current Path Position")
+		except AttributeError, TypeError:
+			#logging.debug("Invalid Current Path Position")
 			return self._restart_path()
 
 		source_tile = self._update['tile_grid'][y][x]
 		source_army = self._update['army_grid'][y][x]
 
 		if (source_tile != self._pi or source_army < 2): # Out of Army, Restart Path
-			print("Path Error: Out of Army (%d,%d,%d)" % (self._path_position, source_tile, source_army))
+			#logging.debug("Path Error: Out of Army (%d,%d)" % (source_tile, source_army))
 			return self._restart_path()
 
 		try:
@@ -249,26 +251,28 @@ class GeneralsBot(object):
 			if (dest_tile == self._pi or source_army > dest_army):
 				self._place_move(y, x, y2, x2)
 			else:
-				print("Path Error: Out of Army To Attack")
+				#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (x,y,source_army,dest_army))
 				return self._restart_path()
 		except TypeError:
-			print("Path Error: Invalid Target Destination")
+			#logging.debug("Path Error: Invalid Target Destination")
 			return self._restart_path()
-
-
 
 		self._path_position = self._path_position + 1
 		return True
 
 	def _path_coordinates(self, i):
-		for y in range(self._rows):
-			for x in range(self._cols):
-				if (self._path[y][x] == i):
-					return (x,y)
-		return None
+		try:
+			return self._path[i]
+		except IndexError:
+			return None
 
-	def _restart_path(self): # Always returns False
-		self._path_position = 1
+	def _restart_path(self, old_x=-1, old_y=-1): # Always returns False
+		self._path_position = 0
+		if (old_x >= 0):
+			for i, pos in enumerate(self._path):
+				if pos == (old_x, old_y):
+					self._path_position = i
+		
 		return False
 
 	######################### Move Outward #########################
@@ -324,7 +328,7 @@ class GeneralsBot(object):
 		return moves
 
 	def _moves_random(self):
-		return random.sample([(1, 0), (-1, 0), (0, 1), (0, -1)], 4)
+		return random.sample(DIRECTIONS, 4)
 
 	def _place_move(self, y1, x1, y2, x2, move_half=False):
 		if (self._validPosition(x2, y2)):

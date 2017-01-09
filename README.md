@@ -14,6 +14,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Features
 
+- [ ] Rewrite Client w/ Point (or Block) Class
 - [X] Blob Bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
@@ -21,10 +22,9 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 - [ ] Path Collect Bot
 	- [X] Primary Target Finding
 	- [X] Path Finding
-		- [ ] Support path generation for any X->Y
-		- [ ] Fix Bugs: Inefficient/Incorrect paths
+		- [ ] Improve Path Selection (use army count and cities in selection)
 	- [X] Run Path Routine
-		- [ ] Fix Bugs: Some numbers in path may be removed.
+		- [ ] Continue running after reaching primary target
 	- [ ] Collect Troops Routine
 	- [ ] Expand Outward Routine
 	- [ ] Sub-prioritize cities/etc
