@@ -23,7 +23,6 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] Primary Target Finding
 	- [X] Path Finding
 		- [ ] Improve Path Selection (use army count and cities in selection)
-		- [ ] First Path Position is doubled?
 	- [X] Run Path Routine
 		- [ ] Continue running after reaching primary target
 	- [ ] Collect Troops Routine (Run largest blob toward closest path point)

@@ -13,7 +13,7 @@ import time
 import client.generals as generals
 from viewer import GeneralsViewer
 
-BOT_NAME = 'PurdueBot'
+BOT_NAME = 'PurdueBot-Blob'
 
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
@@ -29,9 +29,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		#self._game = generals.Generals(BOT_NAME, BOT_NAME, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		self._game = generals.Generals(BOT_NAME, BOT_NAME, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals(BOT_NAME, BOT_NAME, '1v1') # 1v1
-		self._game = generals.Generals(BOT_NAME, BOT_NAME, 'ffa') # FFA
+		#self._game = generals.Generals(BOT_NAME, BOT_NAME, 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True

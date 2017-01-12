@@ -9,10 +9,11 @@ import logging
 from Queue import Queue
 import random
 import threading
-import time
 
 import client2.generals as generals
 from viewer import GeneralsViewer
+
+BOT_NAME = 'PurdueBot-Path'
 
 # Opponent Type Definitions
 OPP_EMPTY = 0
@@ -36,9 +37,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		self._game = generals.Generals('PurdueBot-Path', 'PurdueBot-Path', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals(BOT_NAME, BOT_NAME, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals(BOT_NAME, BOT_NAME, '1v1') # 1v1
+		#self._game = generals.Generals(BOT_NAME, BOT_NAME, 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True
@@ -53,7 +54,7 @@ class GeneralsBot(object):
 	def _pre_game_start(self):
 		self._clear_target()
 		self._path = []
-		self._path_position = 0
+		self._restart_primary_path()
 		return
 
 	######################### Handle Updates From Server #########################
@@ -83,10 +84,9 @@ class GeneralsBot(object):
 		self._update = update
 
 	def _print_scores(self):
-		'''
 		scores = sorted(self._update.scores, key=lambda general: general['total'], reverse=True) # Sort Scores
-		lands = sorted(self._update['lands'], reverse=True)
-		armies = sorted(self._update['armies'], reverse=True)
+		lands = sorted([s['tiles'] for s in self._update.scores], reverse=True)
+		armies = sorted([s['total'] for s in self._update.scores], reverse=True)
 
 		print(" -------- Scores --------")
 		for score in scores:
@@ -96,8 +96,6 @@ class GeneralsBot(object):
 			if (score['i'] == self._update.player_index):
 				print("SELF: ")
 			print('Land: %d (%4d), Army: %d (%4d) / %d' % (pos_lands+1, score['tiles'], pos_armies+1, score['total'], len(scores)))
-		'''
-		print("Update To New API")
 
 	######################### Move Generation #########################
 
@@ -191,7 +189,7 @@ class GeneralsBot(object):
 
 			if current == dest: # Found Destination
 				break
-			
+
 			for next in self._neighbors(current, self.max_target_size[current.y][current.x]):
 				if next not in came_from:
 					frontier.put(next)
@@ -204,7 +202,6 @@ class GeneralsBot(object):
 			while current != source:
 				current = came_from[current]
 				path.append(current)
-			path.append(source)
 		except KeyError:
 			None
 		path.reverse()
@@ -253,7 +250,7 @@ class GeneralsBot(object):
 			else:
 				#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (dest.x,dest.y,source.army,dest.army))
 				return self._restart_primary_path()
-		except TypeError:
+		except IndexError:
 			#logging.debug("Path Error: Invalid Target Destination")
 			return self._restart_primary_path()
 
