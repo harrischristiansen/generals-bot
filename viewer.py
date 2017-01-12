@@ -28,7 +28,7 @@ class GeneralsViewer(object):
 	def updateGrid(self, update):
 		self._grid = update._tile_grid
 		if "path" in dir(update):
-			self._path = update.path
+			self._path = [(path.x, path.y) for path in update.path]
 		else:
 			self._path = None
 		self._armies = update._army_grid

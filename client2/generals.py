@@ -9,12 +9,7 @@ import threading
 import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
-from map import Map
-
-EMPTY = -1
-MOUNTAIN = -2
-FOG = -3
-OBSTACLE = -4
+import map
 
 _ENDPOINTS = {
 	'na': "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket",
@@ -109,7 +104,7 @@ class Generals(object):
 	def _make_update(self, data):
 		if not self._seen_update:
 			self._seen_update = True
-			self._map = Map(self._start_data, data)
+			self._map = map.Map(self._start_data, data)
 			return self._map
 
 		return self._map.update(data)
@@ -138,23 +133,3 @@ def _spawn(f):
 	t = threading.Thread(target=f)
 	t.daemon = True
 	t.start()
-
-
-def _apply_diff(cache, diff):
-	i = 0
-	a = 0
-	while i < len(diff) - 1:
-
-		# offset and length
-		a += diff[i]
-		n = diff[i+1]
-
-		cache[a:a+n] = diff[i+2:i+2+n]
-		a += n
-		i += n + 2
-
-	if i == len(diff) - 1:
-		cache[:] = cache[:a+diff[i]]
-		i += 1
-
-	assert i == len(diff)

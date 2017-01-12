@@ -25,10 +25,13 @@ class Map(object):
 
 		# First Game Data
 		self._applyUpdateDiff(data)
+		self.rows = self.rows
+		self.cols = self.cols
 		self.grid = [[Tile(x,y) for x in range(self.cols)] for y in range(self.rows)]
 		self.turn = data['turn']
 		self.cities = []
-		self.generals = []
+		self.generals = [ None for x in range(8) ]
+		self._setGenerals()
 		self.stars = []
 		self.scores = self._getScores(data)
 		self.complete = False
@@ -85,6 +88,10 @@ class Map(object):
 		# Update Visible Generals
 		self._visible_generals = [(-1, -1) if g == -1 else (g // self.cols, g % self.cols) for g in data['generals']] # returns [(y,x)]
 
+	def _setGenerals(self):
+		for i, general in enumerate(self._visible_generals):
+			if general[0] != -1:
+				self.generals[i] = self.grid[general[0]][general[1]]
 class Tile(object):
 	def __init__(self, x, y):
 		# Public Properties
@@ -96,10 +103,10 @@ class Tile(object):
 		self.isGeneral = False
 
 	def __repr__(self):
-		return str(self._x)+","+str(self._y)
+		return str(self.x)+","+str(self.y)
 
 	def update(self, cities, generals, tile, army, isCity=False, isGeneral=False):
-		self.tile = tile # TODO: Do not update if city -> obstalce
+		self.tile = tile # TODO: Do not update if city -> obstacle, general -> fog
 		self.army = army
 		if isCity:
 			self.isCity = True
@@ -107,11 +114,12 @@ class Tile(object):
 			if self not in cities:
 				cities.append(self)
 			if self in generals:
-				generals.remove(self)
+				# TODO: Set generals[index] to None
+				None
 		if isGeneral:
 			self.isGeneral = True
 			if self not in generals:
-				generals.append(self)
+				generals[tile] = self
 
 def _apply_diff(cache, diff):
 	i = 0
