@@ -14,7 +14,7 @@ BLACK = (0,0,0)
 GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
-PLAYER_COLORS = [(0,128,0), (255,0,0), (255,165,0), (128,0,0), (128,0,128), (0,128,128), (0,70,0), (0,0,255)]
+PLAYER_COLORS = [(255,0,0), (0,0,255), (0,128,0), (128,0,0), (128,0,128), (0,128,128), (0,70,0), (255,165,0)]
 
 # Table Properies
 CELL_WIDTH = 20
@@ -26,15 +26,15 @@ class GeneralsViewer(object):
 		self._receivedUpdate = False
 
 	def updateGrid(self, update):
-		self._grid = update['tile_grid']
-		if "path" in update:
-			self._path = update['path']
+		self._grid = update._tile_grid
+		if "path" in dir(update):
+			self._path = update.path
 		else:
 			self._path = None
-		self._armies = update['army_grid']
-		self._cities = update['cities']
-		self._generals = update['generals']
-		self._turn = update['turn']
+		self._armies = update._army_grid
+		self._cities = update._visible_cities
+		self._generals = update._visible_generals
+		self._turn = update.turn
 		self._receivedUpdate = True
 
 	def _initViewier(self):

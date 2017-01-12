@@ -2,7 +2,7 @@
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
 	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
-	Bot_path_collect: Collects troops along a path, and attacks outward using path.
+	Generals Bot: Base for every bot
 '''
 
 import logging
@@ -10,6 +10,7 @@ from Queue import Queue
 import random
 import threading
 import time
+from pprint import pprint
 
 import client.generals as generals
 from viewer import GeneralsViewer
@@ -36,9 +37,9 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		self._game = generals.Generals('PurdueBot-Path', 'PurdueBot-Path', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+		#self._game = generals.Generals('PurdueBot-Path', 'PurdueBot-Path', 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 		#self._game = generals.Generals('PurdueBot', 'PurdueBot', '1v1') # 1v1
-		#self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
+		self._game = generals.Generals('PurdueBot', 'PurdueBot', 'ffa') # FFA
 
 		# Start Game Update Loop
 		self._running = True

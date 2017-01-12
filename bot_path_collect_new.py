@@ -11,7 +11,7 @@ import random
 import threading
 import time
 
-import client.generals as generals
+import client2.generals as generals
 from viewer import GeneralsViewer
 
 # Opponent Type Definitions
@@ -70,7 +70,7 @@ class GeneralsBot(object):
 			# Update GeneralsViewer Grid
 			if '_viewer' in dir(self):
 				if '_path' in dir(self):
-					self._update['path'] = self._path
+					self._update.path = self._path
 				self._viewer.updateGrid(self._update)
 
 	def _received_first_update(self):
@@ -80,18 +80,19 @@ class GeneralsBot(object):
 		return
 
 	def _set_update(self, update):
-		if (update['complete']):
-			print("!!!! Game Complete. Result = " + str(update['result']) + " !!!!")
+		if (update.complete):
+			print("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			self._running = False
 			return
 
 		self._update = update
-		self._pi = update['player_index']
-		self._rows = update['rows']
-		self._cols = update['cols']
+		self._pi = update.player_index
+		self._rows = update.rows
+		self._cols = update.cols
 
 	def _print_scores(self):
-		scores = sorted(self._update['scores'], key=lambda general: general['total'], reverse=True) # Sort Scores
+		'''
+		scores = sorted(self._update.scores, key=lambda general: general['total'], reverse=True) # Sort Scores
 		lands = sorted(self._update['lands'], reverse=True)
 		armies = sorted(self._update['armies'], reverse=True)
 
@@ -103,11 +104,13 @@ class GeneralsBot(object):
 			if (score['i'] == self._pi):
 				print("SELF: ")
 			print('Land: %d (%4d), Army: %d (%4d) / %d' % (pos_lands+1, score['tiles'], pos_armies+1, score['total'], len(scores)))
+		'''
+		print("Update To New API")
 
 	######################### Move Generation #########################
 
 	def _make_move(self):
-		if (self._update['turn'] % 2 == 0):
+		if (self._update.turn % 2 == 0):
 			self._make_primary_move()
 		else:
 			if not self._move_outward():
@@ -131,27 +134,27 @@ class GeneralsBot(object):
 	def _find_primary_target(self):
 		newTarget = False
 
-		if (self._target_position != None and self._update['tile_grid'][self._target_position[0]][self._target_position[1]] == self._pi): # Acquired Target
+		if (self._target_position != None and self._update._tile_grid[self._target_position[0]][self._target_position[1]] == self._pi): # Acquired Target
 			self._clear_target()
 
-		king_y, king_x = self._update['generals'][self._pi]
-		max_target_size = self._update['army_grid'][king_y][king_x] * 1.5
+		king_y, king_x = self._update._visible_generals[self._pi]
+		max_target_size = self._update._army_grid[king_y][king_x] * 1.5
 
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
 				source_pos = (y,x)
-				source_tile = self._update['tile_grid'][y][x]
-				source_army = self._update['army_grid'][y][x]
+				source_tile = self._update._tile_grid[y][x]
+				source_army = self._update._army_grid[y][x]
 
 				if (self._target_type <= OPP_GENERAL): # Search for Generals
-					if (source_tile >= 0 and source_tile != self._pi and source_pos in self._update['generals']):
+					if (source_tile >= 0 and source_tile != self._pi and source_pos in self._update._visible_generals):
 						self._target_position = source_pos
 						self._target_type = OPP_GENERAL
 						self._target_army = source_army
 						return True
 
 				if (self._target_type <= OPP_CITY): # Search for Smallest Cities
-					if (source_tile != self._pi and source_army < max_target_size and source_pos in self._update['cities']):
+					if (source_tile != self._pi and source_army < max_target_size and source_pos in self._update._visible_cities):
 						if (self._target_type < OPP_CITY or self._target_army > source_army):
 							self._target_position = source_pos
 							self._target_type = OPP_CITY
@@ -159,7 +162,7 @@ class GeneralsBot(object):
 							newTarget = True
 
 				if (self._target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source_tile >= 0 and source_tile != self._pi and source_army > self._target_army and source_pos not in self._update['cities']):
+					if (source_tile >= 0 and source_tile != self._pi and source_army > self._target_army and source_pos not in self._update._visible_cities):
 						self._target_position = source_pos
 						self._target_type = OPP_ARMY
 						self._target_army = source_army
@@ -184,11 +187,11 @@ class GeneralsBot(object):
 	def _find_path(self, x1=-1, y1=-1, x2=-1, y2=-1):
 		# Verify Source and Dest
 		if (x1 == -1 or not self._validPosition(x1,y1)): # No Source, Use King
-			y1, x1 = self._update['generals'][self._pi]
+			y1, x1 = self._update._visible_generals[self._pi]
 		if (x2 == -1 or not self._validPosition(x2,y2)): # No Dest, Use Primary Target
 			y2, x2 = self._target_position
 
-		source = (x1, y1, self._update['army_grid'][y1][x1]-1)
+		source = (x1, y1, self._update._army_grid[y1][x1]-1)
 		dest = (x2,y2)
 
 		# Determine Path To Destination
@@ -230,8 +233,8 @@ class GeneralsBot(object):
 
 		for dy, dx in DIRECTIONS:
 			if (self._validPosition(x+dx, y+dy)):
-				current_tile = self._update['tile_grid'][y][x]
-				current_army = self._update['army_grid'][y][x]
+				current_tile = self._update._tile_grid[y][x]
+				current_army = self._update._army_grid[y][x]
 
 				max_target_size_current = max_target_size
 				if (current_tile == self._pi):
@@ -247,29 +250,29 @@ class GeneralsBot(object):
 	def _move_primary_path_forward(self):
 		try:
 			x,y = self._path_coordinates(self._path_position)
-		except AttributeError, TypeError:
+		except (AttributeError, TypeError):
 			#logging.debug("Invalid Current Path Position")
 			return self._restart_primary_path()
 
-		source_tile = self._update['tile_grid'][y][x]
-		source_army = self._update['army_grid'][y][x]
+		source_tile = self._update._tile_grid[y][x]
+		source_army = self._update._army_grid[y][x]
 
 		if (source_tile != self._pi or source_army < 2): # Out of Army, Restart Path
 			#logging.debug("Path Error: Out of Army (%d,%d)" % (source_tile, source_army))
 			return self._restart_primary_path()
 
-		try:
-			x2,y2 = self._path_coordinates(self._path_position+1) # Determine Destination
-			dest_tile = self._update['tile_grid'][y2][x2]
-			dest_army = self._update['army_grid'][y2][x2] + 1
-			if (dest_tile == self._pi or source_army > dest_army):
-				self._place_move(y, x, y2, x2)
-			else:
-				#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (x,y,source_army,dest_army))
-				return self._restart_primary_path()
-		except TypeError:
-			#logging.debug("Path Error: Invalid Target Destination")
+		#try:
+		x2,y2 = self._path_coordinates(self._path_position+1) # Determine Destination
+		dest_tile = self._update._tile_grid[y2][x2]
+		dest_army = self._update._army_grid[y2][x2] + 1
+		if (dest_tile == self._pi or source_army > dest_army):
+			self._place_move(y, x, y2, x2)
+		else:
+			#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (x,y,source_army,dest_army))
 			return self._restart_primary_path()
+		'''except TypeError:
+			#logging.debug("Path Error: Invalid Target Destination")
+			return self._restart_primary_path()'''
 
 		self._path_position = self._path_position + 1
 		return True
@@ -294,13 +297,13 @@ class GeneralsBot(object):
 	def _move_outward(self):
 		for x in _shuffle(range(self._cols)): # Check Each Square
 			for y in _shuffle(range(self._rows)):
-				source_tile = self._update['tile_grid'][y][x]
-				source_army = self._update['army_grid'][y][x]
+				source_tile = self._update._tile_grid[y][x]
+				source_army = self._update._army_grid[y][x]
 				if (source_tile == self._pi and source_army >= 2 and (x,y) not in self._path): # Find One With Armies
 					for dy, dx in self._toward_dest_moves(x,y):
 						if (self._validPosition(x+dx,y+dy)):
-							dest_tile = self._update['tile_grid'][y+dy][x+dx]
-							dest_army = self._update['army_grid'][y+dy][x+dx] + 1
+							dest_tile = self._update._tile_grid[y+dy][x+dx]
+							dest_army = self._update._army_grid[y+dy][x+dx] + 1
 							if ((dest_tile != self._pi and source_army > dest_army) or (x+dx,y+dy) in self._path): # Capture Somewhere New
 								self._place_move(y, x, y+dy, x+dx)
 								return True
@@ -335,7 +338,7 @@ class GeneralsBot(object):
 		return moves
 
 	def _away_king_moves(self, x, y):
-		king_y, king_x = self._update['generals'][self._pi]
+		king_y, king_x = self._update._visible_generals[self._pi]
 
 		if (y == king_y and x == king_x): # Moving from king
 			return self._moves_random()
@@ -362,7 +365,7 @@ class GeneralsBot(object):
 		return False
 
 	def _validPosition(self, x, y):
-		return 0 <= y < self._rows and 0 <= x < self._cols and self._update['tile_grid'][y][x] != generals.MOUNTAIN and self._update['tile_grid'][y][x] != generals.OBSTACLE
+		return 0 <= y < self._rows and 0 <= x < self._cols and self._update._tile_grid[y][x] != generals.MOUNTAIN and self._update._tile_grid[y][x] != generals.OBSTACLE
 
 ######################### Global Helpers #########################
 
