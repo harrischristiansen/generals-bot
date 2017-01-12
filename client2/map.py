@@ -19,23 +19,23 @@ class Map(object):
 	def __init__(self, start_data, data):
 		# Start Data
 		self._start_data = start_data
-		self.player_index = start_data['playerIndex']
-		self.usernames = start_data['usernames']
-		self.replay_url = _REPLAY_URLS["na"] + start_data['replay_id'] # TODO: Use Client Region
+		self.player_index = start_data['playerIndex'] 									# Integer Player Index
+		self.usernames = start_data['usernames'] 										# List of String Usernames
+		self.replay_url = _REPLAY_URLS["na"] + start_data['replay_id'] 					# String Replay URL          # TODO: Use Client Region
 
 		# First Game Data
 		self._applyUpdateDiff(data)
-		self.rows = self.rows
-		self.cols = self.cols
-		self.grid = [[Tile(x,y) for x in range(self.cols)] for y in range(self.rows)]
-		self.turn = data['turn']
-		self.cities = []
-		self.generals = [ None for x in range(8) ]
+		self.rows = self.rows 															# Integer Number Grid Rows
+		self.cols = self.cols 															# Integer Number Grid Cols
+		self.grid = [[Tile(x,y) for x in range(self.cols)] for y in range(self.rows)]	# 2D List of Tile Objects
+		self.turn = data['turn']														# Integer Turn # (1 turn / 0.5 seconds)
+		self.cities = []																# List of City Tiles
+		self.generals = [ None for x in range(8) ]										# List of 8 Generals (None if not found)
 		self._setGenerals()
-		self.stars = []
-		self.scores = self._getScores(data)
-		self.complete = False
-		self.result = False
+		self.stars = []																	# List of Player Star Ratings
+		self.scores = self._getScores(data)												# List of Player Scores
+		self.complete = False															# Boolean Game Complete
+		self.result = False																# Boolean Game Result (True = Won)
 		
 
 	def update(self, data):
@@ -95,12 +95,12 @@ class Map(object):
 class Tile(object):
 	def __init__(self, x, y):
 		# Public Properties
-		self.x = x
-		self.y = y
-		self.tile = TILE_EMPTY
-		self.army = 0
-		self.isCity = False
-		self.isGeneral = False
+		self.x = x					# Integer X Coordinate
+		self.y = y					# Integer Y Coordinate
+		self.tile = TILE_EMPTY		# Integer Tile Type (TILE_OBSTACLE, TILE_FOG, TILE_MOUNTAIN, TILE_EMPTY, or player_ID)
+		self.army = 0				# Integer Army Count
+		self.isCity = False			# Boolean isCity
+		self.isGeneral = False		# Boolean isGeneral
 
 	def __repr__(self):
 		return str(self.x)+","+str(self.y)
