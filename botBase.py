@@ -13,8 +13,6 @@ import threading
 import client2.generals as generals
 from viewer import GeneralsViewer
 
-BOT_NAME = 'PurdueBot-Path'
-
 # Opponent Type Definitions
 OPP_EMPTY = 0
 OPP_ARMY = 1
@@ -27,7 +25,12 @@ DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 logging.basicConfig(level=logging.DEBUG)
 
 class GeneralsBot(object):
-	def __init__(self):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private"):
+		# Save Config
+		self._updateMethod = updateMethod
+		self._name = name
+		self._gameType = gameType
+
 		# Start Game Loop
 		_create_thread(self._start_game_loop)
 
@@ -37,25 +40,21 @@ class GeneralsBot(object):
 
 	def _start_game_loop(self):
 		# Create Game
-		self._game = generals.Generals(BOT_NAME, BOT_NAME, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
-		#self._game = generals.Generals(BOT_NAME, BOT_NAME, '1v1') # 1v1
-		#self._game = generals.Generals(BOT_NAME, BOT_NAME, 'ffa') # FFA
+		if (self._gameType == "ffa"): # FFA
+			self._game = generals.Generals(self._name, self._name, 'ffa')
+		elif (self._gameType == "1v1"): # 1v1
+			self._game = generals.Generals(self._name, self._name, '1v1')
+		else: # private
+			self._game = generals.Generals(self._name, self._name, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
 
 		# Start Game Update Loop
 		self._running = True
-		self._pre_game_start()
 		_create_thread(self._start_update_loop)
 
 		while (self._running):
 			msg = input('Send Msg:')
 			print("Sending MSG: " + msg)
 			# TODO: Send msg
-
-	def _pre_game_start(self):
-		self._clear_target()
-		self._path = []
-		self._restart_primary_path()
-		return
 
 	######################### Handle Updates From Server #########################
 
@@ -100,35 +99,26 @@ class GeneralsBot(object):
 	######################### Move Generation #########################
 
 	def _make_move(self):
-		if (self._update.turn % 2 == 0):
-			self._make_primary_move()
-		else:
-			if not self._move_outward():
-				self._make_primary_move()
-		return
-
-	def _make_primary_move(self):
-		self._update_primary_target()
-		if (len(self._path) > 0):
-			self._move_primary_path_forward()
+		self._updateMethod(self, self._update)
 
 	######################### Primary Target Finding #########################
 
-	def _update_primary_target(self):
-		if self._find_primary_target():
-			oldPosition = None
-			if (self._path_position > 0 and len(self._path) > 0): # Store old path position
-				oldPosition = self._path[self._path_position]
-			self._path = self._find_path() # Find new path to target
-			self._restart_primary_path(oldPosition) # Check if old path position part of new path
-			print("New Path: " + str(self._path))
+	def find_primary_target(self, target=None):
+		target_type = OPP_EMPTY - 1
+		if (target != None and target in self._update.generals):
+			target_type = OPP_GENERAL
+		elif (target != None and target in self._update.cities):
+			target_type = OPP_CITY
+		elif (target != None and target.army > 0):
+			target_type = OPP_ARMY
+		elif (target != None):
+			target_type = OPP_EMPTY
 
-	def _find_primary_target(self):
-		newTarget = False
+		if (target != None and target.tile == self._update.player_index): # Acquired Target
+			target = None
+			target_type = OPP_EMPTY - 1
 
-		if (self._target != None and self._target.tile == self._update.player_index): # Acquired Target
-			self._clear_target()
-
+		# Determine Max Target Size
 		general_tile = self._update.generals[self._update.player_index]
 		max_target_size = self._update.grid[general_tile.y][general_tile.x].army * 1.5
 
@@ -136,53 +126,44 @@ class GeneralsBot(object):
 			for y in _shuffle(range(self._update.rows)):
 				source = self._update.grid[y][x]
 
-				if (self._target_type <= OPP_GENERAL): # Search for Generals
+				if (target_type <= OPP_GENERAL): # Search for Generals
 					if (source.tile >= 0 and source.tile != self._update.player_index and source in self._update.generals):
-						self._target = source
-						self._target_type = OPP_GENERAL
-						return True
+						return source
 
-				if (self._target_type <= OPP_CITY): # Search for Smallest Cities
+				if (target_type <= OPP_CITY): # Search for Smallest Cities
 					if (source.tile != self._update.player_index and source.army < max_target_size and source in self._update.cities):
-						if (self._target_type < OPP_CITY or self._target.army > source.army):
-							self._target = source
-							self._target_type = OPP_CITY
+						if (target_type < OPP_CITY or target.army > source.army):
+							target = source
+							target_type = OPP_CITY
 							newTarget = True
 
-				if (self._target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source.tile >= 0 and source.tile != self._update.player_index and source.army > self._target.army and source not in self._update.cities):
-						self._target = source
-						self._target_type = OPP_ARMY
-						newTarget = True
+				if (target_type <= OPP_ARMY): # Search for Largest Opponent Armies
+					if (source.tile >= 0 and source.tile != self._update.player_index and source.army > target.army and source not in self._update.cities):
+						target = source
+						target_type = OPP_ARMY
 
-				if (self._target_type < OPP_EMPTY): # Search for Empty Squares
+				if (target_type < OPP_EMPTY): # Search for Empty Squares
 					if (source.tile == generals.map.TILE_EMPTY and source.army < max_target_size):
-						self._target = source
-						self._target_type = OPP_EMPTY
-						return True
+						return source
 
-		return newTarget
-
-	def _clear_target(self):
-		self._target = None
-		self._target_type = OPP_EMPTY - 1
+		return target
 
 	######################### Pathfinding #########################
 
-	def _find_path(self, source=None, dest=None):
+	def find_path(self, source=None, dest=None):
 		# Verify Source and Dest
 		if (source == None): # No Source, Use General
 			source = self._update.generals[self._update.player_index]
 		if (dest == None): # No Dest, Use Primary Target
-			dest = self._target
+			dest = self.find_primary_target()
 
 		# Determine Path To Destination
 		frontier = Queue()
 		frontier.put(source)
 		came_from = {}
 		came_from[source] = None
-		self.max_target_size = [[0 for x in range(self._update.cols)] for y in range(self._update.rows)]
-		self.max_target_size[source.y][source.x] = source.army - 1
+		self._max_target_size = [[0 for x in range(self._update.cols)] for y in range(self._update.rows)]
+		self._max_target_size[source.y][source.x] = source.army - 1
 
 		while not frontier.empty():
 			current = frontier.get()
@@ -190,7 +171,7 @@ class GeneralsBot(object):
 			if current == dest: # Found Destination
 				break
 
-			for next in self._neighbors(current, self.max_target_size[current.y][current.x]):
+			for next in self._neighbors(current, self._max_target_size[current.y][current.x]):
 				if next not in came_from:
 					frontier.put(next)
 					came_from[next] = current # Remove Max Target Amount
@@ -214,7 +195,7 @@ class GeneralsBot(object):
 
 		neighbors = []
 		for dy, dx in DIRECTIONS:
-			if (self._validPosition(x+dx, y+dy)):
+			if (self.validPosition(x+dx, y+dy)):
 				current = self._update.grid[y+dy][x+dx]
 
 				max_target_size_current = max_target_size
@@ -224,72 +205,11 @@ class GeneralsBot(object):
 					max_target_size_current -= (current.army + 1)
 
 				if (current.tile == self._update.player_index or max_target_size == 0 or current.army < max_target_size):
-					if (self.max_target_size[y+dy][x+dx] == 0):
-						self.max_target_size[y+dy][x+dx] = max_target_size_current
+					if (self._max_target_size[y+dy][x+dx] == 0):
+						self._max_target_size[y+dy][x+dx] = max_target_size_current
 					neighbors.append(current)
 
 		return neighbors
-
-	######################### Move Forward Along Path #########################
-
-	def _move_primary_path_forward(self):
-		try:
-			source = self._path_coordinates(self._path_position)
-		except IndexError:
-			logging.debug("Invalid Current Path Position")
-			return self._restart_primary_path()
-
-		if (source.tile != self._update.player_index or source.army < 2): # Out of Army, Restart Path
-			#logging.debug("Path Error: Out of Army (%d,%d)" % (source.tile, source.army))
-			return self._restart_primary_path()
-
-		try:
-			dest = self._path_coordinates(self._path_position+1) # Determine Destination
-			if (dest.tile == self._update.player_index or source.army > (dest.army+1)):
-				self._place_move(source, dest)
-			else:
-				#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (dest.x,dest.y,source.army,dest.army))
-				return self._restart_primary_path()
-		except IndexError:
-			#logging.debug("Path Error: Invalid Target Destination")
-			return self._restart_primary_path()
-
-		self._path_position += 1
-		return True
-
-	def _path_coordinates(self, i):
-		return self._path[i]
-
-	def _restart_primary_path(self, old_tile=None):
-		self._path_position = 0
-		if (old_tile != None):
-			for i, tile in enumerate(self._path):
-				if (tile.x, tile.y) == (old_tile.x, old_tile.y):
-					self._path_position = i
-					return True
-		
-		return False
-
-	######################### Move Outward #########################
-
-	def _move_outward(self):
-		for x in _shuffle(range(self._update.cols)): # Check Each Square
-			for y in _shuffle(range(self._update.rows)):
-				source = self._update.grid[y][x]
-
-				if (source.tile == self._update.player_index and source.army >= 2 and source not in self._path): # Find One With Armies
-					for dy, dx in self._toward_dest_moves(source):
-						if (self._validPosition(x+dx,y+dy)):
-							dest = self._update.grid[y+dy][x+dx]
-							if ((dest.tile != self._update.player_index and source.army > (dest.army+1)) or dest in self._path): # Capture Somewhere New
-								self._place_move(source, dest)
-								return True
-		return False
-
-	######################### Collect To Path #########################
-
-	def _move_collect_to_path(self):
-		return True
 	
 
 	######################### Movement Helpers #########################
@@ -298,7 +218,7 @@ class GeneralsBot(object):
 	def _toward_dest_moves(self, source, dest=None):
 		# Determine Destination
 		if (dest == None):
-			dest = self._target
+			dest = self.find_primary_target()
 
 		# Compute X/y Directions
 		dir_y = 1
@@ -335,13 +255,13 @@ class GeneralsBot(object):
 	def _moves_random(self):
 		return random.sample(DIRECTIONS, 4)
 
-	def _place_move(self, source, dest, move_half=False):
-		if (self._validPosition(dest.x, dest.y)):
+	def place_move(self, source, dest, move_half=False):
+		if (self.validPosition(dest.x, dest.y)):
 			self._game.move(source.y, source.x, dest.y, dest.x, move_half)
 			return True
 		return False
 
-	def _validPosition(self, x, y):
+	def validPosition(self, x, y):
 		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN and self._update._tile_grid[y][x] != generals.map.TILE_OBSTACLE
 
 ######################### Global Helpers #########################
@@ -355,8 +275,3 @@ def _shuffle(seq):
 	shuffled = list(seq)
 	random.shuffle(shuffled)
 	return iter(shuffled)
-
-######################### Main #########################
-
-# Start Bot
-GeneralsBot()

@@ -27,15 +27,15 @@ class GeneralsViewer(object):
 
 	def updateGrid(self, update):
 		self._grid = update._tile_grid
-		if "path" in dir(update):
-			self._path = [(path.x, path.y) for path in update.path]
-		else:
-			self._path = None
 		self._armies = update._army_grid
 		self._cities = update._visible_cities
 		self._generals = update._visible_generals
 		self._turn = update.turn
 		self._receivedUpdate = True
+		if "path" in dir(update):
+			self._path = [(path.x, path.y) for path in update.path]
+		else:
+			self._path = None
 
 	def _initViewier(self):
 		pygame.init()

@@ -110,7 +110,7 @@ class Generals(object):
 		return self._map.update(data)
 
 	def _make_result(self, update, data):
-		return self._map.result(update)
+		return self._map.updateResult(update)
 
 	def _start_sending_heartbeat(self):
 		while True:
