@@ -102,10 +102,10 @@ def move_outward():
 			source = _map.grid[y][x]
 
 			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
-				for dy, dx in _bot._toward_dest_moves(source):
+				for dy, dx in _bot._toward_dest_moves(source, dest=_target):
 					if (_bot.validPosition(x+dx,y+dy)):
 						dest = _map.grid[y+dy][x+dx]
-						if ((dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in _path): # Capture Somewhere New
+						if ((dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in _path or dest in _collect_path): # Capture Somewhere New
 							_bot.place_move(source, dest)
 							return True
 	return False
@@ -113,34 +113,14 @@ def move_outward():
 ######################### Collect To Path #########################
 
 _collect_path = []
-def move_collect_to_path(attempted=False):
-	try:
-		source = _collect_path[0]
-		dest = _collect_path[1]
-		_collect_path.remove(source)
-	except IndexError:
-		logging.debug("Restarting Collection Path")
-		restart_collect_path()
-		if not attempted:
-			return move_collect_to_path(True)
-		return False
-
-	if (source.tile == _map.player_index and (source.tile == _map.player_index or source.army > dest.army+1)):
-		_bot.place_move(source,dest)
-		return True
-
-	restart_collect_path()
-	if not attempted:
-		return move_collect_to_path(True)
-	return False
-
-def restart_collect_path():
+def move_collect_to_path():
 	global _collect_path
-	# Find Largest
+
+	# Find Largest Tile
 	source = _bot.find_largest_tile(notInPath=_path)
 	if (source == None or source in _map.generals):
-		return
-	
+		return False
+
 	# Determine Target Tile
 	dest = _bot.find_closest_in_path(source, _path)
 
@@ -148,9 +128,20 @@ def restart_collect_path():
 	_collect_path = _bot.find_path(source=source, dest=dest)
 	_bot._collect_path = _collect_path
 
+	try:
+		moveTo = _collect_path[1]
+	except IndexError:
+		return False
+
+	if (source.tile == _map.player_index and (moveTo.tile == _map.player_index or source.army > moveTo.army+1)):
+		_bot.place_move(source,moveTo)
+		return True
+
+	return False
+
 ######################### Main #########################
 
 # Start Game
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
-bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
 #bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")

@@ -14,6 +14,9 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Features
 
+- [X] Bot Base
+	- [ ] Fix pathfinding to always find target
+	- [ ] Fix pathfinding to correctly count armies and cities
 - [X] Blob Bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
