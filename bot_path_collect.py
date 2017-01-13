@@ -5,7 +5,12 @@
 	Path Collect Both: Collects troops along a path, and attacks outward using path.
 '''
 
+import logging
+
 import bot_base
+
+# Show all logging
+logging.basicConfig(level=logging.DEBUG)
 
 ######################### Move Making #########################
 
@@ -20,7 +25,7 @@ def make_move(currentBot, currentMap):
 		make_primary_move()
 	else:
 		if not move_outward():
-			make_primary_move()
+			move_collect_to_path()
 	return
 
 ######################### Primary Move Making #########################
@@ -107,16 +112,38 @@ def move_outward():
 
 ######################### Collect To Path #########################
 
-def move_collect_to_path():
-	return True
+_collect_path = []
+def move_collect_to_path(attempted=False):
+	try:
+		source = _collect_path[0]
+		dest = _collect_path[1]
+		_collect_path.remove(source)
+	except IndexError:
+		logging.debug("Restarting Collection Path")
+		restart_collect_path()
+		if not attempted:
+			return move_collect_to_path(True)
+		return False
+
+	if (source.tile == _map.player_index and (source.tile == _map.player_index or source.army > dest.army+1)):
+		_bot.place_move(source,dest)
+		return True
+
+	restart_collect_path()
+	if not attempted:
+		return move_collect_to_path(True)
+	return False
 
 def restart_collect_path():
+	global _collect_path
 	# Find Largest
-	source = _bot.find_largest_tile()
+	source = _bot.find_largest_tile(notInPath=_path)
 	
 	# Determine Target Tile
-	target = _bot.find_closest_in_path(source, _path)
-	return True
+	dest = _bot.find_closest_in_path(source, _path)
+
+	# Determine Path
+	_collect_path = _bot.find_path(source=source, dest=dest)
 
 ######################### Main #########################
 

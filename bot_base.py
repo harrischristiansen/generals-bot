@@ -21,9 +21,6 @@ OPP_GENERAL = 3
 
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-# Show all logging
-logging.basicConfig(level=logging.DEBUG)
-
 class GeneralsBot(object):
 	def __init__(self, updateMethod, name="PurdueBot", gameType="private"):
 		# Save Config
@@ -103,12 +100,12 @@ class GeneralsBot(object):
 
 	######################### Tile Finding #########################
 
-	def find_largest_tile(self):
+	def find_largest_tile(self, notInPath=None):
 		largest = None
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
-				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army)):
+				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army) and (notInPath == None or tile not in notInPath)):
 					largest = tile
 
 		return largest
