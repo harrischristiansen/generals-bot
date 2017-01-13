@@ -14,11 +14,11 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Features
 
-- [ ] Rewrite Client w/ Point (or Block) Class
 - [X] Blob Bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
 	- [X] Run Large Armies Outward. Prioritize Opponents and Cities
+	- [ ] Translate to new bot base
 - [ ] Path Collect Bot
 	- [X] Primary Target Finding
 	- [X] Path Finding
@@ -28,7 +28,6 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [ ] Collect Troops Routine (Run largest blob toward closest path point)
 	- [X] Expand Outward Routine
 	- [ ] Sub-prioritize cities/etc
-- [ ] Improve Code Reuse / Modules
 
 ## Contributors
 

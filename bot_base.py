@@ -10,7 +10,7 @@ from Queue import Queue
 import random
 import threading
 
-import client2.generals as generals
+import client.generals as generals
 from viewer import GeneralsViewer
 
 # Opponent Type Definitions
@@ -101,7 +101,32 @@ class GeneralsBot(object):
 	def _make_move(self):
 		self._updateMethod(self, self._update)
 
-	######################### Primary Target Finding #########################
+	######################### Tile Finding #########################
+
+	def find_largest_tile(self):
+		largest = None
+		for x in range(self._update.cols): # Check Each Square
+			for y in range(self._update.rows):
+				tile = self._update.grid[y][x]
+				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army)):
+					largest = tile
+
+		return largest
+
+	def find_closest_in_path(self, tile, path):
+		closest = None
+		closest_distance = 9999
+		for x in range(self._update.cols): # Check Each Square
+			for y in range(self._update.rows):
+				dest = self._update.grid[y][x]
+				if (dest in path):
+					distance = self._distance(tile, dest)
+					if (distance < closest_distance):
+						closest = dest
+						closest_distance = distance
+
+		return closest
+
 
 	def find_primary_target(self, target=None):
 		target_type = OPP_EMPTY - 1
@@ -138,7 +163,7 @@ class GeneralsBot(object):
 							newTarget = True
 
 				if (target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source.tile >= 0 and source.tile != self._update.player_index and source.army > target.army and source not in self._update.cities):
+					if (source.tile >= 0 and source.tile != self._update.player_index and (target == None or source.army > target.army) and source not in self._update.cities):
 						target = source
 						target_type = OPP_ARMY
 
@@ -214,7 +239,6 @@ class GeneralsBot(object):
 
 	######################### Movement Helpers #########################
 
-
 	def _toward_dest_moves(self, source, dest=None):
 		# Determine Destination
 		if (dest == None):
@@ -254,6 +278,9 @@ class GeneralsBot(object):
 
 	def _moves_random(self):
 		return random.sample(DIRECTIONS, 4)
+
+	def _distance(self, source, dest):
+		return abs(source.x - dest.x) + abs(source.y - dest.y)
 
 	def place_move(self, source, dest, move_half=False):
 		if (self.validPosition(dest.x, dest.y)):

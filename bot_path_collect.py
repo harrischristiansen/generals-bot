@@ -5,16 +5,12 @@
 	Path Collect Both: Collects troops along a path, and attacks outward using path.
 '''
 
-import botBase
-
-_bot = None
-_map = None
-_target = None
-_path = []
-_path_position = 0
+import bot_base
 
 ######################### Move Making #########################
 
+_bot = None
+_map = None
 def make_move(currentBot, currentMap):
 	global _bot, _map
 	_bot = currentBot
@@ -36,6 +32,9 @@ def make_primary_move():
 
 ######################### Primary Targeting #########################
 
+_target = None
+_path = []
+_path_position = 0
 def update_primary_target():
 	global _target, _path, _path_position
 	if (_target != None):
@@ -93,8 +92,8 @@ def restart_primary_path(old_tile=None):
 ######################### Move Outward #########################
 
 def move_outward():
-	for x in botBase._shuffle(range(_map.cols)): # Check Each Square
-		for y in botBase._shuffle(range(_map.rows)):
+	for x in bot_base._shuffle(range(_map.cols)): # Check Each Square
+		for y in bot_base._shuffle(range(_map.rows)):
 			source = _map.grid[y][x]
 
 			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
@@ -111,9 +110,17 @@ def move_outward():
 def move_collect_to_path():
 	return True
 
+def restart_collect_path():
+	# Find Largest
+	source = _bot.find_largest_tile()
+	
+	# Determine Target Tile
+	target = _bot.find_closest_in_path(source, _path)
+	return True
+
 ######################### Main #########################
 
 # Start Game
-botBase.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
-#botBase.GeneralsBot(make_move, "PurdueBot-Path", "1v1")
-#botBase.GeneralsBot(make_move, "PurdueBot-Path", "ffa")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")
