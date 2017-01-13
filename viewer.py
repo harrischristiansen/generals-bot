@@ -36,6 +36,10 @@ class GeneralsViewer(object):
 			self._path = [(path.x, path.y) for path in update.path]
 		else:
 			self._path = None
+		if "collect_path" in dir(update):
+			self._collect_path = [(path.x, path.y) for path in update.collect_path]
+		else:
+			self._collect_path = None
 
 	def _initViewier(self):
 		pygame.init()
@@ -122,6 +126,8 @@ class GeneralsViewer(object):
 				# Draw Path
 				if (self._path != None and (column,row) in self._path):
 					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+3, pos_top+3))
+				if (self._collect_path != None and (column,row) in self._collect_path):
+					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+5, pos_top+5))
 	 
 		# Limit to 60 frames per second
 		self._clock.tick(60)

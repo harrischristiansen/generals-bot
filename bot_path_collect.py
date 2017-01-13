@@ -138,7 +138,7 @@ def restart_collect_path():
 	global _collect_path
 	# Find Largest
 	source = _bot.find_largest_tile(notInPath=_path)
-	if source == None:
+	if (source == None or source in _map.generals):
 		return
 	
 	# Determine Target Tile
@@ -146,6 +146,7 @@ def restart_collect_path():
 
 	# Determine Path
 	_collect_path = _bot.find_path(source=source, dest=dest)
+	_bot._collect_path = _collect_path
 
 ######################### Main #########################
 

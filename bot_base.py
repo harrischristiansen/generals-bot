@@ -69,6 +69,8 @@ class GeneralsBot(object):
 			if '_viewer' in dir(self):
 				if '_path' in dir(self):
 					self._update.path = self._path
+				if '_collect_path' in dir(self):
+					self._update.collect_path = self._collect_path
 				self._viewer.updateGrid(self._update)
 
 	def _set_update(self, update):
