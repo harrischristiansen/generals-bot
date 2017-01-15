@@ -29,7 +29,6 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [ ] Translate to new bot base
 - [ ] Path Collect Bot
 	- [X] Run Path Routine
-		- [ ] Regenerate primary path each restart
 		- [ ] Continue running after reaching primary target
 	- [X] Collect Troops Routine (Run largest blob toward closest path point)
 		- [ ] Bug Test

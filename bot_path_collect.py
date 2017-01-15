@@ -51,28 +51,21 @@ def update_primary_target():
 	newTarget = _bot.find_primary_target(_target)
 	if _target != newTarget:
 		_target = newTarget
-		oldPosition = None
-		if (_path_position > 0 and len(_path) > 0): # Store old path position
-			oldPosition = _path[_path_position]
-		source = _bot.find_largest_city()
-		_path = _bot.find_path(source=source, dest=_target) # Find new path to target
-		_bot._path = _path
-		restart_primary_path(oldPosition) # Check if old path position part of new path
-		#print("New Path: " + str(_path))
+		new_primary_path(restoreOldPosition=True)
 
-######################### Move Forward Along Path #########################
+######################### Primary Path #########################
 
 def move_primary_path_forward():
 	global _path_position
 	try:
 		source = _path[_path_position]
 	except IndexError:
-		logging.debug("Invalid Current Path Position")
-		return restart_primary_path()
+		#logging.debug("Invalid Current Path Position")
+		return new_primary_path()
 
 	if (source.tile != _map.player_index or source.army < 2): # Out of Army, Restart Path
 		#logging.debug("Path Error: Out of Army (%d,%d)" % (source.tile, source.army))
-		return restart_primary_path()
+		return new_primary_path()
 
 	try:
 		dest = _path[_path_position+1] # Determine Destination
@@ -80,18 +73,30 @@ def move_primary_path_forward():
 			_bot.place_move(source, dest)
 		else:
 			#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (dest.x,dest.y,source.army,dest.army))
-			return restart_primary_path()
+			return new_primary_path()
 	except IndexError:
-		#logging.debug("Path Error: Invalid Target Destination")
-		return restart_primary_path()
+		#logging.debug("Path Error: Target Destination Out Of List Bounds")
+		return new_primary_path(restoreOldPosition=True)
 
 	_path_position += 1
 	return True
 
-def restart_primary_path(old_tile=None):
-	global _path_position
+def new_primary_path(restoreOldPosition=False):
+	global _bot, _path, _path_position
+
+	# Store Old Tile
+	old_tile = None
+	if (_path_position > 0 and len(_path) > 0): # Store old path position
+		old_tile = _path[_path_position]
 	_path_position = 0
-	if (old_tile != None):
+	
+	# Determine Source and Path
+	source = _bot.find_largest_city()
+	_path = _bot.find_path(source=source, dest=_target) # Find new path to target
+	_bot._path = _path
+
+	# Restore Old Tile
+	if (restoreOldPosition and old_tile != None):
 		for i, tile in enumerate(_path):
 			if (tile.x, tile.y) == (old_tile.x, old_tile.y):
 				_path_position = i
