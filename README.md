@@ -15,25 +15,26 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 ## Features
 
 - [X] Bot Base
-	- [ ] Fix pathfinding to always find target
-	- [ ] Fix pathfinding to correctly count armies and cities
+	- [X] Primary Target Finding
+	- [X] Path Finding
+		- [ ] Improve Path Selection (use army count and cities in selection)
+		- [ ] Fix pathfinding to always find target
 - [X] Blob Bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
 	- [X] Run Large Armies Outward. Prioritize Opponents and Cities
 	- [ ] Translate to new bot base
 - [ ] Path Collect Bot
-	- [X] Primary Target Finding
-	- [X] Path Finding
-		- [ ] Improve Path Selection (use army count and cities in selection)
 	- [X] Run Path Routine
+		- [ ] Regenerate primary path each restart
 		- [ ] Continue running after reaching primary target
-	- [ ] Collect Troops Routine (Run largest blob toward closest path point)
+	- [X] Collect Troops Routine (Run largest blob toward closest path point)
+		- [ ] Bug Test
 	- [X] Expand Outward Routine
 	- [ ] Sub-prioritize cities/etc
 
 ## Contributors
 
-@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (christih@purdue.edu)   
+@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (harris@harrischristiansen.com)   
 
 [Python client](https://github.com/toshima/generalsio) by [@toshima](https://github.com/toshima)
