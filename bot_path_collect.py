@@ -21,6 +21,10 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
+	# Path Updates
+	find_collect_path()
+
+	# Make Move
 	if (_map.turn % 2 == 0):
 		make_primary_move()
 	else:
@@ -50,7 +54,8 @@ def update_primary_target():
 		oldPosition = None
 		if (_path_position > 0 and len(_path) > 0): # Store old path position
 			oldPosition = _path[_path_position]
-		_path = _bot.find_path(dest=_target) # Find new path to target
+		source = _bot.find_largest_city()
+		_path = _bot.find_path(source=source, dest=_target) # Find new path to target
 		_bot._path = _path
 		restart_primary_path(oldPosition) # Check if old path position part of new path
 		#print("New Path: " + str(_path))
@@ -112,26 +117,35 @@ def move_outward():
 
 ######################### Collect To Path #########################
 
-def move_collect_to_path():
+_collect_path = []
+def find_collect_path():
+	global _collect_path
+
 	# Find Largest Tile
 	source = _bot.find_largest_tile(notInPath=_path)
-	if (source == None or source in _map.generals):
+	if (source == None or source in _map.generals or source.army < 4):
+		_collect_path = []
+		_bot._collect_path = []
 		return False
 
 	# Determine Target Tile
 	dest = _bot.find_closest_in_path(source, _path)
 
 	# Determine Path
-	collect_path = _bot.find_path(source=source, dest=dest)
-	_bot._collect_path = collect_path
+	_collect_path = _bot.find_path(source=source, dest=dest)
+	_bot._collect_path = _collect_path
+
+def move_collect_to_path():
+	global _collect_path
 
 	try:
-		moveTo = collect_path[1]
+		source = _collect_path[0]
+		dest = _collect_path[1]
 	except IndexError:
 		return False
 
-	if (source.tile == _map.player_index and (moveTo.tile == _map.player_index or source.army > moveTo.army+1)):
-		_bot.place_move(source,moveTo)
+	if (source.tile == _map.player_index and (dest.tile == _map.player_index or source.army > dest.army+1)):
+		_bot.place_move(source,dest)
 		return True
 
 	return False
@@ -140,5 +154,5 @@ def move_collect_to_path():
 
 # Start Game
 #bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
-bot_base.GeneralsBot(make_move, name="PurdueBot", gameType="ffa")
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")

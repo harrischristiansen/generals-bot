@@ -18,7 +18,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] Primary Target Finding
 	- [X] Path Finding
 		- [X] Improve Path Selection w/ army count + cities
-			- [ ] Optimize for max army size
+			- [ ] Optimize for max army size and path length
 		- [ ] Fix pathfinding to always find target
 			- [ ] Do not target islands
 - [X] Blob Bot

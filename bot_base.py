@@ -112,6 +112,17 @@ class GeneralsBot(object):
 
 		return largest
 
+	def find_largest_city(self, notInPath=[]):
+		largest = None
+		for x in range(self._update.cols): # Check Each Square
+			for y in range(self._update.rows):
+				tile = self._update.grid[y][x]
+				if (tile.tile == self._update.player_index and tile not in notInPath and tile in self._update.cities or tile in self._update.generals):
+					if (largest == None or largest.army < tile.army or largest in self._update.generals):
+						largest = tile
+
+		return largest
+
 	def find_closest_in_path(self, tile, path):
 		closest = None
 		closest_distance = 9999
@@ -181,6 +192,9 @@ class GeneralsBot(object):
 		if (dest == None): # No Dest, Use Primary Target
 			dest = self.find_primary_target()
 
+		# Current Player Total Army
+		total_army = self._update.scores[self._update.player_index]['total']
+
 		# Determine Path To Destination
 		frontier = PriorityQueue()
 		frontier.put(source, 0 - source.army)
@@ -196,15 +210,22 @@ class GeneralsBot(object):
 				break
 
 			for next in self._neighbors(current):
+				# Calculate Priority
 				new_cost = next.army
 				if (next.tile == self._update.player_index):
-					new_cost = 0 - new_cost
-				if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)):
-					new_cost = new_cost - 40
+					new_cost = 0 - new_cost + total_army
+				new_cost = cost_so_far[current] + new_cost
 
-				if next not in cost_so_far or new_cost < cost_so_far[next]:
+				# Add to frontier
+				if next not in cost_so_far or (new_cost < cost_so_far[next] and came_from[current] != next):
 					cost_so_far[next] = new_cost
-					frontier.put(next, new_cost)
+
+					# Calculate Priority
+					priority = new_cost + (self._distance(next, dest)**2)
+					if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)): # Increase Priority of New Cities
+						priority = priority - (total_army / 4)
+
+					frontier.put(next, priority)
 					came_from[next] = current
 
 		# Create Path List
