@@ -107,8 +107,9 @@ class GeneralsBot(object):
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
-				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army) and (notInPath == None or tile not in notInPath)):
-					largest = tile
+				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army)): # New Largest
+					if ((notInPath == None or tile not in notInPath) and tile not in self._update.generals): # Exclude Path and General
+						largest = tile
 
 		return largest
 
@@ -117,8 +118,8 @@ class GeneralsBot(object):
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
-				if (tile.tile == self._update.player_index and tile not in notInPath and tile in self._update.cities or tile in self._update.generals):
-					if (largest == None or largest.army < tile.army or largest in self._update.generals):
+				if (tile.tile == self._update.player_index and tile in self._update.cities and tile not in notInPath):
+					if (largest == None or largest.army < tile.army):
 						largest = tile
 
 		return largest
@@ -213,7 +214,7 @@ class GeneralsBot(object):
 				# Calculate Priority
 				new_cost = next.army
 				if (next.tile == self._update.player_index):
-					new_cost = 0 - new_cost + total_army
+					new_cost = total_army - new_cost
 				new_cost = cost_so_far[current] + new_cost
 
 				# Add to frontier

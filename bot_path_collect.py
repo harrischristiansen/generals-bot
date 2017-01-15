@@ -123,7 +123,7 @@ def find_collect_path():
 
 	# Find Largest Tile
 	source = _bot.find_largest_tile(notInPath=_path)
-	if (source == None or source in _map.generals or source.army < 4):
+	if (source == None or source.army < 4):
 		_collect_path = []
 		_bot._collect_path = []
 		return False
@@ -153,6 +153,6 @@ def move_collect_to_path():
 ######################### Main #########################
 
 # Start Game
-bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private")
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
 #bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")

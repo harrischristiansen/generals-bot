@@ -37,6 +37,4 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Contributors
 
-@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (harris@harrischristiansen.com)   
-
-[Python client](https://github.com/toshima/generalsio) by [@toshima](https://github.com/toshima)
+@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (harris@harrischristiansen.com)  
