@@ -33,6 +33,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] Collect Troops Routine (Run largest blob toward closest path point)
 		- [ ] Bug Test
 	- [X] Expand Outward Routine
+	- [ ] Proximity Targeting
 
 ## Contributors
 
