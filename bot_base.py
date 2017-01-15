@@ -115,12 +115,10 @@ class GeneralsBot(object):
 
 	def find_largest_city(self, notInPath=[]):
 		largest = None
-		for x in range(self._update.cols): # Check Each Square
-			for y in range(self._update.rows):
-				tile = self._update.grid[y][x]
-				if (tile.tile == self._update.player_index and tile in self._update.cities and tile not in notInPath):
-					if (largest == None or largest.army < tile.army):
-						largest = tile
+		for city in self._update.cities: # Check Each City
+			if (city.tile == self._update.player_index and city not in notInPath):
+				if (largest == None or largest.army < city.army):
+					largest = city
 
 		return largest
 
@@ -156,7 +154,10 @@ class GeneralsBot(object):
 
 		# Determine Max Target Size
 		general_tile = self._update.generals[self._update.player_index]
-		max_target_size = self._update.grid[general_tile.y][general_tile.x].army * 1.5
+		largest = self.find_largest_tile()
+		if (largest == None or largest.army < general_tile.army):
+			largest = general_tile
+		max_target_size = largest.army * 1.5
 
 		for x in _shuffle(range(self._update.cols)): # Check Each Square
 			for y in _shuffle(range(self._update.rows)):
@@ -168,7 +169,7 @@ class GeneralsBot(object):
 
 				if (target_type <= OPP_CITY): # Search for Smallest Cities
 					if (source.tile != self._update.player_index and source.army < max_target_size and source in self._update.cities):
-						if (target_type < OPP_CITY or target.army > source.army):
+						if (target_type < OPP_CITY or source.army < target.army):
 							target = source
 							target_type = OPP_CITY
 							newTarget = True
@@ -193,16 +194,18 @@ class GeneralsBot(object):
 		if (dest == None): # No Dest, Use Primary Target
 			dest = self.find_primary_target()
 
-		# Current Player Total Army
-		total_army = self._update.scores[self._update.player_index]['total']
+		# Current Player Largest Army
+		largest = self.find_largest_tile()
+		if (largest == None):
+			largest = self._update.generals[self._update.player_index]
 
 		# Determine Path To Destination
 		frontier = PriorityQueue()
-		frontier.put(source, 0 - source.army)
+		frontier.put(source, largest.army - source.army)
 		came_from = {}
 		cost_so_far = {}
 		came_from[source] = None
-		cost_so_far[source] = 0 - source.army
+		cost_so_far[source] = largest.army - source.army
 
 		while not frontier.empty():
 			current = frontier.get()
@@ -211,11 +214,11 @@ class GeneralsBot(object):
 				break
 
 			for next in self._neighbors(current):
-				# Calculate Priority
+				# Calculate New Cost
 				new_cost = next.army
 				if (next.tile == self._update.player_index):
-					new_cost = total_army - new_cost
-				new_cost = cost_so_far[current] + new_cost
+					new_cost = 0 - new_cost
+				new_cost = cost_so_far[current] + largest.army + new_cost
 
 				# Add to frontier
 				if next not in cost_so_far or (new_cost < cost_so_far[next] and came_from[current] != next):
@@ -224,7 +227,7 @@ class GeneralsBot(object):
 					# Calculate Priority
 					priority = new_cost + (self._distance(next, dest)**2)
 					if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)): # Increase Priority of New Cities
-						priority = priority - (total_army / 4)
+						priority = priority - largest.army
 
 					frontier.put(next, priority)
 					came_from[next] = current

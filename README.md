@@ -17,7 +17,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 - [X] Bot Base
 	- [X] Primary Target Finding
 	- [X] Path Finding
-		- [X] Improve Path Selection w/ army count + cities
+		- [X] Improve Pathfinding w/ army count + cities
 			- [ ] Optimize for max army size and path length
 			- [ ] Fix Dumb Paths
 		- [ ] Fix pathfinding to always find target
@@ -31,7 +31,6 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] Run Path Routine
 		- [ ] Continue running after reaching primary target
 	- [X] Collect Troops Routine (Run largest blob toward closest path point)
-		- [ ] Bug Test
 	- [X] Expand Outward Routine
 	- [ ] Proximity Targeting
 
