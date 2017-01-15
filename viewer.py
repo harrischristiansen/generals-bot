@@ -14,7 +14,7 @@ BLACK = (0,0,0)
 GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
-PLAYER_COLORS = [(255,0,0), (0,0,255), (0,128,0), (128,0,0), (128,0,128), (0,128,128), (0,70,0), (255,165,0)]
+PLAYER_COLORS = [(255,0,0), (0,0,255), (0,128,0), (128,0,0), (128,0,128), (0,128,128), (0,70,0), (255,165,0), (30,250,30)]
 
 # Table Properies
 CELL_WIDTH = 20
@@ -35,7 +35,7 @@ class GeneralsViewer(object):
 		if "path" in dir(update):
 			self._path = [(path.x, path.y) for path in update.path]
 		else:
-			self._path = None
+			self._path = []
 		if "collect_path" in dir(update):
 			self._collect_path = [(path.x, path.y) for path in update.collect_path]
 		else:
@@ -127,7 +127,7 @@ class GeneralsViewer(object):
 				if (self._path != None and (column,row) in self._path):
 					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+3, pos_top+3))
 				if (self._collect_path != None and (column,row) in self._collect_path):
-					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+5, pos_top+5))
+					self._screen.blit(self._fontLrg.render("*", True, PLAYER_COLORS[8]), (pos_left+6, pos_top+6))
 	 
 		# Limit to 60 frames per second
 		self._clock.tick(60)

@@ -6,7 +6,7 @@
 '''
 
 import logging
-from Queue import Queue
+from Queue import PriorityQueue
 import random
 import threading
 
@@ -182,12 +182,12 @@ class GeneralsBot(object):
 			dest = self.find_primary_target()
 
 		# Determine Path To Destination
-		frontier = Queue()
-		frontier.put(source)
+		frontier = PriorityQueue()
+		frontier.put(source, 0 - source.army)
 		came_from = {}
+		cost_so_far = {}
 		came_from[source] = None
-		self._max_target_size = [[0 for x in range(self._update.cols)] for y in range(self._update.rows)]
-		self._max_target_size[source.y][source.x] = source.army - 1
+		cost_so_far[source] = 0 - source.army
 
 		while not frontier.empty():
 			current = frontier.get()
@@ -195,10 +195,17 @@ class GeneralsBot(object):
 			if current == dest: # Found Destination
 				break
 
-			for next in self._neighbors(current, self._max_target_size[current.y][current.x]):
-				if next not in came_from:
-					frontier.put(next)
-					came_from[next] = current # Remove Max Target Amount
+			for next in self._neighbors(current):
+				new_cost = next.army
+				if (next.tile == self._update.player_index):
+					new_cost = 0 - new_cost
+				if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)):
+					new_cost = new_cost - 40
+
+				if next not in cost_so_far or new_cost < cost_so_far[next]:
+					cost_so_far[next] = new_cost
+					frontier.put(next, new_cost)
+					came_from[next] = current
 
 		# Create Path List
 		current = dest
@@ -213,7 +220,7 @@ class GeneralsBot(object):
 
 		return path
 
-	def _neighbors(self, source, max_target_size=0):
+	def _neighbors(self, source):
 		x = source.x
 		y = source.y
 
@@ -221,16 +228,7 @@ class GeneralsBot(object):
 		for dy, dx in DIRECTIONS:
 			if (self.validPosition(x+dx, y+dy)):
 				current = self._update.grid[y+dy][x+dx]
-
-				max_target_size_current = max_target_size
-				if (current.tile == self._update.player_index):
-					max_target_size_current += (current.army - 1)
-				elif (current.army > 0):
-					max_target_size_current -= (current.army + 1)
-
-				if (current.tile == self._update.player_index or max_target_size == 0 or current.army < max_target_size):
-					if (self._max_target_size[y+dy][x+dx] == 0):
-						self._max_target_size[y+dy][x+dx] = max_target_size_current
+				if (current.tile != generals.map.TILE_OBSTACLE or current in self._update.cities or current in self._update.generals):
 					neighbors.append(current)
 
 		return neighbors
@@ -288,7 +286,7 @@ class GeneralsBot(object):
 		return False
 
 	def validPosition(self, x, y):
-		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN and self._update._tile_grid[y][x] != generals.map.TILE_OBSTACLE
+		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN
 
 ######################### Global Helpers #########################
 
