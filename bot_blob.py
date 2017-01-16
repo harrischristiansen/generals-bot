@@ -30,7 +30,7 @@ def make_move(currentBot, currentMap):
 		make_primary_move()
 	return
 
-def make_primary_move()
+def make_primary_move():
 	if not move_toward():
 		move_outward()
 
