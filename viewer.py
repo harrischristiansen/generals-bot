@@ -121,7 +121,8 @@ class GeneralsViewer(object):
 
 				# Draw Text Value
 				if (self._grid[row][column] >= -2 and self._armies[row][column] != 0): # Don't draw on fog
-					self._screen.blit(self._font.render(str(self._armies[row][column]), True, color_font), (pos_left+2, pos_top+2))
+					textVal = str(self._armies[row][column])
+					self._screen.blit(self._font.render(textVal, True, color_font), (pos_left+2, pos_top+2))
 
 				# Draw Path
 				if (self._path != None and (column,row) in self._path):

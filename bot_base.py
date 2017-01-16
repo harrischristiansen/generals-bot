@@ -195,9 +195,10 @@ class GeneralsBot(object):
 			dest = self.find_primary_target()
 
 		# Current Player Largest Army
+		general = self._update.generals[self._update.player_index]
 		largest = self.find_largest_tile()
-		if (largest == None):
-			largest = self._update.generals[self._update.player_index]
+		if (largest == None or largest.army < general.army):
+			largest = general
 
 		# Determine Path To Destination
 		frontier = PriorityQueue()
