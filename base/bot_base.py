@@ -154,10 +154,12 @@ class GeneralsBot(object):
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				dest = self._update.grid[y][x]
-				if (dest.tile < generals.map.TILE_EMPTY or dest.tile == self._update.player_index or dest.army > max_target_army): 
+				if (dest.tile < generals.map.TILE_EMPTY or dest.tile == self._update.player_index or dest.army > max_target_army): # Non Target Tiles
 					continue
 
 				distance = self.distance(source, dest)
+				if (dest in self._update.generals): # Generals appear closer
+					distance = distance * 0.3
 				if (dest in self._update.cities): # Cities appear closer
 					distance = distance * 0.7
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
