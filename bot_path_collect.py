@@ -7,7 +7,7 @@
 
 import logging
 
-import bot_base
+from base import bot_base
 
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
@@ -169,6 +169,6 @@ def move_collect_to_path():
 ######################### Main #########################
 
 # Start Game
-bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
 #bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")

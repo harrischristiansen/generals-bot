@@ -10,7 +10,7 @@ from Queue import PriorityQueue
 import random
 import threading
 
-import client.generals as generals
+from client import generals
 from viewer import GeneralsViewer
 
 # Opponent Type Definitions

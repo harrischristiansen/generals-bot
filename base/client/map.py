@@ -106,20 +106,22 @@ class Tile(object):
 		return str(self.x)+","+str(self.y)
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
-		self.tile = tile # TODO: Do not update if city -> obstacle, general -> fog
-		self.army = army
+		if (self.tile < 0 or tile >= 0): # Remember Discovered Tiles
+			self.tile = tile
+		if (self.army == 0 or army > 0):
+			self.army = army
+
 		if isCity:
 			self.isCity = True
 			self.isGeneral = False
-			if self not in map.cities:
-				map.cities.append(self)
+			if self in map.cities:
+				map.cities.remove(self)
+			map.cities.append(self)
 			if self in map.generals:
-				# TODO: Set generals[index] to None
-				None
+				map.generals[map.player_index] = None
 		if isGeneral:
 			self.isGeneral = True
-			if self not in map.generals:
-				map.generals[tile] = self
+			map.generals[tile] = self
 
 def _apply_diff(cache, diff):
 	i = 0
