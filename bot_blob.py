@@ -22,12 +22,17 @@ def make_move(currentBot, currentMap):
 	_map = currentMap
 
 	if (_map.turn % 3 == 0):
-		move_outward()
+		if not move_outward():
+			make_primary_move()
 	elif (_map.turn % 3 == 1):
-		move_toward()
+		make_primary_move()
 	else:
-		move_toward()
+		make_primary_move()
 	return
+
+def make_primary_move()
+	if not move_toward():
+		move_outward()
 
 ######################### Move Outward #########################
 
@@ -62,6 +67,6 @@ def move_toward():
 ######################### Main #########################
 
 # Start Game
-bot_base.GeneralsBot(make_move, name="PurdueBot-Blob", gameType="private")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Blob", gameType="1v1")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Blob", gameType="ffa")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Blob", gameType="private")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
