@@ -102,21 +102,27 @@ class GeneralsBot(object):
 
 	######################### Tile Finding #########################
 
-	def find_largest_tile(self, notInPath=None):
+	def find_largest_tile(self, ofType=None, notInPath=None):
+		if ofType == None:
+			ofType = self._update.player_index
+
 		largest = None
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
-				if (tile.tile == self._update.player_index and (largest == None or largest.army < tile.army)): # New Largest
+				if (tile.tile == ofType and (largest == None or largest.army < tile.army)): # New Largest
 					if ((notInPath == None or tile not in notInPath) and tile not in self._update.generals): # Exclude Path and General
 						largest = tile
 
 		return largest
 
-	def find_largest_city(self, notInPath=[]):
+	def find_largest_city(self, ofType=None, notInPath=[]):
+		if ofType == None:
+			ofType = self._update.player_index
+
 		largest = None
 		for city in self._update.cities: # Check Each City
-			if (city.tile == self._update.player_index and city not in notInPath):
+			if (city.tile == ofType and city not in notInPath):
 				if (largest == None or largest.army < city.army):
 					largest = city
 
