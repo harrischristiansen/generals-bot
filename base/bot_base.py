@@ -249,7 +249,7 @@ class GeneralsBot(object):
 				new_cost = cost_so_far[current] + largest.army + new_cost
 
 				# Add to frontier
-				if next not in cost_so_far or (new_cost < cost_so_far[next] and came_from[current] != next):
+				if next not in cost_so_far or (new_cost < cost_so_far[next] and next not in self._path_reconstruct(came_from, current)):
 					cost_so_far[next] = new_cost
 
 					# Calculate Priority
@@ -261,10 +261,15 @@ class GeneralsBot(object):
 					came_from[next] = current
 
 		# Create Path List
+		path = self._path_reconstruct(came_from, dest)
+
+		return path
+
+	def _path_reconstruct(self, came_from, dest):
 		current = dest
 		path = [current]
 		try:
-			while current != source:
+			while came_from[current] != None:
 				current = came_from[current]
 				path.append(current)
 		except KeyError:
