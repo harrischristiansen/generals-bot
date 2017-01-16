@@ -123,7 +123,7 @@ def move_outward():
 			source = _map.grid[y][x]
 
 			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
-				for dy, dx in _bot._toward_dest_moves(source, dest=_target):
+				for dy, dx in _bot.toward_dest_moves(source, dest=_target):
 					if (_bot.validPosition(x+dx,y+dy)):
 						dest = _map.grid[y+dy][x+dx]
 						if ((dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in _path): # Capture Somewhere New

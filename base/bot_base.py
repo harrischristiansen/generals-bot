@@ -102,8 +102,8 @@ class GeneralsBot(object):
 
 	######################### Tile Finding #########################
 
-	def find_largest_tile(self, ofType=None, notInPath=None):
-		if ofType == None:
+	def find_largest_tile(self, ofType=None, notInPath=None, includeGeneral=False):
+		if (ofType == None):
 			ofType = self._update.player_index
 
 		largest = None
@@ -113,6 +113,10 @@ class GeneralsBot(object):
 				if (tile.tile == ofType and (largest == None or largest.army < tile.army)): # New Largest
 					if ((notInPath == None or tile not in notInPath) and tile not in self._update.generals): # Exclude Path and General
 						largest = tile
+
+		general = self._update.generals[self._update.player_index]
+		if (includeGeneral and (largest == None or largest.army < general.army)): # Handle includeGeneral
+			largest = general
 
 		return largest
 
@@ -135,10 +139,33 @@ class GeneralsBot(object):
 			for y in range(self._update.rows):
 				dest = self._update.grid[y][x]
 				if (dest in path):
-					distance = self._distance(tile, dest)
+					distance = self.distance(tile, dest)
 					if (distance < closest_distance):
 						closest = dest
 						closest_distance = distance
+
+		return closest
+
+	def find_closest_target(self, source):
+		max_target_army = source.army * 2
+
+		closest = None
+		closest_distance = 9999
+		for x in range(self._update.cols): # Check Each Square
+			for y in range(self._update.rows):
+				dest = self._update.grid[y][x]
+				if (dest.tile < generals.map.TILE_EMPTY or dest.tile == self._update.player_index or dest.army > max_target_army): 
+					continue
+
+				distance = self.distance(source, dest)
+				if (dest in self._update.cities): # Cities appear closer
+					distance = distance * 0.7
+				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
+					distance = distance * 2
+
+				if (distance < closest_distance):
+					closest = dest
+					closest_distance = distance
 
 		return closest
 
@@ -159,10 +186,7 @@ class GeneralsBot(object):
 			target_type = OPP_EMPTY - 1
 
 		# Determine Max Target Size
-		general_tile = self._update.generals[self._update.player_index]
-		largest = self.find_largest_tile()
-		if (largest == None or largest.army < general_tile.army):
-			largest = general_tile
+		largest = self.find_largest_tile(includeGeneral=True)
 		max_target_size = largest.army * 1.5
 
 		for x in _shuffle(range(self._update.cols)): # Check Each Square
@@ -201,10 +225,7 @@ class GeneralsBot(object):
 			dest = self.find_primary_target()
 
 		# Current Player Largest Army
-		general = self._update.generals[self._update.player_index]
-		largest = self.find_largest_tile()
-		if (largest == None or largest.army < general.army):
-			largest = general
+		largest = self.find_largest_tile(includeGeneral=True)
 
 		# Determine Path To Destination
 		frontier = PriorityQueue()
@@ -232,7 +253,7 @@ class GeneralsBot(object):
 					cost_so_far[next] = new_cost
 
 					# Calculate Priority
-					priority = new_cost + (self._distance(next, dest)**2)
+					priority = new_cost + (self.distance(next, dest)**2)
 					if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)): # Increase Priority of New Cities
 						priority = priority - largest.army
 
@@ -268,12 +289,12 @@ class GeneralsBot(object):
 
 	######################### Movement Helpers #########################
 
-	def _toward_dest_moves(self, source, dest=None):
+	def toward_dest_moves(self, source, dest=None):
 		# Determine Destination
 		if (dest == None):
 			dest = self.find_primary_target()
 
-		# Compute X/y Directions
+		# Compute X/Y Directions
 		dir_y = 1
 		if source.y > dest.y:
 			dir_y = -1
@@ -287,11 +308,11 @@ class GeneralsBot(object):
 		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)],2))
 		return moves
 
-	def _away_king_moves(self, source):
+	def away_king_moves(self, source):
 		general = self._update.generals[self._update.player_index]
 
 		if (source.y == general.y and source.x == general.x): # Moving from General
-			return self._moves_random()
+			return self.moves_random()
 
 		dir_y = 1
 		if source.y < general.y:
@@ -305,10 +326,10 @@ class GeneralsBot(object):
 		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)],2))
 		return moves
 
-	def _moves_random(self):
+	def moves_random(self):
 		return random.sample(DIRECTIONS, 4)
 
-	def _distance(self, source, dest):
+	def distance(self, source, dest):
 		return abs(source.x - dest.x) + abs(source.y - dest.y)
 
 	def place_move(self, source, dest, move_half=False):
