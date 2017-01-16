@@ -118,10 +118,11 @@ class Tile(object):
 				map.cities.remove(self)
 			map.cities.append(self)
 			if self in map.generals:
-				map.generals[map.player_index] = None
-		if isGeneral:
+				map.generals[self._general_index] = None
+		elif isGeneral:
 			self.isGeneral = True
 			map.generals[tile] = self
+			self._general_index = self.tile
 
 def _apply_diff(cache, diff):
 	i = 0

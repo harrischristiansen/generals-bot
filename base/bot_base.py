@@ -103,6 +103,7 @@ class GeneralsBot(object):
 	######################### Tile Finding #########################
 
 	def find_largest_tile(self, ofType=None, notInPath=None, includeGeneral=False):
+		general = self._update.generals[self._update.player_index]
 		if (ofType == None):
 			ofType = self._update.player_index
 
@@ -111,10 +112,9 @@ class GeneralsBot(object):
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
 				if (tile.tile == ofType and (largest == None or largest.army < tile.army)): # New Largest
-					if ((notInPath == None or tile not in notInPath) and tile not in self._update.generals): # Exclude Path and General
+					if ((notInPath == None or tile not in notInPath) and tile != general): # Exclude Path and General
 						largest = tile
 
-		general = self._update.generals[self._update.player_index]
 		if (includeGeneral and (largest == None or largest.army < general.army)): # Handle includeGeneral
 			largest = general
 
