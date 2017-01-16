@@ -36,6 +36,13 @@ def make_move(currentBot, currentMap):
 				make_primary_move()
 	return
 
+def place_move(source, dest):
+	moveHalf = False
+	if (source in _map.cities):
+		moveHalf = True
+	
+	_bot.place_move(source, dest, move_half=moveHalf)
+
 ######################### Primary Move Making #########################
 
 def make_primary_move():
@@ -74,7 +81,7 @@ def move_primary_path_forward():
 	try:
 		dest = _path[_path_position+1] # Determine Destination
 		if (dest.tile == _map.player_index or source.army > (dest.army+1)):
-			_bot.place_move(source, dest)
+			place_move(source, dest)
 		else:
 			#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (dest.x,dest.y,source.army,dest.army))
 			return new_primary_path()
@@ -120,7 +127,7 @@ def move_outward():
 					if (_bot.validPosition(x+dx,y+dy)):
 						dest = _map.grid[y+dy][x+dx]
 						if ((dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in _path): # Capture Somewhere New
-							_bot.place_move(source, dest)
+							place_move(source, dest)
 							return True
 	return False
 
@@ -154,7 +161,7 @@ def move_collect_to_path():
 		return False
 
 	if (source.tile == _map.player_index and (dest.tile == _map.player_index or source.army > dest.army+1)):
-		_bot.place_move(source,dest)
+		place_move(source,dest)
 		return True
 
 	return False
@@ -162,6 +169,6 @@ def move_collect_to_path():
 ######################### Main #########################
 
 # Start Game
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
+bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
 #bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="1v1")
-bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="ffa")
