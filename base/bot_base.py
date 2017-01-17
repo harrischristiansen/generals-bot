@@ -166,7 +166,7 @@ class GeneralsBot(object):
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
 					distance = distance * 2
 
-				if (distance < closest_distance):
+				if (distance < closest_distance and self._validTarget(dest)):
 					closest = dest
 					closest_distance = distance
 
@@ -195,6 +195,9 @@ class GeneralsBot(object):
 		for x in _shuffle(range(self._update.cols)): # Check Each Square
 			for y in _shuffle(range(self._update.rows)):
 				source = self._update.grid[y][x]
+
+				if (not self._validTarget(source)):
+					continue
 
 				if (target_type <= OPP_GENERAL): # Search for Generals
 					if (source.tile >= 0 and source.tile != self._update.player_index and source in self._update.generals):
@@ -348,6 +351,15 @@ class GeneralsBot(object):
 
 	def validPosition(self, x, y):
 		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN
+
+	def _validTarget(self, target): # Check target to verify reachable
+		for dy, dx in self.moves_random():
+			if (self.validPosition(target.x+dx, target.y+dy)):
+				tile = self._update.grid[target.y+dy][target.x+dx]
+				if (tile.tile != generals.map.TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals):
+					return True
+		return False
+
 
 ######################### Global Helpers #########################
 
