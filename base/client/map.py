@@ -98,6 +98,7 @@ class Tile(object):
 		self.x = x					# Integer X Coordinate
 		self.y = y					# Integer Y Coordinate
 		self.tile = TILE_EMPTY		# Integer Tile Type (TILE_OBSTACLE, TILE_FOG, TILE_MOUNTAIN, TILE_EMPTY, or player_ID)
+		self.turn_captured = 0		# Integer Turn Tile Last Captured
 		self.army = 0				# Integer Army Count
 		self.isCity = False			# Boolean isCity
 		self.isGeneral = False		# Boolean isGeneral
@@ -107,8 +108,10 @@ class Tile(object):
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
 		if (self.tile < 0 or tile >= 0): # Remember Discovered Tiles
+			if (tile >= 0 and self.tile != tile):
+				self.turn_captured = map.turn
 			self.tile = tile
-		if (self.army == 0 or army > 0):
+		if (self.army == 0 or army > 0): # Remember Discovered Armies
 			self.army = army
 
 		if isCity:
