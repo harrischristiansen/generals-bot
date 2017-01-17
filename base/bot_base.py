@@ -32,7 +32,8 @@ class GeneralsBot(object):
 		_create_thread(self._start_game_loop)
 
 		# Start Game Viewer
-		self._viewer = GeneralsViewer()
+		window_title = "%s (%s)" % (self._name, self._gameType)
+		self._viewer = GeneralsViewer(window_title)
 		self._viewer.mainViewerLoop()
 
 	def _start_game_loop(self):

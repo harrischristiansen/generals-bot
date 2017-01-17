@@ -22,7 +22,8 @@ CELL_HEIGHT = 20
 CELL_MARGIN = 5
 
 class GeneralsViewer(object):
-	def __init__(self):
+	def __init__(self, name=None):
+		self._name = name
 		self._receivedUpdate = False
 
 	def updateGrid(self, update):
@@ -50,7 +51,10 @@ class GeneralsViewer(object):
 		self._window_size = [window_width, window_height]
 		self._screen = pygame.display.set_mode(self._window_size)
 
-		pygame.display.set_caption("Generals IO Bot")
+		window_title = "Generals IO Bot"
+		if (self._name != None):
+			window_title += " - " + str(self._name)
+		pygame.display.set_caption(window_title)
 		self._font = pygame.font.SysFont('Arial', CELL_HEIGHT-10)
 		self._fontLrg = pygame.font.SysFont('Arial', CELL_HEIGHT)
 
