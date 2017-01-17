@@ -38,8 +38,8 @@ def make_move(currentBot, currentMap):
 
 def place_move(source, dest):
 	moveHalf = False
-	if (source in _map.cities):
-		moveHalf = True
+	if (_map.turn > 200 and (source in _map.generals or source in _map.cities)):
+		moveHalf = random.choice([False, False, True])
 	
 	_bot.place_move(source, dest, move_half=moveHalf)
 
@@ -169,6 +169,6 @@ def move_collect_to_path():
 ######################### Main #########################
 
 # Start Game
-#bot_base.GeneralsBot(make_move, name="PurdueBot-Path", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
+bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="private") # Private Game - http://generals.io/games/HyI4d3_rl
 #bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="1v1")
-bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="ffa")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="ffa")
