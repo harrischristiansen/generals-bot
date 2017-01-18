@@ -28,9 +28,12 @@ def make_move(currentBot, currentMap):
 	# Make Move
 	if (_map.turn % 10 == 0):
 		if not move_collect_to_path():
-			make_primary_move()
+			if not make_primary_move():
+				move_outward()
 	elif (_map.turn % 2 == 0):
-		make_primary_move()
+		if not make_primary_move():
+			if not move_outward():
+				move_collect_to_path()
 	else:
 		if not move_outward():
 			if not move_collect_to_path():
@@ -50,8 +53,11 @@ def place_move(source, dest):
 
 def make_primary_move():
 		update_primary_target()
-		if (len(_path) > 0):
-			move_primary_path_forward()
+		if (len(_path) > 1):
+			return move_primary_path_forward()
+		elif (_target != None):
+			new_primary_path()
+		return False
 
 ######################### Primary Targeting #########################
 
@@ -96,7 +102,7 @@ def move_primary_path_forward():
 	return True
 
 def new_primary_path(restoreOldPosition=False):
-	global _bot, _path, _path_position
+	global _bot, _path, _path_position, _target
 
 	# Store Old Tile
 	old_tile = None
@@ -105,7 +111,7 @@ def new_primary_path(restoreOldPosition=False):
 	_path_position = 0
 	
 	# Determine Source and Path
-	source = _bot.find_largest_city()
+	source = _bot.find_city()
 	_path = _bot.find_path(source=source, dest=_target) # Find new path to target
 	_bot._path = _path
 
@@ -141,14 +147,18 @@ def find_collect_path():
 	global _collect_path
 
 	# Find Largest Tile
-	source = _bot.find_largest_tile(notInPath=_path)
+	source = _bot.find_largest_tile(notInPath=_path, includeGeneral=0.33)
 	if (source == None or source.army < 4):
 		_collect_path = []
 		_bot._collect_path = []
 		return False
 
 	# Determine Target Tile
-	dest = _bot.find_closest_in_path(source, _path)
+	dest = None
+	if (source.army > 50):
+		dest = _bot.find_city(notOfType=_map.player_index, findLargest=False)
+	if (dest == None):
+		dest = _bot.find_closest_in_path(source, _path)
 
 	# Determine Path
 	_collect_path = _bot.find_path(source=source, dest=dest)

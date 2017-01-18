@@ -103,35 +103,49 @@ class GeneralsBot(object):
 
 	######################### Tile Finding #########################
 
-	def find_largest_tile(self, ofType=None, notInPath=None, includeGeneral=False):
-		general = self._update.generals[self._update.player_index]
+	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
 		if (ofType == None):
 			ofType = self._update.player_index
+		general = self._update.generals[ofType]
 
 		largest = None
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
 				if (tile.tile == ofType and (largest == None or largest.army < tile.army)): # New Largest
-					if ((notInPath == None or tile not in notInPath) and tile != general): # Exclude Path and General
+					if ((tile not in notInPath) and tile != general): # Exclude Path and General
 						largest = tile
 
-		if (includeGeneral and (largest == None or largest.army < general.army)): # Handle includeGeneral
-			largest = general
+		if (includeGeneral > 0): # Handle includeGeneral
+			if (includeGeneral < 1):
+				includeGeneral = general.army * includeGeneral
+				if (includeGeneral < 6):
+					includeGeneral = 6
+			if (largest == None): 
+				largest = general
+			elif (includeGeneral == True and largest.army < general.army):
+				largest = general
+			elif (includeGeneral > True and largest.army < general.army and largest.army <= includeGeneral):
+				largest = general
 
 		return largest
 
-	def find_largest_city(self, ofType=None, notInPath=[]):
-		if ofType == None:
+	def find_city(self, ofType=None, notOfType=None, notInPath=[], findLargest=True): # ofType = Integer, notOfType = Integer, notInPath = [Tile], findLargest = Boolean
+		if (ofType == None and notOfType == None):
 			ofType = self._update.player_index
 
-		largest = None
+		found_city = None
 		for city in self._update.cities: # Check Each City
-			if (city.tile == ofType and city not in notInPath):
-				if (largest == None or largest.army < city.army):
-					largest = city
+			if (city in notInPath):
+				continue
 
-		return largest
+			if (city.tile == ofType or (notOfType != None and city.tile != notOfType)):
+				if (found_city == None):
+					found_city = city
+				if (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
+					found_city = city
+
+		return found_city
 
 	def find_closest_in_path(self, tile, path):
 		closest = None
