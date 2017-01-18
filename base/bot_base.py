@@ -181,7 +181,7 @@ class GeneralsBot(object):
 					distance = distance * 2
 
 				if (dest.army > source.army): # Larger targets appear further away
-					distance = distance * (dest.army/source.army)
+					distance = distance * (1.6*dest.army/source.army)
 
 				if (distance < closest_distance and self._validTarget(dest)):
 					closest = dest
