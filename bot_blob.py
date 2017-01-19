@@ -59,7 +59,7 @@ def move_toward():
 	for tile in path:
 		if (tile.tile == _map.player_index):
 			army_total += (tile.army - 1)
-		elif (tile.army > army_total and tile != target):
+		elif (tile.army > army_total and (tile != target or target == path[1])):
 			source = _bot.find_city(includeGeneral=True)
 			target = _bot.find_closest_target(source)
 			path = _bot.find_path(source=source, dest=target)
