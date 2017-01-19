@@ -50,7 +50,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_update_loop)
 
 		while (self._running):
-			msg = input('Send Msg:')
+			msg = str(raw_input('Send Msg:'))
 			print("Sending MSG: " + msg)
 			# TODO: Send msg
 
@@ -64,7 +64,6 @@ class GeneralsBot(object):
 				return
 
 			self._make_move()
-			#self._print_scores()
 
 			# Update GeneralsViewer Grid
 			if '_viewer' in dir(self):
@@ -81,20 +80,6 @@ class GeneralsBot(object):
 			return
 
 		self._update = update
-
-	def _print_scores(self):
-		scores = sorted(self._update.scores, key=lambda general: general['total'], reverse=True) # Sort Scores
-		lands = sorted([s['tiles'] for s in self._update.scores], reverse=True)
-		armies = sorted([s['total'] for s in self._update.scores], reverse=True)
-
-		print(" -------- Scores --------")
-		for score in scores:
-			pos_lands = lands.index(score['tiles'])
-			pos_armies = armies.index(score['total'])
-
-			if (score['i'] == self._update.player_index):
-				print("SELF: ")
-			print('Land: %d (%4d), Army: %d (%4d) / %d' % (pos_lands+1, score['tiles'], pos_armies+1, score['total'], len(scores)))
 
 	######################### Move Generation #########################
 

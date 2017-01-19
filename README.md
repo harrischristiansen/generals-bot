@@ -26,7 +26,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] Expand Blob
 	- [X] Dumb Army Distribution
 	- [X] Run Large Armies Outward. Prioritize Opponents and Cities
-	- [ ] Translate to new bot base
+	- [ ] Always proportionately target cities
 - [ ] Path Collect Bot
 	- [X] Run Path Routine
 		- [ ] Continue running after reaching primary target
