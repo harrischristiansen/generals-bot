@@ -116,7 +116,7 @@ class GeneralsBot(object):
 
 		return largest
 
-	def find_city(self, ofType=None, notOfType=None, notInPath=[], findLargest=True): # ofType = Integer, notOfType = Integer, notInPath = [Tile], findLargest = Boolean
+	def find_city(self, ofType=None, notOfType=None, notInPath=[], findLargest=True, includeGeneral=False): # ofType = Integer, notOfType = Integer, notInPath = [Tile], findLargest = Boolean
 		if (ofType == None and notOfType == None):
 			ofType = self._update.player_index
 
@@ -130,6 +130,13 @@ class GeneralsBot(object):
 					found_city = city
 				if (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
 					found_city = city
+
+		if includeGeneral:
+			general = self._update.generals[ofType]
+			if (found_city == None):
+				return general
+			if (general != None and ((findLargest and general.army > found_city.army) or (not findLargest and general.army < found_city.army))):
+				return general
 
 		return found_city
 
