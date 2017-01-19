@@ -193,7 +193,7 @@ class GeneralsBot(object):
 
 		# Determine Max Target Size
 		largest = self.find_largest_tile(includeGeneral=True)
-		max_target_size = largest.army * 1.5
+		max_target_size = largest.army * 1.25
 
 		for x in _shuffle(range(self._update.cols)): # Check Each Square
 			for y in _shuffle(range(self._update.rows)):
@@ -203,7 +203,7 @@ class GeneralsBot(object):
 					continue
 
 				if (target_type <= OPP_GENERAL): # Search for Generals
-					if (source.tile >= 0 and source.tile != self._update.player_index and source in self._update.generals):
+					if (source.tile >= 0 and source.tile != self._update.player_index and source in self._update.generals and source.army < largest.army):
 						return source
 
 				if (target_type <= OPP_CITY): # Search for Smallest Cities

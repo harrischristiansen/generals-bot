@@ -107,8 +107,8 @@ class Tile(object):
 		return str(self.x)+","+str(self.y)
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
-		if (self.tile < 0 or tile >= 0): # Remember Discovered Tiles
-			if (tile >= 0 and self.tile != tile):
+		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == map.player_index)): # Remember Discovered Tiles
+			if ((tile >= 0 or self.tile >= 0) and self.tile != tile):
 				self.turn_captured = map.turn
 			self.tile = tile
 		if (self.army == 0 or army > 0): # Remember Discovered Armies

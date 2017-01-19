@@ -134,7 +134,7 @@ class GeneralsViewer(object):
 					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
 
 				# Draw Text Value
-				if (tile.tile >= -2 and tile.army != 0): # Don't draw on fog
+				if (tile.army != 0): # Don't draw on empty tiles
 					textVal = str(tile.army)
 					self._screen.blit(self._font.render(textVal, True, color_font), (pos_left+2, pos_top+2))
 
