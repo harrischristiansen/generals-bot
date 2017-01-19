@@ -68,5 +68,5 @@ def move_toward():
 
 # Start Game
 #bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
-bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
+bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
