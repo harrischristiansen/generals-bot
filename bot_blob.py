@@ -53,14 +53,24 @@ def move_outward():
 def move_toward():
 	source = _bot.find_largest_tile(includeGeneral=True)
 	target = _bot.find_closest_target(source)
-
 	path = _bot.find_path(source=source, dest=target)
+
+	army_total = 0
+	for tile in path:
+		if (tile.tile == _map.player_index):
+			army_total += (tile.army - 1)
+		elif (tile.army > army_total and tile != target):
+			source = _bot.find_city()
+			target = _bot.find_closest_target(source)
+			path = _bot.find_path(source=source, dest=target)
+
 	_bot._path = path
 	if (len(path) >= 2):
 		dest = path[1]
 		if (dest.tile == _map.player_index or source.army > (dest.army+1)):
 			_bot.place_move(source, dest)
 			return True
+
 
 	return False
 
