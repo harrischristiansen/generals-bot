@@ -53,6 +53,16 @@ class Generals(object):
 		self._map = []
 		self._cities = []
 
+	def send_chat(self, msg):
+		# 42["chat_message", "game_148479560460049JgP8O3TPIwDNpgAEBB", "ship", null, ""]
+		if not self._seen_update:
+			raise ValueError("Cannot chat before game starts")
+
+		if len(msg) < 2:
+			return
+
+		self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
+
 	def move(self, y1, x1, y2, x2, move_half=False):
 		if not self._seen_update:
 			raise ValueError("Cannot move before first map seen")

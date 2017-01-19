@@ -51,8 +51,7 @@ class GeneralsBot(object):
 
 		while (self._running):
 			msg = str(raw_input('Send Msg:'))
-			print("Sending MSG: " + msg)
-			# TODO: Send msg
+			self._game.send_chat(msg)
 
 	######################### Handle Updates From Server #########################
 
