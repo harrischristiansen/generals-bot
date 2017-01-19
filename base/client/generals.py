@@ -105,6 +105,12 @@ class Generals(object):
 			elif msg[0] in ["game_won", "game_lost"]:
 				yield self._make_result(msg[0], msg[1])
 				break
+			elif msg[0]  == "chat_message":
+				chat_msg = msg[2]
+				if "username" in chat_msg:
+					print("From %s: %s" % (chat_msg["username"],chat_msg["text"]))
+				else:
+					print("Message: %s" % chat_msg["text"])
 			else:
 				logging.info("Unknown message type: {}".format(msg))
 

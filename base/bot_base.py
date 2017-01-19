@@ -9,6 +9,7 @@ import logging
 from Queue import PriorityQueue
 import random
 import threading
+import time
 
 from client import generals
 from viewer import GeneralsViewer
@@ -52,6 +53,7 @@ class GeneralsBot(object):
 		while (self._running):
 			msg = str(raw_input('Send Msg:'))
 			self._game.send_chat(msg)
+			time.sleep(0.7)
 
 	######################### Handle Updates From Server #########################
 
