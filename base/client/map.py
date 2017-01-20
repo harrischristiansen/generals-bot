@@ -104,7 +104,10 @@ class Tile(object):
 		self.isGeneral = False		# Boolean isGeneral
 
 	def __repr__(self):
-		return str(self.x)+","+str(self.y)
+		return "(%d,%d) %d (%d)" % (self.x, self.y, self.tile, self.army)
+
+	def __lt__(self, other):
+			return self.army < other.army
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
 		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == map.player_index)): # Remember Discovered Tiles

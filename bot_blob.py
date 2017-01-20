@@ -24,8 +24,6 @@ def make_move(currentBot, currentMap):
 	if (_map.turn % 3 == 0):
 		if not move_outward():
 			make_primary_move()
-	elif (_map.turn % 3 == 1):
-		make_primary_move()
 	else:
 		make_primary_move()
 	return
@@ -41,37 +39,39 @@ def move_outward():
 		for y in bot_base._shuffle(range(_map.rows)):
 			source = _map.grid[y][x]
 
-			if (source.tile == _map.player_index and source.army >= 2): # Find One With Armies
+			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
 				for dy, dx in _bot.toward_dest_moves(source):
 					if (_bot.validPosition(x+dx,y+dy)):
 						dest = _map.grid[y+dy][x+dx]
-						if (dest.tile != _map.player_index and source.army > (dest.army+1)): # Capture Somewhere New
+						if (dest.tile != _map.player_index and source.army > (dest.army+1)) or (dest in  _path): # Capture Somewhere New
 							_bot.place_move(source, dest)
 							return True
 	return False
 
+_path = []
 def move_toward():
+	# Find path from largest tile to closest target
 	source = _bot.find_largest_tile(includeGeneral=True)
 	target = _bot.find_closest_target(source)
 	path = _bot.find_path(source=source, dest=target)
 
 	army_total = 0
-	for tile in path:
+	for tile in path: # Verify can obtain every tile in path
 		if (tile.tile == _map.player_index):
 			army_total += (tile.army - 1)
-		elif (tile.army > army_total and (tile != target or target == path[1])):
+		elif (tile.army > army_total and (tile != target or target == path[1])): # Cannot obtain tile, draw path from largest city to closest target
 			source = _bot.find_city(includeGeneral=True)
-			target = _bot.find_closest_target(source)
+			target = _bot.find_largest_tile()
 			path = _bot.find_path(source=source, dest=target)
 			break
 
+	# Place Move
+	_path = path
 	_bot._path = path
-	if (len(path) >= 2):
-		dest = path[1]
-		if (dest.tile == _map.player_index or source.army > (dest.army+1)):
-			_bot.place_move(source, dest)
-			return True
-
+	(move_from, move_to) = _bot.path_forward_moves(path)
+	if (move_from != None and (move_to.tile == _map.player_index or move_from.army > (move_to.army+1))):
+		_bot.place_move(move_from, move_to)
+		return True
 
 	return False
 

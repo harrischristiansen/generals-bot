@@ -155,7 +155,7 @@ class GeneralsBot(object):
 		return closest
 
 	def find_closest_target(self, source):
-		max_target_army = source.army * 2
+		max_target_army = source.army * 2 + 14
 
 		closest = None
 		closest_distance = 9999
@@ -169,7 +169,7 @@ class GeneralsBot(object):
 				if (dest in self._update.generals): # Generals appear closer
 					distance = distance * 0.17
 				elif (dest in self._update.cities): # Cities vary distance based on size
-					distance = distance * max(0.5, (dest.army / source.army))
+					distance = distance * sorted((0.22, (dest.army / source.army), 4))[1]
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
 					distance = distance * 1.7
 
@@ -309,6 +309,23 @@ class GeneralsBot(object):
 	
 
 	######################### Movement Helpers #########################
+
+	def path_forward_moves(self, path):
+		if (len(path) < 2):
+			return (None, None)
+
+		# Find largest tile in path to move forward
+		largest = path[0]
+		largest_index = 0
+		for i, tile in enumerate(path):
+			if (tile == path[-1]):
+				break
+			if (tile.tile == path[0].tile and tile > largest):
+				largest = tile
+				largest_index = i
+
+		dest = path[largest_index+1]
+		return (largest, dest)
 
 	def toward_dest_moves(self, source, dest=None):
 		# Determine Destination
