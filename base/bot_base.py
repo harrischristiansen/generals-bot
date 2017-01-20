@@ -102,7 +102,7 @@ class GeneralsBot(object):
 					if ((tile not in notInPath) and tile != general): # Exclude Path and General
 						largest = tile
 
-		if (includeGeneral > 0 and general not in path): # Handle includeGeneral
+		if (includeGeneral > 0 and general not in notInPath): # Handle includeGeneral
 			if (includeGeneral < 1):
 				includeGeneral = general.army * includeGeneral
 				if (includeGeneral < 6):
