@@ -155,8 +155,9 @@ def find_collect_path():
 
 	# Determine Target Tile
 	dest = None
-	if (source.army > 50):
-		dest = _bot.find_city(notOfType=_map.player_index, findLargest=False)
+	if (source.army > 40):
+		#dest = _bot.find_city(notOfType=_map.player_index, findLargest=False)
+		dest = _bot.find_closest_target(source)
 	if (dest == None):
 		dest = _bot.find_closest_in_path(source, _path)
 
