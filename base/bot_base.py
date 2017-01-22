@@ -23,11 +23,12 @@ OPP_GENERAL = 3
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
-	def __init__(self, updateMethod, name="PurdueBot", gameType="private"):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="HyI4d3_rl"):
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name
 		self._gameType = gameType
+		self._privateRoomID = privateRoomID
 
 		# Start Game Loop
 		_create_thread(self._start_game_loop)
@@ -44,7 +45,7 @@ class GeneralsBot(object):
 		elif (self._gameType == "1v1"): # 1v1
 			self._game = generals.Generals(self._name, self._name, '1v1')
 		else: # private
-			self._game = generals.Generals(self._name, self._name, 'private', gameid='HyI4d3_rl') # Private Game - http://generals.io/games/HyI4d3_rl
+			self._game = generals.Generals(self._name, self._name, 'private', gameid=self._privateRoomID)
 
 		# Start Game Update Loop
 		self._running = True
