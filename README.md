@@ -12,7 +12,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Setup
 
-- [ ] `pip install -r requirements.txt`
+- [ ] Install Dependencies: `pip install -r requirements.txt`
 - [ ] Edit `bot_*.py`: At bottom set bot name and match type
 
 ## Usage

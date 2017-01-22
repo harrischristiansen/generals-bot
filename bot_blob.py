@@ -59,17 +59,18 @@ def move_toward():
 	for tile in path: # Verify can obtain every tile in path
 		if (tile.tile == _map.player_index):
 			army_total += (tile.army - 1)
-		elif (tile.army > army_total and (tile != target or target == path[1])): # Cannot obtain tile, draw path from largest city to closest target
+		elif (tile.army+1 > army_total): # Cannot obtain tile, draw path from largest city to largest tile
 			source = _bot.find_city(includeGeneral=True)
 			target = _bot.find_largest_tile()
-			path = _bot.find_path(source=source, dest=target)
+			if (source and target and source != target):
+				path = _bot.find_path(source=source, dest=target)
 			break
 
 	# Place Move
 	_path = path
 	_bot._path = path
 	(move_from, move_to) = _bot.path_forward_moves(path)
-	if (move_from != None and (move_to.tile == _map.player_index or move_from.army > (move_to.army+1))):
+	if (move_from != None):
 		_bot.place_move(move_from, move_to)
 		return True
 
@@ -78,6 +79,6 @@ def move_toward():
 ######################### Main #########################
 
 # Start Game
-bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private")
+bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
 #bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")

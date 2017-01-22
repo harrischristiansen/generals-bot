@@ -168,13 +168,13 @@ class GeneralsBot(object):
 				distance = self.distance(source, dest)
 				if (dest in self._update.generals): # Generals appear closer
 					distance = distance * 0.17
-				elif (dest in self._update.cities): # Cities vary distance based on size
-					distance = distance * sorted((0.22, (dest.army / source.army), 4))[1]
+				elif (dest in self._update.cities): # Cities vary distance based on size, but appear closer
+					distance = distance * sorted((0.22, (dest.army / (1.4*source.army)), 4))[1]
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
-					distance = distance * 1.7
+					distance = distance * 1.8
 
 				if (dest.army > source.army): # Larger targets appear further away
-					distance = distance * (1.5*dest.army/source.army)
+					distance = distance * (1.4*dest.army/source.army)
 
 				if (distance < closest_distance and self._validTarget(dest)):
 					closest = dest
