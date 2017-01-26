@@ -172,7 +172,7 @@ class GeneralsBot(object):
 				elif (dest in self._update.cities): # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.22, (dest.army / (1.4*source.army)), 4))[1]
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
-					distance = distance * 1.8
+					distance = distance * 3.9
 
 				if (dest.army > source.army): # Larger targets appear further away
 					distance = distance * (1.4*dest.army/source.army)
@@ -263,7 +263,7 @@ class GeneralsBot(object):
 				new_cost = next.army
 				if (next.tile == self._update.player_index):
 					new_cost = 0 - new_cost
-				new_cost = cost_so_far[current] + largest.army + new_cost
+				new_cost = cost_so_far[current] + largest.army + new_cost + 1
 
 				# Add to frontier
 				if next not in cost_so_far or (new_cost < cost_so_far[next] and next not in self._path_reconstruct(came_from, current)):
@@ -272,7 +272,8 @@ class GeneralsBot(object):
 					# Calculate Priority
 					priority = new_cost + (self.distance(next, dest)**2)
 					if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)): # Increase Priority of New Cities
-						priority = priority - largest.army
+						priority -= largest.army
+						cost_so_far[next] -= source.army
 
 					frontier.put(next, priority)
 					came_from[next] = current
