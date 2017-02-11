@@ -23,7 +23,7 @@ OPP_GENERAL = 3
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
-	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="HyI4d3_rl"):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot"):
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name

@@ -79,6 +79,6 @@ def move_toward():
 ######################### Main #########################
 
 # Start Game
-#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private", privateRoomID="HyI4d3_rl") # Private Game - http://generals.io/games/HyI4d3_rl
-bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private", privateRoomID="PurdueBot") # Private Game - http://generals.io/games/HyI4d3_rl
+#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
 #bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
