@@ -62,22 +62,26 @@ class GeneralsBot(object):
 	######################### Handle Updates From Server #########################
 
 	def _start_update_loop(self):
-		for update in self._game.get_updates():
-			self._set_update(update)
+		try:
+			for update in self._game.get_updates():
+				self._set_update(update)
 
-			if (not self._running):
-				os._exit(0) # End Program
-				return
+				if (not self._running):
+					os._exit(0) # End Program
+					return
 
-			self._make_move()
+				self._make_move()
 
-			# Update GeneralsViewer Grid
-			if '_viewer' in dir(self):
-				if '_path' in dir(self):
-					self._update.path = self._path
-				if '_collect_path' in dir(self):
-					self._update.collect_path = self._collect_path
-				self._viewer.updateGrid(self._update)
+				# Update GeneralsViewer Grid
+				if '_viewer' in dir(self):
+					if '_path' in dir(self):
+						self._update.path = self._path
+					if '_collect_path' in dir(self):
+						self._update.collect_path = self._collect_path
+					self._viewer.updateGrid(self._update)
+		except ValueError: # Already in match, restart
+			time.sleep(45)
+			os._exit(0)
 
 	def _set_update(self, update):
 		if (update.complete):
