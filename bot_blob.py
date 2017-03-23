@@ -6,6 +6,7 @@
 '''
 
 import logging
+import sys
 
 from base import bot_base
 
@@ -79,6 +80,9 @@ def move_toward():
 ######################### Main #########################
 
 # Start Game
-bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private", privateRoomID="PurdueBot") # Private Game - http://generals.io/games/HyI4d3_rl
-#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
-#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
+if len(sys.argv) > 1:
+	bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+else:
+	bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private", privateRoomID="PurdueBot") # Private Game - http://generals.io/games/HyI4d3_rl
+	#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
+	#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
