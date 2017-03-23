@@ -6,6 +6,7 @@
 '''
 
 import logging
+import os
 from Queue import PriorityQueue
 import random
 import threading
@@ -56,6 +57,8 @@ class GeneralsBot(object):
 			self._game.send_chat(msg)
 			time.sleep(0.7)
 
+		return
+
 	######################### Handle Updates From Server #########################
 
 	def _start_update_loop(self):
@@ -63,6 +66,7 @@ class GeneralsBot(object):
 			self._set_update(update)
 
 			if (not self._running):
+				os._exit(0) # End Program
 				return
 
 			self._make_move()
