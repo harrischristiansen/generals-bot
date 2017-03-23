@@ -25,18 +25,20 @@ class Generals(object):
 
 		logging.debug("Joining game")
 		self._send(["star_and_rank", userid])
+		if "[Bot]" not in username:
+			username = "[Bot]"+username
 		self._send(["set_username", userid, username])
 
 		if mode == "private":
 			if gameid is None:
 				raise ValueError("Gameid must be provided for private games")
-			self._send(["join_private", gameid, username, userid])
+			self._send(["join_private", gameid, userid])
 		elif mode == "1v1":
-			self._send(["join_1v1", username, userid])
+			self._send(["join_1v1", userid])
 		elif mode == "team":
-			self._send(["join_team", username, userid])
+			self._send(["join_team", userid])
 		elif mode == "ffa":
-			self._send(["play", username, userid])
+			self._send(["play", userid])
 		else:
 			raise ValueError("Invalid mode")
 
