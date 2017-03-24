@@ -184,8 +184,8 @@ def move_collect_to_path():
 ######################### Main #########################
 
 # Start Game
-if len(sys.argv) > 1:
-	bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="1v1")
+if len(sys.argv) > 1: # Game Type Argument: "1v1" or "ffa"
+	bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType=sys.argv[1])
 else:
 	bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="private", privateRoomID="PurdueBot") # Private Game - http://generals.io/games/HyI4d3_rl
 	#bot_base.GeneralsBot(make_move, name="PurdueBot-P", gameType="1v1")
