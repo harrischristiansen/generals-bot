@@ -19,6 +19,7 @@ class Generals(object):
 		logging.debug("Creating connection")
 		self._ws = create_connection(_ENDPOINT)
 		self._lock = threading.RLock()
+		self._gameid = gameid
 
 		logging.debug("Starting heartbeat thread")
 		_spawn(self._start_sending_heartbeat)
@@ -42,7 +43,8 @@ class Generals(object):
 		else:
 			raise ValueError("Invalid mode")
 
-		self._send(["set_force_start", gameid, force_start])
+		if (force_start):
+			_spawn(self._send_forcestart)
 
 		self._seen_update = False
 		self._move_id = 1
@@ -125,6 +127,11 @@ class Generals(object):
 
 	def _make_result(self, update, data):
 		return self._map.updateResult(update)
+
+	def _send_forcestart(self):
+		time.sleep(20)
+		self._send(["set_force_start", self._gameid, True])
+		logging.info("Sent force_start")
 
 	def _start_sending_heartbeat(self):
 		while True:
