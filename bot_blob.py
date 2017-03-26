@@ -79,10 +79,20 @@ def move_toward():
 
 ######################### Main #########################
 
-# Start Game
-if len(sys.argv) > 1: # Game Type Argument: "1v1" or "ffa"
-	bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType=sys.argv[1])
-else:
-	bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="private", privateRoomID="PurdueBot") # Private Game - http://generals.io/games/HyI4d3_rl
-	#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="1v1")
-	#bot_base.GeneralsBot(make_move, name="PurdueBot-B", gameType="ffa")
+import argparse
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-name', metavar='str', type=str, default="PurdueBot-B",
+         help='Name of Bot')
+    parser.add_argument(
+        '-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa"], default="private",
+         help='Game Type: private, 1v1, or ffa')
+    parser.add_argument(
+        '-r', '--roomID', metavar='str', type=str, default="PurdueBot", 
+        help='Private Room ID (optional)')
+
+    args = vars(parser.parse_args())
+    parser.print_help()
+    bot_base.GeneralsBot(make_move, name=args['name'], gameType=args['gameType'], privateRoomID=args['roomID'])
+

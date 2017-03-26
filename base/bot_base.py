@@ -81,8 +81,8 @@ class GeneralsBot(object):
 						self._update.collect_path = self._collect_path
 					self._viewer.updateGrid(self._update)
 		except ValueError: # Already in match, restart
-			time.sleep(45)
 			logging.info("Exit: Already in match in _start_update_loop")
+			time.sleep(45)
 			os._exit(0)
 
 	def _set_update(self, update):
