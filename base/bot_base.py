@@ -67,6 +67,7 @@ class GeneralsBot(object):
 				self._set_update(update)
 
 				if (not self._running):
+					logging.info("Exit: Not Running in _start_update_loop")
 					os._exit(0) # End Program
 					return
 
@@ -81,11 +82,12 @@ class GeneralsBot(object):
 					self._viewer.updateGrid(self._update)
 		except ValueError: # Already in match, restart
 			time.sleep(45)
+			logging.info("Exit: Already in match in _start_update_loop")
 			os._exit(0)
 
 	def _set_update(self, update):
 		if (update.complete):
-			print("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
+			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			self._running = False
 			return
 

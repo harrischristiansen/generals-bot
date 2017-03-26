@@ -108,9 +108,9 @@ class Generals(object):
 			elif msg[0] == "chat_message":
 				chat_msg = msg[2]
 				if "username" in chat_msg:
-					print("From %s: %s" % (chat_msg["username"],chat_msg["text"]))
+					logging.info("From %s: %s" % (chat_msg["username"],chat_msg["text"]))
 				else:
-					print("Message: %s" % chat_msg["text"])
+					logging.info("Message: %s" % chat_msg["text"])
 			elif msg[0] == "error_set_username":
 				None
 			else:
