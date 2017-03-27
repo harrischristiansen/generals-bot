@@ -377,7 +377,9 @@ class GeneralsBot(object):
 		return random.sample(DIRECTIONS, 4)
 
 	def distance(self, source, dest):
-		return abs(source.x - dest.x) + abs(source.y - dest.y)
+		if source != None and dest != None:
+			return abs(source.x - dest.x) + abs(source.y - dest.y)
+		return 0
 
 	def place_move(self, source, dest, move_half=False):
 		if (self.validPosition(dest.x, dest.y)):
