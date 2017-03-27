@@ -39,6 +39,9 @@ class Map(object):
 		
 
 	def update(self, data):
+		if self.complete: # Game Over - Ignore Empty Board Updates
+			return self
+
 		self._applyUpdateDiff(data)
 		self.scores = self._getScores(data)
 		self.turn = data['turn']
@@ -92,6 +95,7 @@ class Map(object):
 		for i, general in enumerate(self._visible_generals):
 			if general[0] != -1:
 				self.generals[i] = self.grid[general[0]][general[1]]
+
 class Tile(object):
 	def __init__(self, x, y):
 		# Public Properties
