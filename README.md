@@ -13,15 +13,14 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 ## Setup
 
 - [ ] Install Dependencies: `pip install -r requirements.txt`
-- [ ] Edit `bot_*.py`: At bottom set bot name and game type in bot_base.GeneralsBot(...)
 - [ ] NPM Forever: `npm install -g forever` (optional)
 
 ## Usage
 
-- [ ] Blob Bot: `python bot_blob.py`
-- [ ] Path Bot: `python bot_path_collect.py`
+- [ ] Blob Bot: `python bot_blob.py [-name] [-g gameType] [-r roomID]`
+- [ ] Path Bot: `python bot_path_collect.py [-name] [-g gameType] [-r roomID]`
 
-- [ ] Run Forever: `forever start -c python bot_NAME.py `
+- [ ] Run Forever: `forever start -c python bot_path_collect.py BotName -g ffa`
 
 ## Features
 

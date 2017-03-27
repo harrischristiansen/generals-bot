@@ -139,7 +139,7 @@ class GeneralsBot(object):
 			if (city.tile == ofType or (notOfType != None and city.tile != notOfType)):
 				if (found_city == None):
 					found_city = city
-				if (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
+				elif (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
 					found_city = city
 
 		if includeGeneral:
@@ -154,14 +154,11 @@ class GeneralsBot(object):
 	def find_closest_in_path(self, tile, path):
 		closest = None
 		closest_distance = 9999
-		for x in range(self._update.cols): # Check Each Square
-			for y in range(self._update.rows):
-				dest = self._update.grid[y][x]
-				if (dest in path):
-					distance = self.distance(tile, dest)
-					if (distance < closest_distance):
-						closest = dest
-						closest_distance = distance
+		for dest in path:
+			distance = self.distance(tile, dest)
+			if (distance < closest_distance):
+				closest = dest
+				closest_distance = distance
 
 		return closest
 
@@ -178,7 +175,7 @@ class GeneralsBot(object):
 
 				distance = self.distance(source, dest)
 				if (dest in self._update.generals): # Generals appear closer
-					distance = distance * 0.17
+					distance = distance * 0.13
 				elif (dest in self._update.cities): # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.22, (dest.army / (1.4*source.army)), 4))[1]
 				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
