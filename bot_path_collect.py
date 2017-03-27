@@ -187,16 +187,9 @@ def move_collect_to_path():
 import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-name', metavar='str', type=str, default="PurdueBot-P",
-         help='Name of Bot')
-    parser.add_argument(
-        '-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa"], default="private",
-         help='Game Type: private, 1v1, or ffa')
-    parser.add_argument(
-        '-r', '--roomID', metavar='str', type=str, default="PurdueBot", 
-        help='Private Room ID (optional)')
-
+    parser.add_argument('-name', metavar='str', type=str, default="PurdueBot-P", help='Name of Bot')
+    parser.add_argument('-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa"], default="private", help='Game Type: private, 1v1, or ffa')
+    parser.add_argument('-r', '--roomID', metavar='str', type=str, default="PurdueBot", help='Private Room ID (optional)')
     args = vars(parser.parse_args())
-    parser.print_help()
+    
     bot_base.GeneralsBot(make_move, name=args['name'], gameType=args['gameType'], privateRoomID=args['roomID'])
