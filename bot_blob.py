@@ -62,7 +62,7 @@ def move_toward():
 			army_total += (tile.army - 1)
 		elif (tile.army+1 > army_total): # Cannot obtain tile, draw path from largest city to largest tile
 			source = _bot.find_city(includeGeneral=True)
-			target = _bot.find_largest_tile()
+			target = _bot.find_largest_tile(notInPath=[source])
 			if (source and target and source != target):
 				path = _bot.find_path(source=source, dest=target)
 			break

@@ -247,6 +247,8 @@ class GeneralsBot(object):
 			source = self._update.generals[self._update.player_index]
 		if (dest == None): # No Dest, Use Primary Target
 			dest = self.find_primary_target()
+		if (source==None or dest==None):
+			return []
 
 		# Current Player Largest Army
 		largest = self.find_largest_tile(includeGeneral=True)
