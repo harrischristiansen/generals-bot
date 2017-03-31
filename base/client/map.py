@@ -110,6 +110,9 @@ class Tile(object):
 	def __repr__(self):
 		return "(%d,%d) %d (%d)" % (self.x, self.y, self.tile, self.army)
 
+	'''def __eq__(self, other):
+			return (other != None and self.x==other.x and self.y==other.y)'''
+
 	def __lt__(self, other):
 			return self.army < other.army
 

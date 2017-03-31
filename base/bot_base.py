@@ -409,7 +409,7 @@ class GeneralsBot(object):
 		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN
 
 	def _validTarget(self, target): # Check target to verify reachable
-		for dy, dx in self.moves_random():
+		for dy, dx in DIRECTIONS:
 			if (self.validPosition(target.x+dx, target.y+dy)):
 				tile = self._update.grid[target.y+dy][target.x+dx]
 				if (tile.tile != generals.map.TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals):
