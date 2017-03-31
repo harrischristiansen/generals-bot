@@ -44,6 +44,8 @@ class GeneralsBot(object):
 		while (self._running):
 			time.sleep(10)
 
+		os._exit(0) # End Program
+
 	def _start_game_loop(self):
 		# Create Game
 		if (self._gameType == "ffa"): # FFA
@@ -56,6 +58,7 @@ class GeneralsBot(object):
 		# Start Game Update Loop
 		_create_thread(self._start_update_loop)
 
+		# Send Chat Messages
 		while (self._running):
 			msg = str(input('Send Msg:'))
 			self._game.send_chat(msg)
@@ -66,16 +69,18 @@ class GeneralsBot(object):
 	######################### Handle Updates From Server #########################
 
 	def _start_update_loop(self):
+		# Start Move Thread
+		self._move_event = threading.Event()
+		_create_thread(self._make_moves_thread)
+
+		# Start Receiving Updates
 		try:
 			for update in self._game.get_updates():
 				self._set_update(update)
 
-				if (not self._running):
-					logging.info("Exit: Not Running in _start_update_loop")
-					os._exit(0) # End Program
-					return
-
-				self._make_move()
+				# Perform Make Move
+				#self._make_move()
+				self._move_event.set()
 
 				# Update GeneralsViewer Grid
 				if '_viewer' in dir(self):
@@ -87,17 +92,24 @@ class GeneralsBot(object):
 		except ValueError: # Already in match, restart
 			logging.info("Exit: Already in match in _start_update_loop")
 			time.sleep(45)
-			os._exit(0)
+			os._exit(0) # End Program
 
 	def _set_update(self, update):
 		if (update.complete):
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			self._running = False
+			os._exit(0) # End Program
 			return
 
 		self._update = update
 
 	######################### Move Generation #########################
+
+	def _make_moves_thread(self):
+		while (self._running):
+			self._move_event.wait()
+			self._make_move()
+			self._move_event.clear()
 
 	def _make_move(self):
 		self._updateMethod(self, self._update)
