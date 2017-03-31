@@ -9,7 +9,7 @@ import threading
 import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
-import map
+from . import map
 
 _ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 

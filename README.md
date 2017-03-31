@@ -12,15 +12,16 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Setup
 
-- [ ] Install Dependencies: `pip install -r requirements.txt`
+- [ ] Python3 (https://www.python.org/downloads/)
+- [ ] Install Dependencies: `pip3 install -r requirements.txt`
 - [ ] NPM Forever: `npm install -g forever` (optional)
 
 ## Usage
 
-- [ ] Blob Bot: `python bot_blob.py [-name] [-g gameType] [-r roomID]`
-- [ ] Path Bot: `python bot_path_collect.py [-name] [-g gameType] [-r roomID]`
+- [ ] Blob Bot: `python3 bot_blob.py [-name] [-g gameType] [-r roomID]`
+- [ ] Path Bot: `python3 bot_path_collect.py [-name] [-g gameType] [-r roomID]`
 
-- [ ] Run Forever: `forever start -c python bot_path_collect.py BotName -g ffa`
+- [ ] Run Forever: `forever start -c python3 bot_path_collect.py BotName -g ffa`
 
 ## Features
 

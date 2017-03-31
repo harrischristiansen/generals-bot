@@ -7,13 +7,13 @@
 
 import logging
 import os
-from Queue import PriorityQueue
+from queue import PriorityQueue
 import random
 import threading
 import time
 
-from client import generals
-from viewer import GeneralsViewer
+from .client import generals
+from .viewer import GeneralsViewer
 
 # Opponent Type Definitions
 OPP_EMPTY = 0
@@ -53,7 +53,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_update_loop)
 
 		while (self._running):
-			msg = str(raw_input('Send Msg:'))
+			msg = str(input('Send Msg:'))
 			self._game.send_chat(msg)
 			time.sleep(0.7)
 

@@ -126,9 +126,9 @@ class GeneralsViewer(object):
 				pos_top = (CELL_MARGIN + CELL_HEIGHT) * row + CELL_MARGIN
 				if (tile in self._map.cities or tile in self._map.generals): # City/General
 					# Draw Circle
-					pos_left_circle = pos_left + (CELL_WIDTH/2)
-					pos_top_circle = pos_top + (CELL_HEIGHT/2)
-					pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], CELL_WIDTH/2)
+					pos_left_circle = int(pos_left + (CELL_WIDTH/2))
+					pos_top_circle = int(pos_top + (CELL_HEIGHT/2))
+					pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2))
 				else:
 					# Draw Rect
 					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
@@ -150,18 +150,3 @@ class GeneralsViewer(object):
 		# Go ahead and update the screen with what we've drawn.
 		pygame.display.flip()
 
-'''def _create_thread(f):
-	t = threading.Thread(target=f)
-	#t.daemon = True
-	t.start()
-
-def _fakeUpdates():
-	viewer.updateGrid(maps[0])
-	time.sleep(1)
-	viewer.updateGrid(maps[1])
-
-maps = generals_tests.maps
-
-viewer = GeneralsViewer()
-_create_thread(_fakeUpdates)
-viewer.mainViewerLoop()'''
