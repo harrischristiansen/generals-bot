@@ -24,7 +24,8 @@ OPP_GENERAL = 3
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
-	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot"):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", gameViewer=True):
+		self._running = True
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name
@@ -35,9 +36,13 @@ class GeneralsBot(object):
 		_create_thread(self._start_game_loop)
 
 		# Start Game Viewer
-		window_title = "%s (%s)" % (self._name, self._gameType)
-		self._viewer = GeneralsViewer(window_title)
-		self._viewer.mainViewerLoop()
+		if (gameViewer):
+			window_title = "%s (%s)" % (self._name, self._gameType)
+			self._viewer = GeneralsViewer(window_title)
+			self._viewer.mainViewerLoop() # Consumes Main Thread
+
+		while (self._running):
+			time.sleep(10)
 
 	def _start_game_loop(self):
 		# Create Game
@@ -49,7 +54,6 @@ class GeneralsBot(object):
 			self._game = generals.Generals(self._name, self._name, 'private', gameid=self._privateRoomID)
 
 		# Start Game Update Loop
-		self._running = True
 		_create_thread(self._start_update_loop)
 
 		while (self._running):

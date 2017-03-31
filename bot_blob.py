@@ -6,8 +6,6 @@
 '''
 
 import logging
-import sys
-
 from base import bot_base
 
 # Show all logging
@@ -79,13 +77,7 @@ def move_toward():
 
 ######################### Main #########################
 
-import argparse
+# Start Game
+import startup
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-name', metavar='str', type=str, default="PurdueBot-B", help='Name of Bot')
-    parser.add_argument('-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa"], default="private", help='Game Type: private, 1v1, or ffa')
-    parser.add_argument('-r', '--roomID', metavar='str', type=str, default="PurdueBot", help='Private Room ID (optional)')
-    args = vars(parser.parse_args())
-    
-    bot_base.GeneralsBot(make_move, name=args['name'], gameType=args['gameType'], privateRoomID=args['roomID'])
-
+	startup.startup(make_move, "PurdueBot-B")

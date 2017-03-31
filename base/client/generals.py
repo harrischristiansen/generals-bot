@@ -19,7 +19,7 @@ class Generals(object):
 		logging.debug("Creating connection")
 		self._ws = create_connection(_ENDPOINT)
 		self._lock = threading.RLock()
-		self._gameid = gameid
+		self._gameid = None
 
 		logging.debug("Starting heartbeat thread")
 		_spawn(self._start_sending_heartbeat)
@@ -31,6 +31,7 @@ class Generals(object):
 		self._send(["set_username", userid, username])
 
 		if mode == "private":
+			self._gameid = gameid # Set Game ID
 			if gameid is None:
 				raise ValueError("Gameid must be provided for private games")
 			self._send(["join_private", gameid, userid])
@@ -54,7 +55,6 @@ class Generals(object):
 		self._cities = []
 
 	def send_chat(self, msg):
-		# 42["chat_message", "game_148479560460049JgP8O3TPIwDNpgAEBB", "ship", null, ""]
 		if not self._seen_update:
 			raise ValueError("Cannot chat before game starts")
 
