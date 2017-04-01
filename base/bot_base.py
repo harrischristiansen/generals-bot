@@ -217,49 +217,46 @@ class GeneralsBot(object):
 
 	def find_primary_target(self, target=None):
 		target_type = OPP_EMPTY - 1
-		if (target != None and target in self._update.generals):
-			target_type = OPP_GENERAL
-		elif (target != None and target in self._update.cities):
-			target_type = OPP_CITY
-		elif (target != None and target.army > 0):
-			target_type = OPP_ARMY
-		elif (target != None):
-			target_type = OPP_EMPTY
-
 		if (target != None and target.tile == self._update.player_index): # Acquired Target
 			target = None
-			target_type = OPP_EMPTY - 1
+		if target != None: # Determine Previous Target Type
+			target_type = OPP_EMPTY
+			if target in self._update.generals:
+				target_type = OPP_GENERAL
+			elif target in self._update.cities:
+				target_type = OPP_CITY
+			elif target.army > 0:
+				target_type = OPP_ARMY
 
 		# Determine Max Target Size
 		largest = self.find_largest_tile(includeGeneral=True)
 		max_target_size = largest.army * 1.25
 
-		for x in _shuffle(range(self._update.cols)): # Check Each Square
-			for y in _shuffle(range(self._update.rows)):
+		for x in range(self._update.cols): # Check Each Tile
+			for y in range(self._update.rows):
 				source = self._update.grid[y][x]
-
-				if (not self._validTarget(source)):
+				if (not self._validTarget(source)) or (source.tile == self._update.player_index): # Don't target invalid tiles
 					continue
 
 				if (target_type <= OPP_GENERAL): # Search for Generals
-					if (source.tile >= 0 and source.tile != self._update.player_index and source in self._update.generals and source.army < largest.army):
+					if (source.tile >= 0 and source in self._update.generals and source.army < max_target_size):
 						return source
 
 				if (target_type <= OPP_CITY): # Search for Smallest Cities
-					if (source.tile != self._update.player_index and source.army < max_target_size and source in self._update.cities):
+					if (source in self._update.cities and source.army < max_target_size):
 						if (target_type < OPP_CITY or source.army < target.army):
 							target = source
 							target_type = OPP_CITY
-							newTarget = True
 
 				if (target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source.tile >= 0 and source.tile != self._update.player_index and (target == None or source.army > target.army) and source not in self._update.cities):
+					if (source.tile >= 0 and (target == None or source.army > target.army) and source not in self._update.cities):
 						target = source
 						target_type = OPP_ARMY
 
 				if (target_type < OPP_EMPTY): # Search for Empty Squares
-					if (source.tile == generals.map.TILE_EMPTY and source.army < max_target_size):
-						return source
+					if (source.tile == generals.map.TILE_EMPTY and source.army < largest.army):
+						target = source
+						target_type = OPP_EMPTY
 
 		return target
 
