@@ -25,7 +25,7 @@ def make_move(currentBot, currentMap):
 	find_collect_path()
 
 	# Make Move
-	if (_map.turn % 10 == 0):
+	if (_map.turn % 15 == 0):
 		if not move_collect_to_path():
 			if not make_primary_move():
 				move_outward()
@@ -35,8 +35,8 @@ def make_move(currentBot, currentMap):
 				move_collect_to_path()
 	else:
 		if not move_outward():
-			if not move_collect_to_path():
-				make_primary_move()
+			if not make_primary_move():
+				move_collect_to_path()
 	return
 
 def place_move(source, dest):
