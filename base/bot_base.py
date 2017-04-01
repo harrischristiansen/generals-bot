@@ -108,8 +108,8 @@ class GeneralsBot(object):
 	def _make_moves_thread(self):
 		while (self._running):
 			self._move_event.wait()
-			self._make_move()
 			self._move_event.clear()
+			self._make_move()
 
 	def _make_move(self):
 		self._updateMethod(self, self._update)
