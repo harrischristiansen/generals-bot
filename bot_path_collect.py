@@ -21,9 +21,6 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
-	# Path Updates
-	find_collect_path()
-
 	# Make Move
 	if (_map.turn % 8 == 0):
 		if not move_collect_to_path():
@@ -51,12 +48,12 @@ def place_move(source, dest):
 ######################### Primary Move Making #########################
 
 def make_primary_move():
-		update_primary_target()
-		if (len(_path) > 1):
-			return move_primary_path_forward()
-		elif (_target != None):
-			new_primary_path()
-		return False
+	update_primary_target()
+	if (len(_path) > 1):
+		return move_primary_path_forward()
+	elif (_target != None):
+		new_primary_path()
+	return False
 
 ######################### Primary Targeting #########################
 
@@ -163,17 +160,16 @@ def find_collect_path():
 	_collect_path = _bot.find_path(source=source, dest=dest)
 	_bot._collect_path = _collect_path
 
+	return _collect_path
+
 def move_collect_to_path():
-	global _collect_path
+	# Update Path
+	collect_path = find_collect_path()
 
-	try:
-		source = _collect_path[0]
-		dest = _collect_path[1]
-	except IndexError:
-		return False
-
-	if (source.tile == _map.player_index and (dest.tile == _map.player_index or source.army > dest.army+1)):
-		place_move(source,dest)
+	# Perform Move
+	(move_from, move_to) = _bot.path_forward_moves(collect_path)
+	if (move_from != None):
+		place_move(move_from, move_to)
 		return True
 
 	return False
