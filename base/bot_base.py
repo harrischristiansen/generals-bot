@@ -36,7 +36,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_game_loop)
 
 		# Start Game Viewer
-		'''if (gameViewer):
+		if (gameViewer):
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
@@ -44,9 +44,7 @@ class GeneralsBot(object):
 		while (self._running):
 			time.sleep(10)
 
-		os._exit(0) # End Program'''
-		time.sleep(0.4)
-		self._make_moves_thread()
+		os._exit(0) # End Program
 
 	def _start_game_loop(self):
 		# Create Game
@@ -73,7 +71,7 @@ class GeneralsBot(object):
 	def _start_update_loop(self):
 		# Start Move Thread
 		self._move_event = threading.Event()
-		#_create_thread(self._make_moves_thread)
+		_create_thread(self._make_moves_thread)
 
 		# Start Receiving Updates
 		try:
@@ -106,7 +104,7 @@ class GeneralsBot(object):
 			if '_moves_realized' in dir(self):
 				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
 			self._running = False
-			#os._exit(0) # End Program
+			os._exit(0) # End Program
 			return
 
 		self._update = update

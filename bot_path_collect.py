@@ -147,7 +147,7 @@ def find_collect_path():
 	if (source == None or source.army < 4):
 		_collect_path = []
 		_bot._collect_path = []
-		return False
+		return _collect_path
 
 	# Determine Target Tile
 	dest = None
