@@ -83,11 +83,15 @@ class GeneralsBot(object):
 				self._move_event.set()
 
 				# Update GeneralsViewer Grid
-				if '_viewer' in dir(self):
-					if '_path' in dir(self):
+				selfDir = dir(self)
+				if '_viewer' in selfDir:
+					if '_path' in selfDir:
 						self._update.path = self._path
-					if '_collect_path' in dir(self):
+					if '_collect_path' in selfDir:
 						self._update.collect_path = self._collect_path
+					if '_moves_realized' in selfDir:
+						self._update.bottomText = "Realized: "+str(self._moves_realized)
+						print("Set: "+self._update.bottomText)
 					self._viewer.updateGrid(self._update)
 		except ValueError: # Already in match, restart
 			logging.info("Exit: Already in match in _start_update_loop")
@@ -97,6 +101,8 @@ class GeneralsBot(object):
 	def _set_update(self, update):
 		if (update.complete):
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
+			if '_moves_realized' in dir(self):
+				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
 			self._running = False
 			os._exit(0) # End Program
 			return
@@ -106,10 +112,12 @@ class GeneralsBot(object):
 	######################### Move Generation #########################
 
 	def _make_moves_thread(self):
+		self._moves_realized = 0
 		while (self._running):
 			self._move_event.wait()
 			self._move_event.clear()
 			self._make_move()
+			self._moves_realized+=1
 
 	def _make_move(self):
 		self._updateMethod(self, self._update)

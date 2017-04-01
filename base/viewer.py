@@ -29,14 +29,17 @@ class GeneralsViewer(object):
 		self._receivedUpdate = False
 
 	def updateGrid(self, update):
+		updateDir = dir(update)
 		self._map = update
+		if "bottomText" in updateDir:
+			self._bottomText = update.bottomText
 		self._scores = sorted(update.scores, key=lambda general: general['total'], reverse=True) # Sort Scores
 		self._receivedUpdate = True
-		if "path" in dir(update):
+		if "path" in updateDir:
 			self._path = [(path.x, path.y) for path in update.path]
 		else:
 			self._path = []
-		if "collect_path" in dir(update):
+		if "collect_path" in updateDir:
 			self._collect_path = [(path.x, path.y) for path in update.collect_path]
 		else:
 			self._collect_path = None
@@ -56,6 +59,7 @@ class GeneralsViewer(object):
 		pygame.display.set_caption(window_title)
 		self._font = pygame.font.SysFont('Arial', CELL_HEIGHT-10)
 		self._fontLrg = pygame.font.SysFont('Arial', CELL_HEIGHT)
+		self._bottomText = ""
 
 		self._clock = pygame.time.Clock()
 
@@ -90,8 +94,8 @@ class GeneralsViewer(object):
 	def _drawGrid(self):
 		self._screen.fill(BLACK) # Set BG Color
 
-		# Draw Info Text
-		self._screen.blit(self._fontLrg.render("Turn: "+str(self._map.turn), True, WHITE), (10, self._window_size[1]-INFO_ROW_HEIGHT))
+		# Draw Bottom Info Text
+		self._screen.blit(self._fontLrg.render("Turn: %d, %s" % (self._map.turn, self._bottomText), True, WHITE), (10, self._window_size[1]-INFO_ROW_HEIGHT))
 		
 		# Draw Scores
 		pos_top = self._window_size[1]-INFO_ROW_HEIGHT-SCORES_ROW_HEIGHT
