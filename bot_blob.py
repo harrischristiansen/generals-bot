@@ -80,4 +80,4 @@ def move_toward():
 # Start Game
 import startup
 if __name__ == '__main__':
-	startup.startup(make_move, "PurdueBot-B")
+	startup.startup(make_move, "PurdueBot-B2")

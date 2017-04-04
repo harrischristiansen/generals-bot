@@ -179,4 +179,4 @@ def move_collect_to_path():
 # Start Game
 import startup
 if __name__ == '__main__':
-	startup.startup(make_move, "PurdueBot-P")
+	startup.startup(make_move, "PurdueBot-P2")

@@ -7,7 +7,7 @@
 
 import logging
 import os
-from queue import PriorityQueue
+from queue import Queue
 import random
 import threading
 import time
@@ -25,28 +25,38 @@ DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
 	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", gameViewer=True):
-		self._running = True
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name
 		self._gameType = gameType
 		self._privateRoomID = privateRoomID
 
-		# Start Game Loop
-		_create_thread(self._start_game_loop)
+		# ----- Start Game -----
+		self._running = True
+		self._move_event = threading.Event()
+
+		# Start Game Thread
+		_create_thread(self._start_game_thread)
+		# Start Chat Message Thead
+		_create_thread(self._start_chat_thread)
+		# Start Game Move Thread
+		_create_thread(self._start_moves_thread)
 
 		# Start Game Viewer
 		if (gameViewer):
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
+			os._exit(0) # End Program
 
 		while (self._running):
 			time.sleep(10)
 
 		os._exit(0) # End Program
 
-	def _start_game_loop(self):
+	######################### Handle Updates From Server #########################
+
+	def _start_game_thread(self):
 		# Create Game
 		if (self._gameType == "ffa"): # FFA
 			self._game = generals.Generals(self._name, self._name, 'ffa')
@@ -54,24 +64,6 @@ class GeneralsBot(object):
 			self._game = generals.Generals(self._name, self._name, '1v1')
 		else: # private
 			self._game = generals.Generals(self._name, self._name, 'private', gameid=self._privateRoomID)
-
-		# Start Game Update Loop
-		_create_thread(self._start_update_loop)
-
-		# Send Chat Messages
-		while (self._running):
-			msg = str(input('Send Msg:'))
-			self._game.send_chat(msg)
-			time.sleep(0.7)
-
-		return
-
-	######################### Handle Updates From Server #########################
-
-	def _start_update_loop(self):
-		# Start Move Thread
-		self._move_event = threading.Event()
-		_create_thread(self._make_moves_thread)
 
 		# Start Receiving Updates
 		try:
@@ -91,7 +83,6 @@ class GeneralsBot(object):
 						self._update.collect_path = self._collect_path
 					if '_moves_realized' in selfDir:
 						self._update.bottomText = "Realized: "+str(self._moves_realized)
-						print("Set: "+self._update.bottomText)
 					self._viewer.updateGrid(self._update)
 		except ValueError: # Already in match, restart
 			logging.info("Exit: Already in match in _start_update_loop")
@@ -111,7 +102,7 @@ class GeneralsBot(object):
 
 	######################### Move Generation #########################
 
-	def _make_moves_thread(self):
+	def _start_moves_thread(self):
 		self._moves_realized = 0
 		while (self._running):
 			self._move_event.wait()
@@ -121,6 +112,18 @@ class GeneralsBot(object):
 
 	def _make_move(self):
 		self._updateMethod(self, self._update)
+
+
+	######################### Chat Messages #########################
+
+	def _start_chat_thread(self):
+		# Send Chat Messages
+		while (self._running):
+			msg = str(input('Send Msg:'))
+			self._game.send_chat(msg)
+			time.sleep(0.7)
+
+		return
 
 	######################### Tile Finding #########################
 
@@ -271,16 +274,11 @@ class GeneralsBot(object):
 		if (source==None or dest==None):
 			return []
 
-		# Current Player Largest Army
-		largest = self.find_largest_tile(includeGeneral=True)
-
 		# Determine Path To Destination
-		frontier = PriorityQueue()
-		frontier.put(source, largest.army - source.army)
+		frontier = Queue()
+		frontier.put(source)
 		came_from = {}
-		cost_so_far = {}
 		came_from[source] = None
-		cost_so_far[source] = largest.army - source.army
 
 		while not frontier.empty():
 			current = frontier.get()
@@ -289,23 +287,9 @@ class GeneralsBot(object):
 				break
 
 			for next in self._neighbors(current):
-				# Calculate New Cost
-				new_cost = next.army
-				if (next.tile == self._update.player_index):
-					new_cost = 0 - new_cost
-				new_cost = cost_so_far[current] + largest.army + new_cost + 1
-
-				# Add to frontier
-				if next not in cost_so_far or (new_cost < cost_so_far[next] and next not in self._path_reconstruct(came_from, current)):
-					cost_so_far[next] = new_cost
-
-					# Calculate Priority
-					priority = new_cost + (self.distance(next, dest)**2)
-					if (next.tile != self._update.player_index and (next in self._update.cities or next in self._update.generals)): # Increase Priority of New Cities
-						priority -= largest.army
-						cost_so_far[next] -= source.army
-
-					frontier.put(next, priority)
+				if (next not in came_from) and (next not in self._update.cities or next.tile == self._update.player_index): # Add to frontier
+					#priority = self.distance(next, dest)
+					frontier.put(next)
 					came_from[next] = current
 
 		# Create Path List
