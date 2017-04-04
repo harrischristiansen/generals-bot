@@ -287,7 +287,7 @@ class GeneralsBot(object):
 				break
 
 			for next in self._neighbors(current):
-				if (next not in came_from) and (next not in self._update.cities or next.tile == self._update.player_index): # Add to frontier
+				if (next not in came_from) and (next not in self._update.cities or next==dest or next.tile == self._update.player_index): # Add to frontier
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
