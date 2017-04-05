@@ -6,6 +6,7 @@
 '''
 
 import logging
+import random
 from base import bot_base
 
 # Show all logging
@@ -27,6 +28,18 @@ def make_move(currentBot, currentMap):
 		make_primary_move()
 	return
 
+def place_move(source, dest):
+	moveHalf = False
+	if _map.turn > 150:
+		if source in _map.generals:
+			moveHalf = True
+		elif source in _map.cities:
+			moveHalf = random.choice([False, False, False, True])
+			if (_map.turn - source.turn_captured) < 16:
+				moveHalf = True
+	
+	_bot.place_move(source, dest, move_half=moveHalf)
+
 def make_primary_move():
 	if not move_toward():
 		move_outward()
@@ -43,9 +56,11 @@ def move_outward():
 					if (_bot.validPosition(x+dx,y+dy)):
 						dest = _map.grid[y+dy][x+dx]
 						if (dest.tile != _map.player_index and source.army > (dest.army+1)) or (dest in  _path): # Capture Somewhere New
-							_bot.place_move(source, dest)
+							place_move(source, dest)
 							return True
 	return False
+
+######################### Move Toward #########################
 
 _path = []
 def move_toward():
@@ -70,7 +85,7 @@ def move_toward():
 	_bot._path = path
 	(move_from, move_to) = _bot.path_forward_moves(path)
 	if (move_from != None):
-		_bot.place_move(move_from, move_to)
+		place_move(move_from, move_to)
 		return True
 
 	return False

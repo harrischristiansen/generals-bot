@@ -38,10 +38,13 @@ def make_move(currentBot, currentMap):
 
 def place_move(source, dest):
 	moveHalf = False
-	if (_map.turn > 150 and (source in _map.generals or source in _map.cities)):
-		moveHalf = random.choice([False, False, False, True])
-		if (_map.turn - source.turn_captured) < 8:
+	if _map.turn > 150:
+		if source in _map.generals:
 			moveHalf = True
+		elif source in _map.cities:
+			moveHalf = random.choice([False, False, False, True])
+			if (_map.turn - source.turn_captured) < 16:
+				moveHalf = True
 	
 	_bot.place_move(source, dest, move_half=moveHalf)
 
