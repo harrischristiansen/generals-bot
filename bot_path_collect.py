@@ -64,10 +64,18 @@ _target = None
 _path = []
 _path_position = 0
 def update_primary_target():
-	global _target, _path, _path_position
-	if (_target != None):
-		_target = _map.grid[_target.y][_target.x] # Update Target Tile State
+	global _target
+	movesLeft = 100
+	pathLength = len(_path)
+	if pathLength > 2:
+		movesLeft = pathLength - _path_position - 1
+
+	if (_target != None): # Refresh Target Tile State
+		_target = _map.grid[_target.y][_target.x]
+		if movesLeft <= 2: # Make target appear smaller to avoid un-targeting # TEMP-FIX
+			_target.army = _target.army / 5
 	newTarget = _bot.find_primary_target(_target)
+
 	if _target != newTarget:
 		_target = newTarget
 		new_primary_path(restoreOldPosition=True)
