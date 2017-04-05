@@ -49,8 +49,7 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 	- [X] find_primary_target(target): Returns primary tile to target, optionally given an previous unobtained target to consider
 		- [ ] Do not target unreachable tiles
 	- [X] find_path(source, dest): Finds optimal path from source to dest
-		- [ ] Improve Pathfinding
-			- [ ] Correctly collect max chains and run shortest paths
+		- [ ] Improve Pathfinding to optimize costs
 	- [X] path_forward_moves(path): Returns (from_tile, to_tile) to move next given the current state of a path.
 	- [X] toward_dest_moves(source, dest): Returns DIRECTIONS array with first directions toward dest
 	- [X] away_king_moves(source): Returns DIRECTIONS array with first directions away from general
