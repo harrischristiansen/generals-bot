@@ -347,6 +347,8 @@ class GeneralsBot(object):
 		# Determine Destination
 		if (dest == None):
 			dest = self.find_primary_target()
+			if (dest == None):
+				return self.away_king_moves(source)
 
 		# Compute X/Y Directions
 		dir_y = 1
