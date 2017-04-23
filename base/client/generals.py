@@ -11,7 +11,10 @@ from websocket import create_connection, WebSocketConnectionClosedException
 
 from . import map
 
-_ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
+#_ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
+_ENDPOINT = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
+
+_BOT_KEY = "013f0dijsf"
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None,
@@ -25,22 +28,22 @@ class Generals(object):
 		_spawn(self._start_sending_heartbeat)
 
 		logging.debug("Joining game")
-		self._send(["star_and_rank", userid])
+		self._send(["star_and_rank", userid, _BOT_KEY])
 		if "[Bot]" not in username:
 			username = "[Bot]"+username
-		self._send(["set_username", userid, username])
+		self._send(["set_username", userid, username, _BOT_KEY])
 
 		if mode == "private":
 			self._gameid = gameid # Set Game ID
 			if gameid is None:
 				raise ValueError("Gameid must be provided for private games")
-			self._send(["join_private", gameid, userid])
+			self._send(["join_private", gameid, userid, _BOT_KEY])
 		elif mode == "1v1":
-			self._send(["join_1v1", userid])
+			self._send(["join_1v1", userid, _BOT_KEY])
 		elif mode == "team":
-			self._send(["join_team", userid])
+			self._send(["join_team", userid, _BOT_KEY])
 		elif mode == "ffa":
-			self._send(["play", userid])
+			self._send(["play", userid, _BOT_KEY])
 		else:
 			raise ValueError("Invalid mode")
 
