@@ -8,4 +8,4 @@ RUN pip install -U websocket-client
 ADD base/ /usr/src/app/base/
 ADD *.py /usr/src/app/
 
-CMD ["python", "bot_path_collect.py", "--no-ui", "-name", "$BOT_NAME", "-g", "$BOT_MODE"]
+CMD ["python", "bot_path_collect.py", "--no-ui"]
