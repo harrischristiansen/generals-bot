@@ -29,8 +29,6 @@ class Generals(object):
 
 		logging.debug("Joining game")
 		self._send(["star_and_rank", userid, _BOT_KEY])
-		if "[Bot]" not in username:
-			username = "[Bot]"+username
 		self._send(["set_username", userid, username, _BOT_KEY])
 
 		if mode == "private":
