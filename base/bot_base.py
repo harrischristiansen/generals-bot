@@ -13,7 +13,13 @@ import threading
 import time
 
 from .client import generals
-from .viewer import GeneralsViewer
+
+HAS_VIEWER = False
+try:
+	from .viewer import GeneralsViewer
+	HAS_VIEWER = True
+except:
+	pass
 
 # Opponent Type Definitions
 OPP_EMPTY = 0
@@ -43,7 +49,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_moves_thread)
 
 		# Start Game Viewer
-		if (gameViewer):
+		if (gameViewer) and HAS_VIEWER:
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
