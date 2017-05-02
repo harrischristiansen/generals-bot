@@ -30,12 +30,13 @@ OPP_GENERAL = 3
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
-	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", gameViewer=True):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", gameViewer=True, public_server=False):
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name
 		self._gameType = gameType
 		self._privateRoomID = privateRoomID
+		self._public_server = public_server
 
 		# ----- Start Game -----
 		self._running = True
@@ -64,12 +65,8 @@ class GeneralsBot(object):
 
 	def _start_game_thread(self):
 		# Create Game
-		if (self._gameType == "ffa"): # FFA
-			self._game = generals.Generals(self._name, self._name, 'ffa')
-		elif (self._gameType == "1v1"): # 1v1
-			self._game = generals.Generals(self._name, self._name, '1v1')
-		else: # private
-			self._game = generals.Generals(self._name, self._name, 'private', gameid=self._privateRoomID)
+		if (self._gameType in ['1v1','ffa','private']):
+			self._game = generals.Generals(self._name, self._name, self._gameType, gameid=self._privateRoomID, public_server=self._public_server)
 
 		# Start Receiving Updates
 		try:
@@ -124,10 +121,13 @@ class GeneralsBot(object):
 
 	def _start_chat_thread(self):
 		# Send Chat Messages
-		while (self._running):
-			msg = str(input('Send Msg:'))
-			self._game.send_chat(msg)
-			time.sleep(0.7)
+		try:
+			while (self._running):
+				msg = str(input('Send Msg:'))
+				self._game.send_chat(msg)
+				time.sleep(0.7)
+		except:
+			pass
 
 		return
 

@@ -11,16 +11,16 @@ from websocket import create_connection, WebSocketConnectionClosedException
 
 from . import map
 
-#_ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
-_ENDPOINT = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
+_ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
+_ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
 
 _BOT_KEY = "013f0dijsf"
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None,
-				 force_start=True):
+				 force_start=True, public_server=False):
 		logging.debug("Creating connection")
-		self._ws = create_connection(_ENDPOINT)
+		self._ws = create_connection(_ENDPOINT if not public_server else _ENDPOINT_PUBLIC)
 		self._lock = threading.RLock()
 		self._gameid = None
 
