@@ -58,9 +58,7 @@ class Generals(object):
 	def send_chat(self, msg):
 		if "start" in msg:
 			self._send_forcestart(delay=0)
-
-		if not self._seen_update:
-			raise ValueError("Cannot chat before game starts")
+			return
 
 		if len(msg) < 2:
 			return
