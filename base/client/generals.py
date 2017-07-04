@@ -108,6 +108,8 @@ class Generals(object):
 				break
 			elif msg[0] == "chat_message":
 				chat_msg = msg[2]
+				if "start" in chat_msg["text"]: # Force Start Requests
+					self._send_forcestart(delay=0)
 				if "username" in chat_msg:
 					logging.info("From %s: %s" % (chat_msg["username"],chat_msg["text"]))
 				else:
@@ -131,8 +133,8 @@ class Generals(object):
 	def _make_result(self, update, data):
 		return self._map.updateResult(update)
 
-	def _send_forcestart(self):
-		time.sleep(20)
+	def _send_forcestart(self, delay=20):
+		time.sleep(delay)
 		self._send(["set_force_start", self._gameid, True])
 		logging.info("Sent force_start")
 
