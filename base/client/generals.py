@@ -63,7 +63,10 @@ class Generals(object):
 		if len(msg) < 2:
 			return
 
-		self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
+		if self._seen_update:
+			self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
+		elif self._gameid != None:
+			self._send(["chat_message", "chat_custom_queue_"+self._gameid, msg, None, ""])
 
 	def move(self, y1, x1, y2, x2, move_half=False):
 		if not self._seen_update:
