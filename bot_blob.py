@@ -21,7 +21,7 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
-	if (_map.turn % 3 == 0):
+	if _map.turn % 3 == 0:
 		if not move_outward():
 			make_primary_move()
 	else:
@@ -35,7 +35,7 @@ def place_move(source, dest):
 			moveHalf = True
 		elif source in _map.cities:
 			moveHalf = random.choice([False, False, False, True])
-			if (_map.turn - source.turn_captured) < 16:
+			if _map.turn - source.turn_captured < 16:
 				moveHalf = True
 	
 	_bot.place_move(source, dest, move_half=moveHalf)
@@ -51,11 +51,11 @@ def move_outward():
 		for y in bot_base._shuffle(range(_map.rows)):
 			source = _map.grid[y][x]
 
-			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
+			if source.tile == _map.player_index and source.army >= 2 and source not in _path: # Find One With Armies
 				for dy, dx in _bot.toward_dest_moves(source):
-					if (_bot.validPosition(x+dx,y+dy)):
+					if _bot.validPosition(x+dx,y+dy):
 						dest = _map.grid[y+dy][x+dx]
-						if (dest.tile != _map.player_index and source.army > (dest.army+1)) or (dest in  _path): # Capture Somewhere New
+						if (dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in  _path: # Capture Somewhere New
 							place_move(source, dest)
 							return True
 	return False
@@ -71,12 +71,12 @@ def move_toward():
 
 	army_total = 0
 	for tile in path: # Verify can obtain every tile in path
-		if (tile.tile == _map.player_index):
-			army_total += (tile.army - 1)
-		elif (tile.army+1 > army_total): # Cannot obtain tile, draw path from largest city to largest tile
+		if tile.tile == _map.player_index:
+			army_total += tile.army - 1
+		elif tile.army + 1 > army_total: # Cannot obtain tile, draw path from largest city to largest tile
 			source = _bot.find_city(includeGeneral=True)
 			target = _bot.find_largest_tile(notInPath=[source])
-			if (source and target and source != target):
+			if source and target and source != target:
 				path = _bot.find_path(source=source, dest=target)
 			break
 
@@ -84,7 +84,7 @@ def move_toward():
 	_path = path
 	_bot._path = path
 	(move_from, move_to) = _bot.path_forward_moves(path)
-	if (move_from != None):
+	if move_from and move_to:
 		place_move(move_from, move_to)
 		return True
 

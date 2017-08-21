@@ -30,7 +30,7 @@ OPP_GENERAL = 3
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 class GeneralsBot(object):
-	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", gameViewer=True, public_server=False):
+	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", showGameViewer=True, public_server=False):
 		# Save Config
 		self._updateMethod = updateMethod
 		self._name = name
@@ -50,7 +50,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_moves_thread)
 
 		# Start Game Viewer
-		if (gameViewer) and HAS_VIEWER:
+		if showGameViewer and HAS_VIEWER:
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
@@ -65,8 +65,7 @@ class GeneralsBot(object):
 
 	def _start_game_thread(self):
 		# Create Game
-		if (self._gameType in ['1v1','ffa','private']):
-			self._game = generals.Generals(self._name, self._name, self._gameType, gameid=self._privateRoomID, public_server=self._public_server)
+		self._game = generals.Generals(self._name, self._name, self._gameType, gameid=self._privateRoomID, public_server=self._public_server)
 
 		# Start Receiving Updates
 		try:
@@ -93,7 +92,7 @@ class GeneralsBot(object):
 			os._exit(0) # End Program
 
 	def _set_update(self, update):
-		if (update.complete):
+		if update.complete:
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			if '_moves_realized' in dir(self):
 				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
@@ -107,7 +106,7 @@ class GeneralsBot(object):
 
 	def _start_moves_thread(self):
 		self._moves_realized = 0
-		while (self._running):
+		while self._running:
 			self._move_event.wait()
 			self._move_event.clear()
 			self._make_move()
@@ -122,7 +121,7 @@ class GeneralsBot(object):
 	def _start_chat_thread(self):
 		# Send Chat Messages
 		try:
-			while (self._running):
+			while self._running:
 				msg = str(input('Send Msg:'))
 				self._game.send_chat(msg)
 				time.sleep(0.7)
@@ -134,7 +133,7 @@ class GeneralsBot(object):
 	######################### Tile Finding #########################
 
 	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
-		if (ofType == None):
+		if ofType == None:
 			ofType = self._update.player_index
 		general = self._update.generals[ofType]
 
@@ -142,44 +141,43 @@ class GeneralsBot(object):
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
-				if (tile.tile == ofType and (largest == None or largest.army < tile.army)): # New Largest
-					if ((tile not in notInPath) and tile != general): # Exclude Path and General
+				if tile.tile == ofType and (largest == None or largest.army < tile.army): # New Largest
+					if tile != general and tile not in notInPath # Exclude General and Path
 						largest = tile
 
-		if (includeGeneral > 0 and general not in notInPath): # Handle includeGeneral
-			if (includeGeneral < 1):
+		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
+			if includeGeneral < 1:
 				includeGeneral = general.army * includeGeneral
 				if (includeGeneral < 6):
 					includeGeneral = 6
-			if (largest == None): 
+			if largest == None: 
 				largest = general
-			elif (includeGeneral == True and largest.army < general.army):
+			elif includeGeneral == True and largest.army < general.army:
 				largest = general
-			elif (includeGeneral > True and largest.army < general.army and largest.army <= includeGeneral):
+			elif includeGeneral > True and largest.army < general.army and largest.army <= includeGeneral:
 				largest = general
 
 		return largest
 
 	def find_city(self, ofType=None, notOfType=None, notInPath=[], findLargest=True, includeGeneral=False): # ofType = Integer, notOfType = Integer, notInPath = [Tile], findLargest = Boolean
-		if (ofType == None and notOfType == None):
+		if ofType == None and notOfType == None:
 			ofType = self._update.player_index
 
 		found_city = None
 		for city in self._update.cities: # Check Each City
-			if (city in notInPath):
-				continue
-
-			if (city.tile == ofType or (notOfType != None and city.tile != notOfType)):
-				if (found_city == None):
+			if city.tile == ofType or (notOfType != None and city.tile != notOfType):
+				if city in notInPath:
+					continue
+				if found_city == None:
 					found_city = city
 				elif (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
 					found_city = city
 
 		if includeGeneral:
 			general = self._update.generals[ofType]
-			if (found_city == None):
+			if found_city == None:
 				return general
-			if (general != None and ((findLargest and general.army > found_city.army) or (not findLargest and general.army < found_city.army))):
+			if general != None and ((findLargest and general.army > found_city.army) or (not findLargest and general.army < found_city.army)):
 				return general
 
 		return found_city
@@ -189,7 +187,7 @@ class GeneralsBot(object):
 		closest_distance = 9999
 		for dest in path:
 			distance = self.distance(tile, dest)
-			if (distance < closest_distance):
+			if distance < closest_distance:
 				closest = dest
 				closest_distance = distance
 
@@ -207,17 +205,17 @@ class GeneralsBot(object):
 					continue
 
 				distance = self.distance(source, dest)
-				if (dest in self._update.generals): # Generals appear closer
+				if dest in self._update.generals: # Generals appear closer
 					distance = distance * 0.13
-				elif (dest in self._update.cities): # Cities vary distance based on size, but appear closer
+				elif dest in self._update.cities: # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.18, (dest.army / (3.2*source.army)), 4))[1]
-				elif (dest.tile == generals.map.TILE_EMPTY): # Empties appear further away
+				elif dest.tile == generals.map.TILE_EMPTY: # Empties appear further away
 					distance = distance * 3.8
 
-				if (dest.army > source.army): # Larger targets appear further away
+				if dest.army > source.army: # Larger targets appear further away
 					distance = distance * (1.5*dest.army/source.army)
 
-				if (distance < closest_distance and self._validTarget(dest)):
+				if distance < closest_distance and self._validTarget(dest):
 					closest = dest
 					closest_distance = distance
 
@@ -226,7 +224,7 @@ class GeneralsBot(object):
 
 	def find_primary_target(self, target=None):
 		target_type = OPP_EMPTY - 1
-		if (target != None and target.tile == self._update.player_index): # Acquired Target
+		if target != None and target.tile == self._update.player_index: # Acquired Target
 			target = None
 		if target != None: # Determine Previous Target Type
 			target_type = OPP_EMPTY
@@ -244,26 +242,26 @@ class GeneralsBot(object):
 		for x in _shuffle(range(self._update.cols)): # Check Each Tile
 			for y in _shuffle(range(self._update.rows)):
 				source = self._update.grid[y][x]
-				if (not self._validTarget(source)) or (source.tile == self._update.player_index): # Don't target invalid tiles
+				if not self._validTarget(source) or source.tile == self._update.player_index: # Don't target invalid tiles
 					continue
 
-				if (target_type <= OPP_GENERAL): # Search for Generals
-					if (source.tile >= 0 and source in self._update.generals and source.army < max_target_size):
+				if target_type <= OPP_GENERAL: # Search for Generals
+					if source.tile >= 0 and source in self._update.generals and source.army < max_target_size:
 						return source
 
-				if (target_type <= OPP_CITY): # Search for Smallest Cities
-					if (source in self._update.cities and source.army < max_target_size):
-						if (target_type < OPP_CITY or source.army < target.army):
+				if target_type <= OPP_CITY: # Search for Smallest Cities
+					if source in self._update.cities and source.army < max_target_size:
+						if target_type < OPP_CITY or source.army < target.army:
 							target = source
 							target_type = OPP_CITY
 
-				if (target_type <= OPP_ARMY): # Search for Largest Opponent Armies
-					if (source.tile >= 0 and (target == None or source.army > target.army) and source not in self._update.cities):
+				if target_type <= OPP_ARMY: # Search for Largest Opponent Armies
+					if source.tile >= 0 and (target == None or source.army > target.army) and source not in self._update.cities:
 						target = source
 						target_type = OPP_ARMY
 
-				if (target_type < OPP_EMPTY): # Search for Empty Squares
-					if (source.tile == generals.map.TILE_EMPTY and source.army < largest.army):
+				if target_type < OPP_EMPTY: # Search for Empty Squares
+					if source.tile == generals.map.TILE_EMPTY and source.army < largest.army:
 						target = source
 						target_type = OPP_EMPTY
 
@@ -273,11 +271,11 @@ class GeneralsBot(object):
 
 	def find_path(self, source=None, dest=None):
 		# Verify Source and Dest
-		if (source == None): # No Source, Use General
+		if source == None: # No Source, Use General
 			source = self._update.generals[self._update.player_index]
-		if (dest == None): # No Dest, Use Primary Target
+		if dest == None: # No Dest, Use Primary Target
 			dest = self.find_primary_target()
-		if (source==None or dest==None):
+		if source==None or dest==None:
 			return []
 
 		# Determine Path To Destination
@@ -293,7 +291,7 @@ class GeneralsBot(object):
 				break
 
 			for next in self._neighbors(current):
-				if (next not in came_from) and (next not in self._update.cities or next==dest or next.tile == self._update.player_index): # Add to frontier
+				if next not in came_from and (next not in self._update.cities or next==dest or next.tile == self._update.player_index): # Add to frontier
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
@@ -322,9 +320,9 @@ class GeneralsBot(object):
 
 		neighbors = []
 		for dy, dx in DIRECTIONS:
-			if (self.validPosition(x+dx, y+dy)):
+			if self.validPosition(x+dx, y+dy):
 				current = self._update.grid[y+dy][x+dx]
-				if (current.tile != generals.map.TILE_OBSTACLE or current in self._update.cities or current in self._update.generals):
+				if current.tile != generals.map.TILE_OBSTACLE or current in self._update.cities or current in self._update.generals:
 					neighbors.append(current)
 
 		return neighbors
@@ -333,16 +331,16 @@ class GeneralsBot(object):
 	######################### Movement Helpers #########################
 
 	def path_forward_moves(self, path):
-		if (len(path) < 2):
+		if len(path) < 2:
 			return (None, None)
 
 		# Find largest tile in path to move forward
 		largest = path[0]
 		largest_index = 0
 		for i, tile in enumerate(path):
-			if (tile == path[-1]):
+			if tile == path[-1]:
 				break
-			if (tile.tile == path[0].tile and tile > largest):
+			if tile.tile == path[0].tile and tile > largest:
 				largest = tile
 				largest_index = i
 
@@ -351,9 +349,9 @@ class GeneralsBot(object):
 
 	def toward_dest_moves(self, source, dest=None):
 		# Determine Destination
-		if (dest == None):
+		if dest == None:
 			dest = self.find_primary_target()
-			if (dest == None):
+			if dest == None:
 				return self.away_king_moves(source)
 
 		# Compute X/Y Directions
@@ -373,7 +371,7 @@ class GeneralsBot(object):
 	def away_king_moves(self, source):
 		general = self._update.generals[self._update.player_index]
 
-		if (source.y == general.y and source.x == general.x): # Moving from General
+		if source.y == general.y and source.x == general.x: # Moving from General
 			return self.moves_random()
 
 		dir_y = 1
@@ -397,7 +395,7 @@ class GeneralsBot(object):
 		return 0
 
 	def place_move(self, source, dest, move_half=False):
-		if (self.validPosition(dest.x, dest.y)):
+		if self.validPosition(dest.x, dest.y):
 			self._game.move(source.y, source.x, dest.y, dest.x, move_half)
 			return True
 		return False
@@ -407,9 +405,9 @@ class GeneralsBot(object):
 
 	def _validTarget(self, target): # Check target to verify reachable
 		for dy, dx in DIRECTIONS:
-			if (self.validPosition(target.x+dx, target.y+dy)):
+			if self.validPosition(target.x+dx, target.y+dy):
 				tile = self._update.grid[target.y+dy][target.x+dx]
-				if (tile.tile != generals.map.TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals):
+				if tile.tile != generals.map.TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals:
 					return True
 		return False
 

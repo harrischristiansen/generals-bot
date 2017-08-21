@@ -22,11 +22,11 @@ def make_move(currentBot, currentMap):
 	_map = currentMap
 
 	# Make Move
-	if (_map.turn % 8 == 0):
+	if _map.turn % 8 == 0:
 		if not move_collect_to_path():
 			if not make_primary_move():
 				move_outward()
-	elif (_map.turn % 2 == 0):
+	elif _map.turn % 2 == 0:
 		if not make_primary_move():
 			if not move_outward():
 				move_collect_to_path()
@@ -52,9 +52,9 @@ def place_move(source, dest):
 
 def make_primary_move():
 	update_primary_target()
-	if (len(_path) > 1):
+	if len(_path) > 1:
 		return move_primary_path_forward()
-	elif (_target != None):
+	elif _target != None:
 		new_primary_path()
 	return False
 
@@ -70,7 +70,7 @@ def update_primary_target():
 	if pathLength > 2:
 		movesLeft = pathLength - _path_position - 1
 
-	if (_target != None): # Refresh Target Tile State
+	if _target != None: # Refresh Target Tile State
 		_target = _map.grid[_target.y][_target.x]
 		if movesLeft <= 2: # Make target appear smaller to avoid un-targeting # TEMP-FIX
 			_target.army = _target.army / 5
@@ -90,13 +90,13 @@ def move_primary_path_forward():
 		#logging.debug("Invalid Current Path Position")
 		return new_primary_path()
 
-	if (source.tile != _map.player_index or source.army < 2): # Out of Army, Restart Path
+	if source.tile != _map.player_index or source.army < 2: # Out of Army, Restart Path
 		#logging.debug("Path Error: Out of Army (%d,%d)" % (source.tile, source.army))
 		return new_primary_path()
 
 	try:
 		dest = _path[_path_position+1] # Determine Destination
-		if (dest.tile == _map.player_index or source.army > (dest.army+1)):
+		if dest.tile == _map.player_index or source.army > (dest.army + 1):
 			place_move(source, dest)
 		else:
 			#logging.debug("Path Error: Out of Army To Attack (%d,%d,%d,%d)" % (dest.x,dest.y,source.army,dest.army))
@@ -113,7 +113,7 @@ def new_primary_path(restoreOldPosition=False):
 
 	# Store Old Tile
 	old_tile = None
-	if (_path_position > 0 and len(_path) > 0): # Store old path position
+	if _path_position > 0 and len(_path) > 0: # Store old path position
 		old_tile = _path[_path_position]
 	_path_position = 0
 	
@@ -123,7 +123,7 @@ def new_primary_path(restoreOldPosition=False):
 	_bot._path = _path
 
 	# Restore Old Tile
-	if (restoreOldPosition and old_tile != None):
+	if restoreOldPosition and old_tile != Non:
 		for i, tile in enumerate(_path):
 			if (tile.x, tile.y) == (old_tile.x, old_tile.y):
 				_path_position = i
@@ -138,11 +138,11 @@ def move_outward():
 		for y in bot_base._shuffle(range(_map.rows)):
 			source = _map.grid[y][x]
 
-			if (source.tile == _map.player_index and source.army >= 2 and source not in _path): # Find One With Armies
+			if source.tile == _map.player_index and source.army >= 2 and source not in _path: # Find One With Armies
 				for dy, dx in _bot.toward_dest_moves(source, dest=_target):
-					if (_bot.validPosition(x+dx,y+dy)):
-						dest = _map.grid[y+dy][x+dx]
-						if ((dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in _path): # Capture Somewhere New
+					if _bot.validPosition(x + dx, y + dy):
+						dest = _map.grid[y + dy][x + dx]
+						if (dest.tile != _map.player_index and source.army > (dest.army + 1)) or dest in _path: # Capture Somewhere New
 							place_move(source, dest)
 							return True
 	return False
@@ -162,9 +162,9 @@ def find_collect_path():
 
 	# Determine Target Tile
 	dest = None
-	if (source.army > 40):
+	if source.army > 40:
 		dest = _bot.find_closest_target(source)
-	if (dest == None):
+	if dest == None:
 		dest = _bot.find_closest_in_path(source, _path)
 
 	# Determine Path
@@ -179,7 +179,7 @@ def move_collect_to_path():
 
 	# Perform Move
 	(move_from, move_to) = _bot.path_forward_moves(collect_path)
-	if (move_from != None):
+	if move_from != None:
 		place_move(move_from, move_to)
 		return True
 

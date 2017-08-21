@@ -20,4 +20,4 @@ def startup(moveMethod, botName="PurdueBot"):
     if (moveMethod == None):
     	raise ValueError("A move method must be supplied upon startup")
     
-    bot_base.GeneralsBot(moveMethod, name=args['name'], gameType=args['gameType'], privateRoomID=args['roomID'], gameViewer=args['no_ui'], public_server=args['public'])
+    bot_base.GeneralsBot(moveMethod, name=args['name'], gameType=args['gameType'], privateRoomID=args['roomID'], showGameViewer=args['no_ui'], public_server=args['public'])

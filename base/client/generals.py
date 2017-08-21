@@ -13,8 +13,9 @@ from . import map
 
 _ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 _ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
+_BOT_KEY = "O13f0dijsf"
 
-_BOT_KEY = "013f0dijsf"
+_START_KEYWORDS = ["start", "go", "force"]
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None,
@@ -22,15 +23,11 @@ class Generals(object):
 		logging.debug("Creating connection")
 		self._ws = create_connection(_ENDPOINT if not public_server else _ENDPOINT_PUBLIC)
 		self._lock = threading.RLock()
+		_spawn(self._start_sending_heartbeat)
+		self._send(["set_username", userid, username, _BOT_KEY])
 		self._gameid = None
 
-		logging.debug("Starting heartbeat thread")
-		_spawn(self._start_sending_heartbeat)
-
 		logging.debug("Joining game")
-		self._send(["star_and_rank", userid, _BOT_KEY])
-		self._send(["set_username", userid, username, _BOT_KEY])
-
 		if mode == "private":
 			self._gameid = gameid # Set Game ID
 			if gameid is None:
@@ -56,7 +53,7 @@ class Generals(object):
 		self._cities = []
 
 	def send_chat(self, msg):
-		if "start" in msg:
+		if any(keyword in msg for keyword in _START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return
 
@@ -111,13 +108,7 @@ class Generals(object):
 				yield self._make_result(msg[0], msg[1])
 				break
 			elif msg[0] == "chat_message":
-				chat_msg = msg[2]
-				if "start" in chat_msg["text"]: # Force Start Requests
-					self._send_forcestart(delay=0)
-				if "username" in chat_msg:
-					logging.info("From %s: %s" % (chat_msg["username"],chat_msg["text"]))
-				else:
-					logging.info("Message: %s" % chat_msg["text"])
+				self._handle_chat(msg[2])
 			elif msg[0] == "error_set_username":
 				None
 			else:
@@ -136,6 +127,14 @@ class Generals(object):
 
 	def _make_result(self, update, data):
 		return self._map.updateResult(update)
+
+	def _handle_chat(self, chat_msg):
+		if any(keyword in chat_msg["text"] for keyword in _START_KEYWORDS): # Force Start Requests
+			self._send_forcestart(delay=0)
+		if "username" in chat_msg:
+			logging.info("From %s: %s" % (chat_msg["username"], chat_msg["text"]))
+		else:
+			logging.info("Message: %s" % chat_msg["text"])
 
 	def _send_forcestart(self, delay=20):
 		time.sleep(delay)
