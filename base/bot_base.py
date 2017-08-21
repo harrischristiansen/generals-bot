@@ -142,7 +142,7 @@ class GeneralsBot(object):
 			for y in range(self._update.rows):
 				tile = self._update.grid[y][x]
 				if tile.tile == ofType and (largest == None or largest.army < tile.army): # New Largest
-					if tile != general and tile not in notInPath # Exclude General and Path
+					if tile != general and tile not in notInPath: # Exclude General and Path
 						largest = tile
 
 		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
