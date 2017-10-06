@@ -41,12 +41,8 @@ class GeneralsBot(object):
 		self._running = True
 		self._exit_on_game_over = True
 		self._move_event = threading.Event()
-
-		# Start Game Thread
 		_create_thread(self._start_game_thread)
-		# Start Chat Message Thead
 		_create_thread(self._start_chat_thread)
-		# Start Game Move Thread
 		_create_thread(self._start_moves_thread)
 
 		# Start Game Viewer
@@ -120,7 +116,6 @@ class GeneralsBot(object):
 
 	def _make_move(self):
 		self._updateMethod(self, self._update)
-
 
 	######################### Chat Messages #########################
 
