@@ -110,6 +110,8 @@ class Generals(object):
 				self._handle_chat(msg[2])
 			elif msg[0] == "error_set_username":
 				None
+			elif msg[0] == "game_over":
+				None
 			else:
 				logging.info("Unknown message type: {}".format(msg))
 

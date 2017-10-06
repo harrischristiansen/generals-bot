@@ -27,6 +27,8 @@ class Map(object):
 		self.rows = self.rows 															# Integer Number Grid Rows
 		self.cols = self.cols 															# Integer Number Grid Cols
 		self.grid = [[Tile(x,y) for x in range(self.cols)] for y in range(self.rows)]	# 2D List of Tile Objects
+		self.swamps = [(c // self.cols, c % self.cols) for c in start_data['swamps']] 	# List [(y,x)] of swamps
+		self._setSwamps()
 		self.turn = data['turn']														# Integer Turn # (1 turn / 0.5 seconds)
 		self.cities = []																# List of City Tiles
 		self.generals = [ None for x in range(8) ]										# List of 8 Generals (None if not found)
@@ -90,6 +92,10 @@ class Map(object):
 		# Update Visible Generals
 		self._visible_generals = [(-1, -1) if g == -1 else (g // self.cols, g % self.cols) for g in data['generals']] # returns [(y,x)]
 
+	def _setSwamps(self):
+		for (y,x) in self.swamps:
+			self.grid[y][x].setSwamp(True)
+
 	def _setGenerals(self):
 		for i, general in enumerate(self._visible_generals):
 			if general[0] != -1:
@@ -104,6 +110,7 @@ class Tile(object):
 		self.turn_captured = 0		# Integer Turn Tile Last Captured
 		self.army = 0				# Integer Army Count
 		self.isCity = False			# Boolean isCity
+		self.isSwamp = False		# Boolean isSwamp
 		self.isGeneral = False		# Boolean isGeneral
 
 	def __repr__(self):
@@ -114,6 +121,9 @@ class Tile(object):
 
 	def __lt__(self, other):
 			return self.army < other.army
+
+	def setSwamp(self, isSwamp):
+		self.isSwamp = isSwamp
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
 		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == map.player_index)): # Remember Discovered Tiles
