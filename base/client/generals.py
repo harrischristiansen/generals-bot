@@ -5,45 +5,24 @@
 
 import logging
 import json
+import random
 import threading
 import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
+from . import catalog
 from . import map
 
 _ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 _ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
 _BOT_KEY = "O13f0dijsf"
 
-_START_KEYWORDS = ["start", "go", "force"]
+_START_KEYWORDS = ["start", "go", "force", "play"]
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None,
 				 force_start=True, public_server=False):
-		logging.debug("Creating connection")
-		self._ws = create_connection(_ENDPOINT if not public_server else _ENDPOINT_PUBLIC)
-		self._lock = threading.RLock()
-		_spawn(self._start_sending_heartbeat)
-		self._send(["set_username", userid, username, _BOT_KEY])
-		self._gameid = None
-
-		logging.debug("Joining game")
-		if mode == "private":
-			self._gameid = gameid # Set Game ID
-			if gameid is None:
-				raise ValueError("Gameid must be provided for private games")
-			self._send(["join_private", gameid, userid, _BOT_KEY])
-		elif mode == "1v1":
-			self._send(["join_1v1", userid, _BOT_KEY])
-		elif mode == "team":
-			self._send(["join_team", userid, _BOT_KEY])
-		elif mode == "ffa":
-			self._send(["play", userid, _BOT_KEY])
-		else:
-			raise ValueError("Invalid mode")
-
-		if (force_start):
-			_spawn(self._send_forcestart)
+		self._connect_and_join(userid, username, mode, gameid, force_start, public_server)
 
 		self._seen_update = False
 		self._move_id = 1
@@ -52,28 +31,10 @@ class Generals(object):
 		self._map = []
 		self._cities = []
 
-	def send_chat(self, msg):
-		if any(keyword in msg for keyword in _START_KEYWORDS):
-			self._send_forcestart(delay=0)
-			return
+	def close(self):
+		self._ws.close()
 
-		if len(msg) < 2:
-			return
-
-		if self._seen_update:
-			self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
-		elif self._gameid != None:
-			self._send(["chat_message", "chat_custom_queue_"+self._gameid, msg, None, ""])
-
-	def move(self, y1, x1, y2, x2, move_half=False):
-		if not self._seen_update:
-			raise ValueError("Cannot move before first map seen")
-
-		cols = self._map.cols
-		a = y1 * cols + x1
-		b = y2 * cols + x2
-		self._send(["attack", a, b, move_half, self._move_id])
-		self._move_id += 1
+	######################### Get updates from server #########################
 
 	def get_updates(self):
 		while True:
@@ -121,8 +82,64 @@ class Generals(object):
 			else:
 				logging.info("Unknown message type: {}".format(msg))
 
-	def close(self):
-		self._ws.close()
+	######################### Make Moves #########################
+
+	def move(self, y1, x1, y2, x2, move_half=False):
+		if not self._seen_update:
+			raise ValueError("Cannot move before first map seen")
+
+		cols = self._map.cols
+		a = y1 * cols + x1
+		b = y2 * cols + x2
+		self._send(["attack", a, b, move_half, self._move_id])
+		self._move_id += 1
+
+	######################### Send Chat Messages #########################
+
+	def send_chat(self, msg):
+		if self._handle_command(msg):
+			return
+		
+		if self._seen_update:
+			self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
+		elif self._gameid != None:
+			self._send(["chat_message", "chat_custom_queue_"+self._gameid, msg, None, ""])
+
+	######################### PRIVATE FUNCTIONS - PRIVATE FUNCTIONS #########################
+
+	######################### Bot Commands #########################
+
+	def _handle_command(self, msg):
+		if len(msg) < 10 and any(keyword in msg for keyword in _START_KEYWORDS):
+			self._send_forcestart(delay=0)
+			return True
+		if len(msg) < 2:
+			return True
+
+		command = msg.split(" ")
+		if command[0] == "help":
+			self._print_command_help()
+			return True
+		elif command[0] == "speed":
+			self._set_game_speed(command[1])
+			return True
+		elif command[0] == "public":
+			self._set_game_public()
+			return True
+		elif command[0] == "map":
+			self._set_game_map()
+			return True
+
+		return False
+
+	def _print_command_help(self):
+		print("======= Available Commands =======")
+		print("start: send force start")
+		print("speed 4: set game play speed [1, 2, 3, 4]")
+		print("public: make custom game public")
+		print("map: assign a random custom map")
+
+	######################### Server -> Client #########################
 
 	def _make_update(self, data):
 		if not self._seen_update:
@@ -143,10 +160,33 @@ class Generals(object):
 		else:
 			logging.info("Message: %s" % chat_msg["text"])
 
-	def _send_forcestart(self, delay=20):
-		time.sleep(delay)
-		self._send(["set_force_start", self._gameid, True])
-		logging.info("Sent force_start")
+	######################### Client -> Server #########################
+
+	def _connect_and_join(self, userid, username, mode, gameid, force_start, public_server):
+		logging.debug("Creating connection")
+		self._ws = create_connection(_ENDPOINT if not public_server else _ENDPOINT_PUBLIC)
+		self._lock = threading.RLock()
+		_spawn(self._start_sending_heartbeat)
+		self._send(["set_username", userid, username, _BOT_KEY])
+
+		logging.debug("Joining game")
+		self._gameid = gameid
+		if mode == "private":
+			if gameid is None:
+				raise ValueError("Gameid must be provided for private games")
+			self._send(["join_private", gameid, userid, _BOT_KEY])
+		elif mode == "1v1":
+			self._send(["join_1v1", userid, _BOT_KEY])
+		elif mode == "team":
+			self._send(["join_team", userid, _BOT_KEY])
+		elif mode == "ffa":
+			self._send(["play", userid, _BOT_KEY])
+		else:
+			raise ValueError("Invalid mode")
+
+		if (force_start):
+			_spawn(self._send_forcestart)
+		self._set_game_speed(2)
 
 	def _start_sending_heartbeat(self):
 		while True:
@@ -156,6 +196,22 @@ class Generals(object):
 			except WebSocketConnectionClosedException:
 				break
 			time.sleep(0.1)
+
+	def _send_forcestart(self, delay=20):
+		time.sleep(delay)
+		self._send(["set_force_start", self._gameid, True])
+		logging.info("Sent force_start")
+
+	def _set_game_speed(self, speed=1):
+		speed = int(speed)
+		if speed in [1, 2, 3, 4]:
+			self._send(["set_custom_options", self._gameid, {"game_speed":speed}])
+
+	def _set_game_public(self):
+		self._send(["make_custom_public", self._gameid])
+
+	def _set_game_map(self):
+		self._send(["set_custom_options", self._gameid, {"map":random.choice(catalog.GENERALS_MAPS)}])
 
 	def _send(self, msg):
 		try:
