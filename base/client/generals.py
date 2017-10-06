@@ -99,8 +99,12 @@ class Generals(object):
 
 			if msg[0] == "error_user_id":
 				raise ValueError("Already in game")
+			elif msg[0] == "queue_update":
+				logging.info("Queue %d/%d" % (msg[1]['numForce'], msg[1]['numPlayers']))
+			elif msg[0] == "pre_game_start":
+				logging.info("pre_game_start")
 			elif msg[0] == "game_start":
-				logging.info("Game info: {}".format(msg[1]))
+				logging.info("Joined Game: Replay ID = %s" % msg[1]['replay_id'])
 				self._start_data = msg[1]
 			elif msg[0] == "game_update":
 				yield self._make_update(msg[1])
@@ -111,6 +115,8 @@ class Generals(object):
 			elif msg[0] == "error_set_username":
 				None
 			elif msg[0] == "game_over":
+				None
+			elif msg[0] == "notify":
 				None
 			else:
 				logging.info("Unknown message type: {}".format(msg))
