@@ -178,7 +178,10 @@ class GeneralsViewer(object):
 					# Draw Circle
 					pos_left_circle = int(pos_left + (CELL_WIDTH/2))
 					pos_top_circle = int(pos_top + (CELL_HEIGHT/2))
-					pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2))
+					if tile in self._map.generals:
+						pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2.5))
+					else:
+						pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2))
 				else:
 					# Draw Rect
 					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
@@ -186,11 +189,15 @@ class GeneralsViewer(object):
 				# Draw Text Value
 				if (tile.army != 0): # Don't draw on empty tiles
 					textVal = str(tile.army)
-					self._screen.blit(self._font.render(textVal, True, color_font), (pos_left+2, pos_top+2))
+					self._screen.blit(self._font.render(textVal, True, color_font), (pos_left, pos_top+2))
+
+				# Draw Swamps
+				if (tile.isSwamp):
+					self._screen.blit(self._font.render("±", True, color_font), (pos_left+9, pos_top+7))
 
 				# Draw Path
 				if (self._path != None and (column,row) in self._path):
-					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+3, pos_top+3))
+					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+5, pos_top-3))
 				if (self._collect_path != None and (column,row) in self._collect_path):
 					self._screen.blit(self._fontLrg.render("*", True, PLAYER_COLORS[8]), (pos_left+6, pos_top+6))
 	 
