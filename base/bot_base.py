@@ -98,7 +98,7 @@ class GeneralsBot(object):
 		self._update = update
 
 	def _exit_game(self):
-		time.sleep(0.7)
+		time.sleep(1.1)
 		if not self._exit_on_game_over:
 			time.sleep(100)
 		self._running = False
