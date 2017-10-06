@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Game Viewer
 '''
@@ -22,7 +21,8 @@ CELL_HEIGHT = 20
 CELL_MARGIN = 5
 SCORES_ROW_HEIGHT = 28
 ACTIONBAR_ROW_HEIGHT = 25
-ACTIONBAR_BUTTON_WIDTH = 100
+TOGGLE_GRID_BTN_WIDTH = 75
+TOGGLE_EXIT_BTN_WIDTH = 65
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
@@ -30,6 +30,7 @@ class GeneralsViewer(object):
 		self._name = name
 		self._receivedUpdate = False
 		self._showGrid = True
+		self.exit_on_game_over = True
 
 	def mainViewerLoop(self):
 		while not self._receivedUpdate: # Wait for first update
@@ -71,6 +72,8 @@ class GeneralsViewer(object):
 		else:
 			self._collect_path = None
 
+		return self
+
 	''' ======================== PRIVATE METHODS - Viewer Init - PRIVATE METHODS ======================== '''
 
 	def _initViewier(self):
@@ -97,8 +100,10 @@ class GeneralsViewer(object):
 
 	def _handleClick(self, pos):
 		if (pos[1] < ABOVE_GRID_HEIGHT):
-			if (pos[0] < ACTIONBAR_BUTTON_WIDTH): # Toggle Grid
+			if (pos[0] < TOGGLE_GRID_BTN_WIDTH): # Toggle Grid
 				self._toggleGrid()
+			elif (pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH): # Toggle Exit on Game Over
+				self.exit_on_game_over = not self.exit_on_game_over
 		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
 			row = (pos[1] - ABOVE_GRID_HEIGHT) // (CELL_HEIGHT + CELL_MARGIN)
@@ -125,8 +130,15 @@ class GeneralsViewer(object):
 		pygame.display.flip() # update screen with new drawing
 
 	def _drawActionbar(self):
-		pygame.draw.rect(self._screen, (0,90,0), [0, 0, ACTIONBAR_BUTTON_WIDTH, ACTIONBAR_ROW_HEIGHT])
+		# Toggle Grid Button
+		pygame.draw.rect(self._screen, (0,80,0), [0, 0, TOGGLE_GRID_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
 		self._screen.blit(self._font.render("Toggle Grid", True, WHITE), (10, 5))
+
+		# Toggle Exit on Game Over Button
+		pygame.draw.rect(self._screen, (0,100,0) if self.exit_on_game_over else (90,0,0), [TOGGLE_GRID_BTN_WIDTH, 0, TOGGLE_EXIT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
+		self._screen.blit(self._font.render("Auto Quit", True, WHITE), (TOGGLE_GRID_BTN_WIDTH+10, 5))
+
+		# Info Text
 		self._screen.blit(self._fontLrg.render("Turn: %d" % self._map.turn, True, WHITE), (self._window_size[0]-200, 5))
 		self._screen.blit(self._font.render("%s" % self._bottomText, True, WHITE), (self._window_size[0]-90, 12))
 

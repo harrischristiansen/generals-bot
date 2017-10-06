@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Map: Objects for representing Generals IO Map and Tiles
 '''

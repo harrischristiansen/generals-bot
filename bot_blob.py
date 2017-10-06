@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Bot_blob: Creates a blob of troops.
 '''

@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Path Collect Both: Collects troops along a path, and attacks outward using path.
 '''

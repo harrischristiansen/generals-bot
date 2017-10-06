@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	March 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Startup: Initiate Bots with command line arguments
 '''

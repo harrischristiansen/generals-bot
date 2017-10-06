@@ -1,6 +1,5 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
-	January 2016
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Generals Bot: Base Bot Class
 '''
@@ -40,6 +39,7 @@ class GeneralsBot(object):
 
 		# ----- Start Game -----
 		self._running = True
+		self._exit_on_game_over = True
 		self._move_event = threading.Event()
 
 		# Start Game Thread
@@ -72,9 +72,8 @@ class GeneralsBot(object):
 			for update in self._game.get_updates():
 				self._set_update(update)
 
-				# Perform Make Move
-				#self._make_move()
-				self._move_event.set()
+				if not update.complete:
+					self._move_event.set() # Permit another move
 
 				# Update GeneralsViewer Grid
 				selfDir = dir(self)
@@ -85,22 +84,29 @@ class GeneralsBot(object):
 						self._update.collect_path = self._collect_path
 					if '_moves_realized' in selfDir:
 						self._update.bottomText = "Realized: "+str(self._moves_realized)
-					self._viewer.updateGrid(self._update)
+					viewer = self._viewer.updateGrid(self._update)
+					self._exit_on_game_over = viewer.exit_on_game_over
 		except ValueError: # Already in match, restart
 			logging.info("Exit: Already in match in _start_update_loop")
-			time.sleep(45)
-			os._exit(0) # End Program
+			time.sleep(40)
+			self._exit_game()
 
 	def _set_update(self, update):
 		if update.complete:
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			if '_moves_realized' in dir(self):
 				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
-			self._running = False
-			os._exit(0) # End Program
+			self._exit_game()
 			return
 
 		self._update = update
+
+	def _exit_game(self):
+		time.sleep(0.7)
+		if not self._exit_on_game_over:
+			time.sleep(100)
+		self._running = False
+		os._exit(0) # End Program
 
 	######################### Move Generation #########################
 
