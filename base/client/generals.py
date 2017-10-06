@@ -109,8 +109,8 @@ class Generals(object):
 
 	######################### Bot Commands #########################
 
-	def _handle_command(self, msg):
-		if len(msg) < 10 and any(keyword in msg for keyword in _START_KEYWORDS):
+	def _handle_command(self, msg, from_chat=False):
+		if len(msg) < 12 and any(keyword in msg for keyword in _START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return True
 		if len(msg) < 2:
@@ -118,7 +118,7 @@ class Generals(object):
 
 		command = msg.split(" ")
 		if command[0] == "help":
-			self._print_command_help()
+			self._print_command_help(from_chat)
 			return True
 		elif command[0] == "speed":
 			self._set_game_speed(command[1])
@@ -132,12 +132,21 @@ class Generals(object):
 
 		return False
 
-	def _print_command_help(self):
-		print("======= Available Commands =======")
-		print("start: send force start")
-		print("speed 4: set game play speed [1, 2, 3, 4]")
-		print("public: make custom game public")
-		print("map: assign a random custom map")
+	def _print_command_help(self, from_chat=False):
+		help_text = [
+			"| ======= Available Commands =======",
+			"| start: send force start",
+			"| speed 4: set game play speed [1, 2, 3, 4]",
+			"| public: make custom game public",
+			"| map: assign a random custom map",
+		]
+
+		if from_chat:
+			for txt in help_text:
+				self.send_chat(txt)
+				time.sleep(0.33)
+		else:
+			print("\n".join(help_text))
 
 	######################### Server -> Client #########################
 
@@ -153,9 +162,8 @@ class Generals(object):
 		return self._map.updateResult(update)
 
 	def _handle_chat(self, chat_msg):
-		if any(keyword in chat_msg["text"] for keyword in _START_KEYWORDS): # Force Start Requests
-			self._send_forcestart(delay=0)
 		if "username" in chat_msg:
+			self._handle_command(chat_msg["text"], from_chat=True)
 			logging.info("From %s: %s" % (chat_msg["username"], chat_msg["text"]))
 		else:
 			logging.info("Message: %s" % chat_msg["text"])
