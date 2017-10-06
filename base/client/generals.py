@@ -106,7 +106,6 @@ class Generals(object):
 				yield self._make_update(msg[1])
 			elif msg[0] in ["game_won", "game_lost"]:
 				yield self._make_result(msg[0], msg[1])
-				break
 			elif msg[0] == "chat_message":
 				self._handle_chat(msg[2])
 			elif msg[0] == "error_set_username":

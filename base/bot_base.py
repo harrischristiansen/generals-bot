@@ -92,7 +92,7 @@ class GeneralsBot(object):
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
 			if '_moves_realized' in dir(self):
 				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
-			self._exit_game()
+			_create_thread(self._exit_game)
 			return
 
 		self._update = update
