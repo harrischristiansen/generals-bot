@@ -21,7 +21,6 @@ CELL_WIDTH = 20
 CELL_HEIGHT = 20
 CELL_MARGIN = 5
 SCORES_ROW_HEIGHT = 28
-INFO_ROW_HEIGHT = 25
 ACTIONBAR_ROW_HEIGHT = 25
 ACTIONBAR_BUTTON_WIDTH = 100
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
@@ -79,7 +78,7 @@ class GeneralsViewer(object):
 
 		# Set Window Size
 		self._grid_height = self._map.rows * (CELL_HEIGHT + CELL_MARGIN) + CELL_MARGIN
-		window_height = ACTIONBAR_ROW_HEIGHT + self._grid_height + SCORES_ROW_HEIGHT + INFO_ROW_HEIGHT
+		window_height = ACTIONBAR_ROW_HEIGHT + self._grid_height + SCORES_ROW_HEIGHT
 		window_width = self._map.cols * (CELL_WIDTH + CELL_MARGIN) + CELL_MARGIN
 		self._window_size = [window_width, window_height]
 		self._screen = pygame.display.set_mode(self._window_size)
@@ -100,14 +99,14 @@ class GeneralsViewer(object):
 		if (pos[1] < ABOVE_GRID_HEIGHT):
 			if (pos[0] < ACTIONBAR_BUTTON_WIDTH): # Toggle Grid
 				self._toggleGrid()
-		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-INFO_ROW_HEIGHT-SCORES_ROW_HEIGHT): # Click inside Grid
+		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
 			row = (pos[1] - ABOVE_GRID_HEIGHT) // (CELL_HEIGHT + CELL_MARGIN)
 			print("Click ", pos, "Grid coordinates: ", row, column)
 
 	def _toggleGrid(self):
 		self._showGrid = not self._showGrid
-		window_height = ACTIONBAR_ROW_HEIGHT + SCORES_ROW_HEIGHT + INFO_ROW_HEIGHT
+		window_height = ACTIONBAR_ROW_HEIGHT + SCORES_ROW_HEIGHT
 		if self._showGrid:
 			window_height += self._grid_height
 		self._window_size[1] = window_height
@@ -121,7 +120,6 @@ class GeneralsViewer(object):
 		if self._showGrid:
 			self._drawGrid()
 		self._drawScores()
-		self._drawInfo()
 
 		self._clock.tick(60) # Limit to 60 FPS
 		pygame.display.flip() # update screen with new drawing
@@ -129,12 +127,11 @@ class GeneralsViewer(object):
 	def _drawActionbar(self):
 		pygame.draw.rect(self._screen, (0,90,0), [0, 0, ACTIONBAR_BUTTON_WIDTH, ACTIONBAR_ROW_HEIGHT])
 		self._screen.blit(self._font.render("Toggle Grid", True, WHITE), (10, 5))
-
-	def _drawInfo(self):
-		self._screen.blit(self._fontLrg.render("Turn: %d, %s" % (self._map.turn, self._bottomText), True, WHITE), (10, self._window_size[1]-INFO_ROW_HEIGHT))
+		self._screen.blit(self._fontLrg.render("Turn: %d" % self._map.turn, True, WHITE), (self._window_size[0]-200, 5))
+		self._screen.blit(self._font.render("%s" % self._bottomText, True, WHITE), (self._window_size[0]-90, 12))
 
 	def _drawScores(self):
-		pos_top = self._window_size[1]-INFO_ROW_HEIGHT-SCORES_ROW_HEIGHT
+		pos_top = self._window_size[1]-SCORES_ROW_HEIGHT
 		score_width = self._window_size[0] / len(self._scores)
 		for i, score in enumerate(self._scores):
 			score_color = PLAYER_COLORS[int(score['i'])]
