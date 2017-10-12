@@ -120,14 +120,17 @@ class Generals(object):
 		if command[0] == "help":
 			self._print_command_help(from_chat)
 			return True
-		elif command[0] == "speed":
+		elif command[0] == "speed" and len(command) >= 2:
 			self._set_game_speed(command[1])
 			return True
 		elif command[0] == "public":
 			self._set_game_public()
 			return True
 		elif command[0] == "map":
-			self._set_game_map()
+			if len(command) >= 2:
+				self._set_game_map(" ".join(command[1:]))
+			else:
+				self._set_game_map()
 			return True
 
 		return False
@@ -139,6 +142,7 @@ class Generals(object):
 			"| speed 4: set game play speed [1, 2, 3, 4]",
 			"| public: make custom game public",
 			"| map: assign a random custom map",
+			"| map Map Name: assign map by name",
 		]
 
 		if from_chat:
@@ -194,7 +198,6 @@ class Generals(object):
 
 		if (force_start):
 			_spawn(self._send_forcestart)
-		self._set_game_speed(2)
 
 	def _start_sending_heartbeat(self):
 		while True:
@@ -218,8 +221,11 @@ class Generals(object):
 	def _set_game_public(self):
 		self._send(["make_custom_public", self._gameid])
 
-	def _set_game_map(self):
-		self._send(["set_custom_options", self._gameid, {"map":random.choice(catalog.GENERALS_MAPS)}])
+	def _set_game_map(self, map=""):
+		if len(map) > 1:
+			self._send(["set_custom_options", self._gameid, {"map":map}])
+		else:
+			self._send(["set_custom_options", self._gameid, {"map":random.choice(catalog.GENERALS_MAPS)}])
 
 	def _send(self, msg):
 		try:
