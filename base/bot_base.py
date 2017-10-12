@@ -12,21 +12,8 @@ import threading
 import time
 
 from .client import generals
-
-HAS_VIEWER = False
-try:
-	from .viewer import GeneralsViewer
-	HAS_VIEWER = True
-except:
-	pass
-
-# Opponent Type Definitions
-OPP_EMPTY = 0
-OPP_ARMY = 1
-OPP_CITY = 2
-OPP_GENERAL = 3
-
-DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+from .client.constants import *
+from .viewer import GeneralsViewer
 
 class GeneralsBot(object):
 	def __init__(self, updateMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", showGameViewer=True, public_server=False):
@@ -46,7 +33,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_moves_thread)
 
 		# Start Game Viewer
-		if showGameViewer and HAS_VIEWER:
+		if showGameViewer:
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
@@ -402,7 +389,7 @@ class GeneralsBot(object):
 		return False
 
 	def validPosition(self, x, y):
-		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != generals.map.TILE_MOUNTAIN
+		return 0 <= y < self._update.rows and 0 <= x < self._update.cols and self._update._tile_grid[y][x] != TILE_MOUNTAIN
 
 	def _validTarget(self, target): # Check target to verify reachable
 		for dy, dx in DIRECTIONS:

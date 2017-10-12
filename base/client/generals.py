@@ -10,14 +10,8 @@ import threading
 import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
-from . import catalog
+from .constants import *
 from . import map
-
-_ENDPOINT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
-_ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
-_BOT_KEY = "O13f0dijsf"
-
-_START_KEYWORDS = ["start", "go", "force", "play"]
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None,
@@ -61,11 +55,10 @@ class Generals(object):
 			if msg[0] == "error_user_id":
 				raise ValueError("Already in game")
 			elif msg[0] == "queue_update":
-				logging.info("Queue %d/%d" % (msg[1]['numForce'], msg[1]['numPlayers']))
+				self._log_queue_update(msg[1])
 			elif msg[0] == "pre_game_start":
 				logging.info("pre_game_start")
 			elif msg[0] == "game_start":
-				logging.info("Joined Game: Replay ID = %s" % msg[1]['replay_id'])
 				self._start_data = msg[1]
 			elif msg[0] == "game_update":
 				yield self._make_update(msg[1])
@@ -110,7 +103,7 @@ class Generals(object):
 	######################### Bot Commands #########################
 
 	def _handle_command(self, msg, from_chat=False):
-		if len(msg) < 12 and any(keyword in msg for keyword in _START_KEYWORDS):
+		if len(msg) < 12 and any(keyword in msg for keyword in START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return True
 		if len(msg) < 2:
@@ -154,10 +147,20 @@ class Generals(object):
 
 	######################### Server -> Client #########################
 
+	def _log_queue_update(self, msg):
+		teams = {}
+		if "teams" in msg:
+			for i in range(len(msg['teams'])):
+				if msg['teams'][i] not in teams:
+					teams[msg['teams'][i]] = []
+				teams[msg['teams'][i]].append(msg['usernames'][i])
+		logging.info("Queue %d/%d %s" % (msg['numForce'], msg['numPlayers'], teams))
+
 	def _make_update(self, data):
 		if not self._seen_update:
 			self._seen_update = True
 			self._map = map.Map(self._start_data, data)
+			logging.info("Joined Game: %s - %s" % (self._map.replay_url, self._map.usernames))
 			return self._map
 
 		return self._map.update(data)
@@ -176,23 +179,23 @@ class Generals(object):
 
 	def _connect_and_join(self, userid, username, mode, gameid, force_start, public_server):
 		logging.debug("Creating connection")
-		self._ws = create_connection(_ENDPOINT if not public_server else _ENDPOINT_PUBLIC)
+		self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC)
 		self._lock = threading.RLock()
 		_spawn(self._start_sending_heartbeat)
-		self._send(["set_username", userid, username, _BOT_KEY])
+		self._send(["set_username", userid, username, BOT_KEY])
 
 		logging.debug("Joining game")
 		self._gameid = gameid
 		if mode == "private":
 			if gameid is None:
 				raise ValueError("Gameid must be provided for private games")
-			self._send(["join_private", gameid, userid, _BOT_KEY])
+			self._send(["join_private", gameid, userid, BOT_KEY])
 		elif mode == "1v1":
-			self._send(["join_1v1", userid, _BOT_KEY])
+			self._send(["join_1v1", userid, BOT_KEY])
 		elif mode == "team":
-			self._send(["join_team", userid, _BOT_KEY])
+			self._send(["join_team", userid, BOT_KEY])
 		elif mode == "ffa":
-			self._send(["play", userid, _BOT_KEY])
+			self._send(["play", userid, BOT_KEY])
 		else:
 			raise ValueError("Invalid mode")
 
@@ -225,7 +228,7 @@ class Generals(object):
 		if len(map) > 1:
 			self._send(["set_custom_options", self._gameid, {"map":map}])
 		else:
-			self._send(["set_custom_options", self._gameid, {"map":random.choice(catalog.GENERALS_MAPS)}])
+			self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS)}])
 
 	def _send(self, msg):
 		try:
