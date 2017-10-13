@@ -53,7 +53,6 @@ class Tile(object):
 			self.isGeneral = False
 			if self not in map.cities:
 				map.cities.append(self)
-				print(map.cities)
 			if self._general_index != -1 and self._general_index < 8:
 				map.generals[self._general_index] = None
 				self._general_index = -1

@@ -53,7 +53,8 @@ class Generals(object):
 				continue
 
 			if msg[0] == "error_user_id":
-				raise ValueError("Already in game")
+				logging.info("Exit: User already in game queue")
+				return
 			elif msg[0] == "queue_update":
 				self._log_queue_update(msg[1])
 			elif msg[0] == "pre_game_start":

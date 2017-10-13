@@ -51,38 +51,37 @@ class GeneralsBot(object):
 		self._game = generals.Generals(self._name, self._name, self._gameType, gameid=self._privateRoomID, public_server=self._public_server)
 
 		# Start Receiving Updates
-		try:
-			for update in self._game.get_updates():
-				self._set_update(update)
+		for update in self._game.get_updates():
+			self._set_update(update)
 
-				if not update.complete:
-					self._move_event.set() # Permit another move
+			if not update.complete:
+				self._move_event.set() # Permit another move
 
-				# Update GeneralsViewer Grid
-				selfDir = dir(self)
-				if '_viewer' in selfDir:
-					if '_path' in selfDir:
-						self._update.path = self._path
-					if '_collect_path' in selfDir:
-						self._update.collect_path = self._collect_path
-					if '_moves_realized' in selfDir:
-						self._update.bottomText = "Realized: "+str(self._moves_realized)
-					viewer = self._viewer.updateGrid(self._update)
-					self._exit_on_game_over = viewer.exit_on_game_over
-		except ValueError: # Already in match, restart
-			logging.info("Exit: Already in match in _start_update_loop")
-			time.sleep(40)
-			self._exit_game()
+		time.sleep(40)
+		self._exit_game()
 
 	def _set_update(self, update):
-		if update.complete:
+		self._update = update
+		selfDir = dir(self)
+
+		# Update GeneralsViewer Grid
+		if '_viewer' in selfDir:
+			if '_path' in selfDir:
+				self._update.path = self._path
+			if '_collect_path' in selfDir:
+				self._update.collect_path = self._collect_path
+			if '_moves_realized' in selfDir:
+				self._update.bottomText = "Realized: "+str(self._moves_realized)
+			viewer = self._viewer.updateGrid(self._update)
+			self._exit_on_game_over = viewer.exit_on_game_over
+
+		# Handle Game Complete
+		if update.complete and not self._has_completed:
 			logging.info("!!!! Game Complete. Result = " + str(update.result) + " !!!!")
-			if '_moves_realized' in dir(self):
+			if '_moves_realized' in selfDir:
 				logging.info("Moves: %d, Realized: %d" % (self._update.turn, self._moves_realized))
 			_create_thread(self._exit_game)
-			return
-
-		self._update = update
+		self._has_completed = update.complete
 
 	def _exit_game(self):
 		time.sleep(1.1)
