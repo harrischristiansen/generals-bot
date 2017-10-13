@@ -40,6 +40,9 @@ class Tile(object):
 
 		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == map.player_index)): # Remember Discovered Tiles
 			if ((tile >= 0 or self.tile >= 0) and self.tile != tile):
+				if self.tile >= 0:
+					map.tiles[self.tile].remove(self)
+				map.tiles[tile].append(self)
 				self.turn_captured = map.turn
 			self.tile = tile
 		if (self.army == 0 or army > 0): # Remember Discovered Armies
@@ -59,7 +62,22 @@ class Tile(object):
 			map.generals[tile] = self
 			self._general_index = self.tile
 
-	################################ Tile Related Operations ################################
+	################################ Select Other Tiles ################################
+
+	def neighbors(self, includeSwamps=False):
+		x = self.x
+		y = self.y
+
+		neighbors = []
+		for dy, dx in DIRECTIONS:
+			if self._map.isValidPosition(x+dx, y+dy):
+				current = self._map.grid[y+dy][x+dx]
+				if (current.tile != TILE_OBSTACLE or current in self._map.cities or current in self._map.generals) and (includeSwamps or not self.isSwamp):
+					neighbors.append(current)
+
+		return neighbors
+
+	################################ Pathfinding ################################
 
 	def find_path(self, dest):
 		if dest == None:
@@ -77,41 +95,28 @@ class Tile(object):
 			if current == dest: # Found Destination
 				break
 
-			for next in self._neighbors(current):
+			for next in current.neighbors():
 				if next not in came_from and (next == dest or next.tile == self._map.player_index or next not in self._map.cities): # Add to frontier
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
 
 		# Create Path List
-		path = self._path_reconstruct(came_from, dest)
+		path = _path_reconstruct(came_from, dest)
 
 		return path
 
-	################################ PRIVATE FUNCTIONS ################################
+################################ PRIVATE FUNCTIONS ################################
 
-	def _path_reconstruct(self, came_from, dest):
-		current = dest
-		path = [current]
-		try:
-			while came_from[current] != None:
-				current = came_from[current]
-				path.append(current)
-		except KeyError:
-			None
-		path.reverse()
+def _path_reconstruct(came_from, dest):
+	current = dest
+	path = [current]
+	try:
+		while came_from[current] != None:
+			current = came_from[current]
+			path.append(current)
+	except KeyError:
+		None
+	path.reverse()
 
-		return path
-
-	def _neighbors(self, source):
-		x = source.x
-		y = source.y
-
-		neighbors = []
-		for dy, dx in DIRECTIONS:
-			if self._map.validPosition(x+dx, y+dy):
-				current = self._map.grid[y+dy][x+dx]
-				if current.tile != TILE_OBSTACLE or current in self._map.cities or current in self._map.generals:
-					neighbors.append(current)
-
-		return neighbors
+	return path

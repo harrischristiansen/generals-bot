@@ -46,17 +46,12 @@ def make_primary_move():
 ######################### Move Outward #########################
 
 def move_outward():
-	for x in bot_base._shuffle(range(_map.cols)): # Check Each Square
-		for y in bot_base._shuffle(range(_map.rows)):
-			source = _map.grid[y][x]
-
-			if source.tile == _map.player_index and source.army >= 2 and source not in _path: # Find One With Armies
-				for dy, dx in _bot.toward_dest_moves(source):
-					if _bot.validPosition(x+dx,y+dy):
-						dest = _map.grid[y+dy][x+dx]
-						if (dest.tile != _map.player_index and source.army > (dest.army+1)) or dest in  _path: # Capture Somewhere New
-							place_move(source, dest)
-							return True
+	for source in _map.tiles[_map.player_index]: # Check Each Owned Tile
+		if source.army >= 2 and source not in _path: # Find One With Armies
+			for neighbor in bot_base._shuffle(source.neighbors()):
+				if (neighbor.tile != _map.player_index and source.army > neighbor.army + 1) or neighbor in  _path: # Capture Somewhere New
+					place_move(source, neighbor)
+					return True
 	return False
 
 ######################### Move Toward #########################

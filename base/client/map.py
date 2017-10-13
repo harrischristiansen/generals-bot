@@ -23,8 +23,9 @@ class Map(object):
 		self.swamps = [(c // self.cols, c % self.cols) for c in start_data['swamps']] 	# List [(y,x)] of swamps
 		self._setSwamps()
 		self.turn = data['turn']														# Integer Turn # (1 turn / 0.5 seconds)
+		self.tiles = [[] for x in range(8)]												# List of 8 Players Tiles
 		self.cities = []																# List of City Tiles
-		self.generals = [ None for x in range(8) ]										# List of 8 Generals (None if not found)
+		self.generals = [None for x in range(8)]										# List of 8 Generals (None if not found)
 		self._setGenerals()
 		self.stars = []																	# List of Player Star Ratings
 		self.scores = self._getScores(data)												# List of Player Scores
@@ -58,7 +59,7 @@ class Map(object):
 
 	################################ Validators ################################
 
-	def validPosition(self, x, y):
+	def isValidPosition(self, x, y):
 		return 0 <= y < self.rows and 0 <= x < self.cols and self._tile_grid[y][x] != TILE_MOUNTAIN
 
 	################################ PRIVATE FUNCTIONS ################################
