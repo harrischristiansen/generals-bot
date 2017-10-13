@@ -30,7 +30,8 @@ class Map(object):
 		self.scores = self._getScores(data)												# List of Player Scores
 		self.complete = False															# Boolean Game Complete
 		self.result = False																# Boolean Game Result (True = Won)
-		
+	
+	################################ Game Updates ################################
 
 	def update(self, data):
 		if self.complete: # Game Over - Ignore Empty Board Updates
@@ -54,6 +55,13 @@ class Map(object):
 		self.complete = True
 		self.result = result == "game_won"
 		return self
+
+	################################ Validators ################################
+
+	def validPosition(self, x, y):
+		return 0 <= y < self.rows and 0 <= x < self.cols and self._tile_grid[y][x] != TILE_MOUNTAIN
+
+	################################ PRIVATE FUNCTIONS ################################
 
 	def _getScores(self, data):
 		scores = {s['i']: s for s in data['scores']}
@@ -87,7 +95,7 @@ class Map(object):
 
 	def _setSwamps(self):
 		for (y,x) in self.swamps:
-			self.grid[y][x].setSwamp(True)
+			self.grid[y][x].setIsSwamp(True)
 
 	def _setGenerals(self):
 		for i, general in enumerate(self._visible_generals):

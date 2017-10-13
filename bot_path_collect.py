@@ -118,11 +118,13 @@ def new_primary_path(restoreOldPosition=False):
 	
 	# Determine Source and Path
 	source = _bot.find_city()
-	_path = _bot.find_path(source=source, dest=_target) # Find new path to target
+	if source == None:
+		source = _bot.find_largest_tile(includeGeneral=True)
+	_path = source.find_path(_target) # Find new path to target
 	_bot._path = _path
 
 	# Restore Old Tile
-	if restoreOldPosition and old_tile != Non:
+	if restoreOldPosition and old_tile != None:
 		for i, tile in enumerate(_path):
 			if (tile.x, tile.y) == (old_tile.x, old_tile.y):
 				_path_position = i
@@ -167,7 +169,7 @@ def find_collect_path():
 		dest = _bot.find_closest_in_path(source, _path)
 
 	# Determine Path
-	_collect_path = _bot.find_path(source=source, dest=dest)
+	_collect_path = source.find_path(dest)
 	_bot._collect_path = _collect_path
 
 	return _collect_path

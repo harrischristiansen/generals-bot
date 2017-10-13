@@ -4,6 +4,8 @@
 	Tile: Objects for representing Generals IO Tiles
 '''
 
+from queue import Queue
+
 from .constants import *
 
 class Tile(object):
@@ -18,6 +20,9 @@ class Tile(object):
 		self.isSwamp = False		# Boolean isSwamp
 		self.isGeneral = False		# Boolean isGeneral
 
+		# Private Properties
+		self._general_index = -1	# Player Index if tile is a general
+
 	def __repr__(self):
 		return "(%d,%d) %d (%d)" % (self.x, self.y, self.tile, self.army)
 
@@ -27,10 +32,12 @@ class Tile(object):
 	def __lt__(self, other):
 			return self.army < other.army
 
-	def setSwamp(self, isSwamp):
+	def setIsSwamp(self, isSwamp):
 		self.isSwamp = isSwamp
 
 	def update(self, map, tile, army, isCity=False, isGeneral=False):
+		self._map = map
+
 		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == map.player_index)): # Remember Discovered Tiles
 			if ((tile >= 0 or self.tile >= 0) and self.tile != tile):
 				self.turn_captured = map.turn
@@ -41,12 +48,70 @@ class Tile(object):
 		if isCity:
 			self.isCity = True
 			self.isGeneral = False
-			if self in map.cities:
-				map.cities.remove(self)
-			map.cities.append(self)
-			if self in map.generals:
+			if self not in map.cities:
+				map.cities.append(self)
+				print(map.cities)
+			if self._general_index != -1 and self._general_index < 8:
 				map.generals[self._general_index] = None
+				self._general_index = -1
 		elif isGeneral:
 			self.isGeneral = True
 			map.generals[tile] = self
 			self._general_index = self.tile
+
+	################################ Tile Related Operations ################################
+
+	def find_path(self, dest):
+		if dest == None:
+			return []
+
+		# Determine Path To Destination
+		frontier = Queue()
+		frontier.put(self)
+		came_from = {}
+		came_from[self] = None
+
+		while not frontier.empty():
+			current = frontier.get()
+
+			if current == dest: # Found Destination
+				break
+
+			for next in self._neighbors(current):
+				if next not in came_from and (next == dest or next.tile == self._map.player_index or next not in self._map.cities): # Add to frontier
+					#priority = self.distance(next, dest)
+					frontier.put(next)
+					came_from[next] = current
+
+		# Create Path List
+		path = self._path_reconstruct(came_from, dest)
+
+		return path
+
+	################################ PRIVATE FUNCTIONS ################################
+
+	def _path_reconstruct(self, came_from, dest):
+		current = dest
+		path = [current]
+		try:
+			while came_from[current] != None:
+				current = came_from[current]
+				path.append(current)
+		except KeyError:
+			None
+		path.reverse()
+
+		return path
+
+	def _neighbors(self, source):
+		x = source.x
+		y = source.y
+
+		neighbors = []
+		for dy, dx in DIRECTIONS:
+			if self._map.validPosition(x+dx, y+dy):
+				current = self._map.grid[y+dy][x+dx]
+				if current.tile != TILE_OBSTACLE or current in self._map.cities or current in self._map.generals:
+					neighbors.append(current)
+
+		return neighbors

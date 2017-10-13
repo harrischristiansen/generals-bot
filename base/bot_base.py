@@ -189,7 +189,7 @@ class GeneralsBot(object):
 		for x in range(self._update.cols): # Check Each Square
 			for y in range(self._update.rows):
 				dest = self._update.grid[y][x]
-				if (dest.tile < generals.map.TILE_EMPTY or dest.tile == self._update.player_index or dest.army > max_target_army): # Non Target Tiles
+				if (dest.tile < TILE_EMPTY or dest.tile == self._update.player_index or dest.army > max_target_army): # Non Target Tiles
 					continue
 
 				distance = self.distance(source, dest)
@@ -197,7 +197,7 @@ class GeneralsBot(object):
 					distance = distance * 0.13
 				elif dest in self._update.cities: # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.18, (dest.army / (3.2*source.army)), 4))[1]
-				elif dest.tile == generals.map.TILE_EMPTY: # Empties appear further away
+				elif dest.tile == TILE_EMPTY: # Empties appear further away
 					distance = distance * 3.8
 
 				if dest.army > source.army: # Larger targets appear further away
@@ -249,73 +249,12 @@ class GeneralsBot(object):
 						target_type = OPP_ARMY
 
 				if target_type < OPP_EMPTY: # Search for Empty Squares
-					if source.tile == generals.map.TILE_EMPTY and source.army < largest.army:
+					if source.tile == TILE_EMPTY and source.army < largest.army:
 						target = source
 						target_type = OPP_EMPTY
 
 		return target
-
-	######################### Pathfinding #########################
-
-	def find_path(self, source=None, dest=None):
-		# Verify Source and Dest
-		if source == None: # No Source, Use General
-			source = self._update.generals[self._update.player_index]
-		if dest == None: # No Dest, Use Primary Target
-			dest = self.find_primary_target()
-		if source==None or dest==None:
-			return []
-
-		# Determine Path To Destination
-		frontier = Queue()
-		frontier.put(source)
-		came_from = {}
-		came_from[source] = None
-
-		while not frontier.empty():
-			current = frontier.get()
-
-			if current == dest: # Found Destination
-				break
-
-			for next in self._neighbors(current):
-				if next not in came_from and (next not in self._update.cities or next==dest or next.tile == self._update.player_index): # Add to frontier
-					#priority = self.distance(next, dest)
-					frontier.put(next)
-					came_from[next] = current
-
-		# Create Path List
-		path = self._path_reconstruct(came_from, dest)
-
-		return path
-
-	def _path_reconstruct(self, came_from, dest):
-		current = dest
-		path = [current]
-		try:
-			while came_from[current] != None:
-				current = came_from[current]
-				path.append(current)
-		except KeyError:
-			None
-		path.reverse()
-
-		return path
-
-	def _neighbors(self, source):
-		x = source.x
-		y = source.y
-
-		neighbors = []
-		for dy, dx in DIRECTIONS:
-			if self.validPosition(x+dx, y+dy):
-				current = self._update.grid[y+dy][x+dx]
-				if current.tile != generals.map.TILE_OBSTACLE or current in self._update.cities or current in self._update.generals:
-					neighbors.append(current)
-
-		return neighbors
 	
-
 	######################### Movement Helpers #########################
 
 	def path_forward_moves(self, path):
@@ -395,7 +334,7 @@ class GeneralsBot(object):
 		for dy, dx in DIRECTIONS:
 			if self.validPosition(target.x+dx, target.y+dy):
 				tile = self._update.grid[target.y+dy][target.x+dx]
-				if tile.tile != generals.map.TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals:
+				if tile.tile != TILE_OBSTACLE or tile in self._update.cities or tile in self._update.generals:
 					return True
 		return False
 

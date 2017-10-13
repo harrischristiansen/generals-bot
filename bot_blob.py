@@ -66,7 +66,7 @@ def move_toward():
 	# Find path from largest tile to closest target
 	source = _bot.find_largest_tile(includeGeneral=True)
 	target = _bot.find_closest_target(source)
-	path = _bot.find_path(source=source, dest=target)
+	path = source.find_path(target)
 
 	army_total = 0
 	for tile in path: # Verify can obtain every tile in path
@@ -76,7 +76,7 @@ def move_toward():
 			source = _bot.find_city(includeGeneral=True)
 			target = _bot.find_largest_tile(notInPath=[source])
 			if source and target and source != target:
-				path = _bot.find_path(source=source, dest=target)
+				path = source.find_path(target)
 			break
 
 	# Place Move
