@@ -94,10 +94,13 @@ class Generals(object):
 		if self._handle_command(msg):
 			return
 		
-		if self._seen_update:
-			self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
-		elif self._gameid != None:
-			self._send(["chat_message", "chat_custom_queue_"+self._gameid, msg, None, ""])
+		try:
+			if self._seen_update:
+				self._send(["chat_message", self._start_data['chat_room'], msg, None, ""])
+			elif self._gameid != None:
+				self._send(["chat_message", "chat_custom_queue_"+self._gameid, msg, None, ""])
+		except WebSocketConnectionClosedException:
+			pass
 
 	######################### PRIVATE FUNCTIONS - PRIVATE FUNCTIONS #########################
 

@@ -37,12 +37,12 @@ class GeneralsBot(object):
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
-			os._exit(0) # End Program
+			self._exit_game()
 
 		while (self._running):
 			time.sleep(10)
 
-		os._exit(0) # End Program
+		self._exit_game()
 
 	######################### Handle Updates From Server #########################
 
@@ -57,7 +57,6 @@ class GeneralsBot(object):
 			if not update.complete:
 				self._move_event.set() # Permit another move
 
-		time.sleep(40)
 		self._exit_game()
 
 	def _set_update(self, update):
@@ -72,7 +71,7 @@ class GeneralsBot(object):
 				self._update.collect_path = self._collect_path
 			if '_moves_realized' in selfDir:
 				self._update.bottomText = "Realized: "+str(self._moves_realized)
-			viewer = self._viewer.updateGrid(self._update)
+			viewer = self._viewer.updateGrid(update)
 			self._exit_on_game_over = viewer.exit_on_game_over
 
 		# Handle Game Complete
@@ -107,14 +106,10 @@ class GeneralsBot(object):
 
 	def _start_chat_thread(self):
 		# Send Chat Messages
-		try:
-			while self._running:
-				msg = str(input('Send Msg:'))
-				self._game.send_chat(msg)
-				time.sleep(0.7)
-		except:
-			pass
-
+		while self._running:
+			msg = str(input('Send Msg:'))
+			self._game.send_chat(msg)
+			time.sleep(0.7)
 		return
 
 	######################### Tile Finding #########################

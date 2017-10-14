@@ -27,10 +27,14 @@ ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
 	def __init__(self, name=None):
+		# Public Atrributes
+		self.exit_on_game_over = True
+
+		# Private Attributes
+		self._runPygame = True
 		self._name = name
 		self._receivedUpdate = False
 		self._showGrid = True
-		self.exit_on_game_over = True
 
 	def mainViewerLoop(self):
 		while not self._receivedUpdate: # Wait for first update
@@ -38,11 +42,10 @@ class GeneralsViewer(object):
 
 		self._initViewier()
 
-		done = False
-		while not done:
+		while self._runPygame:
 			for event in pygame.event.get(): # User did something
 				if event.type == pygame.QUIT: # User clicked quit
-					done = True # Flag done
+					self._runPygame = False # Flag done
 				elif event.type == pygame.MOUSEBUTTONDOWN: # Mouse Click
 					self._handleClick(pygame.mouse.get_pos())
 

@@ -43,6 +43,7 @@ class Tile(object):
 				if self.tile >= 0:
 					map.tiles[self.tile].remove(self)
 				map.tiles[tile].append(self)
+				self._neighbors = self._getNeighbors()
 				self.turn_captured = map.turn
 			self.tile = tile
 		if (self.army == 0 or army > 0): # Remember Discovered Armies
@@ -63,7 +64,14 @@ class Tile(object):
 
 	################################ Select Other Tiles ################################
 
-	def neighbors(self, includeSwamps=False):
+	def neighbors(self):
+		try:
+			return self._neighbors
+		except AttributeError:
+			self._neighbors = self._getNeighbors()
+			return self._neighbors
+
+	def _getNeighbors(self, includeSwamps=False):
 		x = self.x
 		y = self.y
 

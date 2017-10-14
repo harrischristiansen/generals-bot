@@ -93,3 +93,6 @@ ENV/
 
 # Wildcard Ignore
 *_ignore.*
+
+# PyBuilder
+.idea
