@@ -251,23 +251,6 @@ class GeneralsBot(object):
 	
 	######################### Movement Helpers #########################
 
-	def path_forward_moves(self, path):
-		if len(path) < 2:
-			return (None, None)
-
-		# Find largest tile in path to move forward
-		largest = path[0]
-		largest_index = 0
-		for i, tile in enumerate(path):
-			if tile == path[-1]:
-				break
-			if tile.tile == path[0].tile and tile > largest:
-				largest = tile
-				largest_index = i
-
-		dest = path[largest_index+1]
-		return (largest, dest)
-
 	def toward_dest_moves(self, source, dest=None):
 		# Determine Destination
 		if dest == None:

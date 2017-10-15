@@ -120,7 +120,7 @@ def new_primary_path(restoreOldPosition=False):
 	source = _bot.find_city()
 	if source == None:
 		source = _bot.find_largest_tile(includeGeneral=True)
-	_path = source.find_path(_target) # Find new path to target
+	_path = source.path_to(_target) # Find new path to target
 	_bot._path = _path
 
 	# Restore Old Tile
@@ -162,7 +162,7 @@ def find_collect_path():
 		dest = _bot.find_closest_in_path(source, _path)
 
 	# Determine Path
-	_collect_path = source.find_path(dest)
+	_collect_path = source.path_to(dest)
 	_bot._collect_path = _collect_path
 
 	return _collect_path
@@ -172,7 +172,7 @@ def move_collect_to_path():
 	collect_path = find_collect_path()
 
 	# Perform Move
-	(move_from, move_to) = _bot.path_forward_moves(collect_path)
+	(move_from, move_to) = bot_moves.move_path(collect_path)
 	if move_from != None:
 		place_move(move_from, move_to)
 		return True

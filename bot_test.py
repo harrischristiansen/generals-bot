@@ -28,7 +28,7 @@ def place_move(source, dest):
 
 def move_outward():
 	(source, dest) = bot_moves.move_outward(_map)
-	if source:
+	if source and dest:
 		place_move(source, dest)
 		return True
 	return False

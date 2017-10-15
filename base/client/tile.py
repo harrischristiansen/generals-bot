@@ -86,7 +86,7 @@ class Tile(object):
 
 	################################ Pathfinding ################################
 
-	def find_path(self, dest):
+	def path_to(self, dest):
 		if dest == None:
 			return []
 
