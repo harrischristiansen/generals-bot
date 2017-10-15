@@ -120,6 +120,9 @@ class Generals(object):
 		elif command[0] == "speed" and len(command) >= 2:
 			self._set_game_speed(command[1])
 			return True
+		elif command[0] == "team" and len(command) >= 2:
+			self._set_game_team(command[1])
+			return True
 		elif command[0] == "public":
 			self._set_game_public()
 			return True
@@ -140,6 +143,7 @@ class Generals(object):
 			"| public: make custom game public",
 			"| map: assign a random custom map",
 			"| map Map Name: assign map by name",
+			"| team 1: join a team [1 - 8]",
 		]
 
 		if from_chat:
@@ -220,10 +224,15 @@ class Generals(object):
 		self._send(["set_force_start", self._gameid, True])
 		logging.info("Sent force_start")
 
-	def _set_game_speed(self, speed=1):
+	def _set_game_speed(self, speed="1"):
 		speed = int(speed)
 		if speed in [1, 2, 3, 4]:
 			self._send(["set_custom_options", self._gameid, {"game_speed":speed}])
+
+	def _set_game_team(self, team="1"):
+		team = int(team)
+		if team in range(1,MAX_NUM_TEAMS+1):
+			self._send(["set_custom_team", self._gameid, team])
 
 	def _set_game_public(self):
 		self._send(["make_custom_public", self._gameid])
