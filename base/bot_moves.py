@@ -6,6 +6,7 @@
 import random
 
 from base import bot_base
+from .client.constants import *
 
 ######################### Move Outward #########################
 
@@ -21,9 +22,22 @@ def move_outward(gamemap, path=[]):
 
 def move_path(path):
 	if len(path) < 2:
-		return (None, None)
+		return (False, False)
 
-	# Find largest tile in path to move forward
+	source = path[0]
+	target = path[-1]
+
+	if target.tile == source.tile:
+		return _move_path_largest(path)
+
+	move_capture = _move_path_capture(path)
+
+	if target.tile == TILE_EMPTY and move_capture[1] != target:
+		return _move_path_largest(path)
+
+	return move_capture
+
+def _move_path_largest(path):
 	largest = path[0]
 	largest_index = 0
 	for i, tile in enumerate(path):
@@ -35,19 +49,33 @@ def move_path(path):
 
 	dest = path[largest_index+1]
 	return (largest, dest)
+	
+
+def _move_path_capture(path):
+	source = path[0]
+	capture_army = 0
+	for i, tile in reversed(list(enumerate(path))):
+		if tile.tile == source.tile:
+			capture_army += (tile.army - 1)
+		else:
+			capture_army -= tile.army
+
+		if capture_army > 0 and i+1 < len(path):
+			return (path[i], path[i+1])
+
+	return (False, False)
 
 ######################### Move Path Forward #########################
 
 def should_move_half(gamemap, source):
-	moveHalf = False
 	if gamemap.turn > 150:
 		if source in gamemap.generals:
-			moveHalf = True
+			return True
 		elif source in gamemap.cities:
 			moveHalf = random.choice([False, False, False, True])
 			if gamemap.turn - source.turn_captured < 16:
-				moveHalf = True
-	return moveHalf
+				return True
+	return False
 
 ######################### Proximity Targeting - Pathfinding #########################
 
