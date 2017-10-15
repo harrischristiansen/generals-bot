@@ -9,11 +9,11 @@ from base import bot_base
 
 ######################### Move Outward #########################
 
-def move_outward(map, path=[]):
-	for source in map.tiles[map.player_index]: # Check Each Owned Tile
+def move_outward(gamemap, path=[]):
+	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
 		if source.army >= 2 and source not in path: # Find One With Armies
 			for neighbor in bot_base._shuffle(source.neighbors()):
-				if ((neighbor.tile != map.player_index and source.army > neighbor.army + 1) or neighbor in path) and not neighbor.isSwamp: # Capture Somewhere New
+				if ((neighbor.tile != gamemap.player_index and source.army > neighbor.army + 1) or neighbor in path) and not neighbor.isSwamp: # Capture Somewhere New
 					return (source, neighbor)
 	return (False, False)
 
@@ -38,34 +38,29 @@ def move_path(path):
 
 ######################### Move Path Forward #########################
 
-def should_move_half(map, source):
+def should_move_half(gamemap, source):
 	moveHalf = False
-	if map.turn > 150:
-		if source in map.generals:
+	if gamemap.turn > 150:
+		if source in gamemap.generals:
 			moveHalf = True
-		elif source in map.cities:
+		elif source in gamemap.cities:
 			moveHalf = random.choice([False, False, False, True])
-			if map.turn - source.turn_captured < 16:
+			if gamemap.turn - source.turn_captured < 16:
 				moveHalf = True
 	return moveHalf
 
 ######################### Proximity Targeting - Pathfinding #########################
 
-def path_proximity_target(bot, map):
+def path_proximity_target(bot, gamemap):
 	# Find path from largest tile to closest target
-	source = bot.find_largest_tile(includeGeneral=True)
-	target = bot.find_closest_target(source)
+	source = gamemap.find_largest_tile(includeGeneral=True)
+	target = source.nearest_target_tile()
 	path = source.path_to(target)
 
-	army_total = 0
-	for tile in path: # Verify can obtain every tile in path
-		if tile.tile == map.player_index:
-			army_total += tile.army - 1
-		elif tile.army + 1 > army_total: # Cannot obtain tile, draw path from largest city to largest tile
-			source = bot.find_city(includeGeneral=True)
-			target = bot.find_largest_tile(notInPath=[source])
-			if source and target and source != target:
-				path = source.path_to(target)
-			break
+	if not gamemap.canCompletePath(path):
+		source = gamemap.find_city(includeGeneral=True)
+		target = gamemap.find_largest_tile(notInPath=[source])
+		if source and target and source != target:
+			path = source.path_to(target)
 
 	return path

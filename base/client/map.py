@@ -19,7 +19,7 @@ class Map(object):
 		self._applyUpdateDiff(data)
 		self.rows = self.rows 															# Integer Number Grid Rows
 		self.cols = self.cols 															# Integer Number Grid Cols
-		self.grid = [[Tile(x,y) for x in range(self.cols)] for y in range(self.rows)]	# 2D List of Tile Objects
+		self.grid = [[Tile(self,x,y) for x in range(self.cols)] for y in range(self.rows)]	# 2D List of Tile Objects
 		self.swamps = [(c // self.cols, c % self.cols) for c in start_data['swamps']] 	# List [(y,x)] of swamps
 		self._setSwamps()
 		self.turn = data['turn']														# Integer Turn # (1 turn / 0.5 seconds)
@@ -57,10 +57,69 @@ class Map(object):
 		self.result = result == "game_won"
 		return self
 
+	################################ Map Search/Selection ################################
+
+	def find_city(self, ofType=None, notOfType=None, notInPath=[], findLargest=True, includeGeneral=False): # ofType = Integer, notOfType = Integer, notInPath = [Tile], findLargest = Boolean
+		if ofType == None and notOfType == None:
+			ofType = self.player_index
+
+		found_city = None
+		for city in self.cities: # Check Each City
+			if city.tile == ofType or (notOfType != None and city.tile != notOfType):
+				if city in notInPath:
+					continue
+				if found_city == None:
+					found_city = city
+				elif (findLargest and found_city.army < city.army) or (not findLargest and city.army < found_city.army):
+					found_city = city
+
+		if includeGeneral:
+			general = self.generals[ofType]
+			if found_city == None:
+				return general
+			if general != None and ((findLargest and general.army > found_city.army) or (not findLargest and general.army < found_city.army)):
+				return general
+
+		return found_city
+
+	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
+		if ofType == None:
+			ofType = self.player_index
+		general = self.generals[ofType]
+
+		largest = None
+		for tile in self.tiles[ofType]: # Check each ofType tile
+			if largest == None or largest.army < tile.army: # New largest
+				if tile != general and tile not in notInPath: # Exclude general and path
+					largest = tile
+
+		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
+			if includeGeneral < 1:
+				includeGeneral = general.army * includeGeneral
+				if (includeGeneral < 6):
+					includeGeneral = 6
+			if largest == None: 
+				largest = general
+			elif includeGeneral == True and largest.army < general.army:
+				largest = general
+			elif includeGeneral > True and largest.army < general.army and largest.army <= includeGeneral:
+				largest = general
+
+		return largest
+
 	################################ Validators ################################
 
 	def isValidPosition(self, x, y):
 		return 0 <= y < self.rows and 0 <= x < self.cols and self._tile_grid[y][x] != TILE_MOUNTAIN
+
+	def canCompletePath(self, path):
+		army_total = 0
+		for tile in path: # Verify can obtain every tile in path
+			if tile.tile == self.player_index:
+				army_total += tile.army - 1
+			elif tile.army + 1 > army_total: # Cannot obtain tile
+				return False
+		return True
 
 	################################ PRIVATE FUNCTIONS ################################
 

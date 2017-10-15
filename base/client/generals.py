@@ -26,7 +26,8 @@ class Generals(object):
 		self._cities = []
 
 	def close(self):
-		self._ws.close()
+		with self._lock:
+			self._ws.close()
 
 	######################### Get updates from server #########################
 

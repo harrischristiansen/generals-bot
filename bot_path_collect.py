@@ -117,7 +117,7 @@ def new_primary_path(restoreOldPosition=False):
 	_path_position = 0
 	
 	# Determine Source and Path
-	source = _bot.find_city()
+	source = _map.find_city()
 	if source == None:
 		source = _bot.find_largest_tile(includeGeneral=True)
 	_path = source.path_to(_target) # Find new path to target
@@ -159,7 +159,7 @@ def find_collect_path():
 	if source.army > 40:
 		dest = _bot.find_closest_target(source)
 	if dest == None:
-		dest = _bot.find_closest_in_path(source, _path)
+		dest = source.nearest_tile_in_path(_path)
 
 	# Determine Path
 	_collect_path = source.path_to(dest)
