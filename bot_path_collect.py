@@ -6,7 +6,7 @@
 
 import logging
 import random
-from base import bot_base
+from base import bot_base, bot_moves
 
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
@@ -135,12 +135,10 @@ def new_primary_path(restoreOldPosition=False):
 ######################### Move Outward #########################
 
 def move_outward():
-	for source in _map.tiles[_map.player_index]: # Check Each Owned Tile
-		if source.army >= 2 and source not in _path: # Find One With Armies
-			for neighbor in bot_base._shuffle(source.neighbors()):
-				if (neighbor.tile != _map.player_index and source.army > neighbor.army + 1) or neighbor in  _path: # Capture Somewhere New
-					place_move(source, neighbor)
-					return True
+	(source, dest) = bot_moves.move_outward(_map, _path)
+	if source:
+		place_move(source, dest)
+		return True
 	return False
 
 ######################### Collect To Path #########################

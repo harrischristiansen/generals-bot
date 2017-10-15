@@ -27,6 +27,7 @@ GENERALS_MAPS = [
 	"Experiment G",
 	"WIN or LOSE",
 	"Russian Roulette ",
+	"The Inquisitor",
 ]
 
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
