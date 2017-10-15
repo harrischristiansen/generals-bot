@@ -113,7 +113,7 @@ class Tile(object):
 				if tile in self._map.generals: # Generals appear closer
 					distance = distance * 0.13
 				elif tile in self._map.cities: # Cities vary distance based on size, but appear closer
-					distance = distance * sorted((0.18, (tile.army / (3.2*source.army)), 4))[1]
+					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 4))[1]
 				elif tile.tile == TILE_EMPTY: # Empties appear further away
 					distance = distance * 3.8
 
@@ -149,6 +149,9 @@ class Tile(object):
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
+
+		if frontier.empty(): # Did not find dest
+			return []
 
 		# Create Path List
 		path = _path_reconstruct(came_from, dest)

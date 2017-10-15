@@ -113,6 +113,9 @@ class Map(object):
 		return 0 <= y < self.rows and 0 <= x < self.cols and self._tile_grid[y][x] != TILE_MOUNTAIN
 
 	def canCompletePath(self, path):
+		if len(path) < 2:
+			return False
+		
 		army_total = 0
 		for tile in path: # Verify can obtain every tile in path
 			if tile.tile == self.player_index:

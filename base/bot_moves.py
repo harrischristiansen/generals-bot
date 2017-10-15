@@ -51,16 +51,19 @@ def should_move_half(gamemap, source):
 
 ######################### Proximity Targeting - Pathfinding #########################
 
-def path_proximity_target(bot, gamemap):
+def path_proximity_target(gamemap):
 	# Find path from largest tile to closest target
 	source = gamemap.find_largest_tile(includeGeneral=True)
 	target = source.nearest_target_tile()
 	path = source.path_to(target)
 
 	if not gamemap.canCompletePath(path):
-		source = gamemap.find_city(includeGeneral=True)
-		target = gamemap.find_largest_tile(notInPath=[source])
-		if source and target and source != target:
-			path = source.path_to(target)
-
+		path = path_gather(gamemap, elsoDo=path)
 	return path
+
+def path_gather(gamemap, elsoDo=[]):
+	source = gamemap.find_city(includeGeneral=True)
+	target = gamemap.find_largest_tile(notInPath=[source])
+	if source and target and source != target:
+		return source.path_to(target)
+	return elsoDo
