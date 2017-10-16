@@ -44,7 +44,7 @@ class Tile(object):
 				if self.tile >= 0:
 					gamemap.tiles[self.tile].remove(self)
 				gamemap.tiles[tile].append(self)
-				self._neighbors = self._getNeighbors()
+				# self._getNeighbors()
 				self.turn_captured = gamemap.turn
 			self.tile = tile
 		if (self.army == 0 or army > 0): # Remember Discovered Armies
@@ -71,11 +71,11 @@ class Tile(object):
 		return 0
 
 	def neighbors(self):
-		try:
-			return self._neighbors
-		except AttributeError:
-			self._neighbors = self._getNeighbors()
-			return self._neighbors
+		return self._getNeighbors()
+		# try:
+		# 	return self._neighbors
+		# except AttributeError:
+		# 	return self._getNeighbors()
 
 	def isValidTarget(self): # Check tile to verify reachability
 		for dy, dx in DIRECTIONS:
@@ -167,10 +167,11 @@ class Tile(object):
 		neighbors = []
 		for dy, dx in DIRECTIONS:
 			if self._map.isValidPosition(x+dx, y+dy):
-				current = self._map.grid[y+dy][x+dx]
-				if (current.tile != TILE_OBSTACLE or current in self._map.cities or current in self._map.generals) and (includeSwamps or not self.isSwamp):
-					neighbors.append(current)
+				tile = self._map.grid[y+dy][x+dx]
+				if (tile.tile != TILE_OBSTACLE or tile in self._map.cities or tile in self._map.generals) and (includeSwamps or not tile.isSwamp):
+					neighbors.append(tile)
 
+		self._neighbors = neighbors
 		return neighbors
 
 def _path_reconstruct(came_from, dest):
