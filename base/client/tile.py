@@ -150,7 +150,7 @@ class Tile(object):
 					frontier.put(next)
 					came_from[next] = current
 
-		if frontier.empty(): # Did not find dest
+		if dest not in came_from: # Did not find dest
 			return []
 
 		# Create Path List
