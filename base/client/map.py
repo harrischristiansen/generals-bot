@@ -20,6 +20,7 @@ class Map(object):
 		self.rows = self.rows 															# Integer Number Grid Rows
 		self.cols = self.cols 															# Integer Number Grid Cols
 		self.grid = [[Tile(self,x,y) for x in range(self.cols)] for y in range(self.rows)]	# 2D List of Tile Objects
+		self._setNeighbors()
 		self.swamps = [(c // self.cols, c % self.cols) for c in start_data['swamps']] 	# List [(y,x)] of swamps
 		self._setSwamps()
 		self.turn = data['turn']														# Integer Turn # (1 turn / 0.5 seconds)
@@ -118,6 +119,9 @@ class Map(object):
 		
 		army_total = 0
 		for tile in path: # Verify can obtain every tile in path
+			if tile.isSwamp:
+				army_total -= 1
+
 			if tile.tile == self.player_index:
 				army_total += tile.army - 1
 			elif tile.army + 1 > army_total: # Cannot obtain tile
@@ -155,6 +159,11 @@ class Map(object):
 
 		# Update Visible Generals
 		self._visible_generals = [(-1, -1) if g == -1 else (g // self.cols, g % self.cols) for g in data['generals']] # returns [(y,x)]
+
+	def _setNeighbors(self):
+		for x in range(self.cols):
+			for y in range(self.rows):
+				self.grid[y][x].setNeighbors(self)
 
 	def _setSwamps(self):
 		for (y,x) in self.swamps:

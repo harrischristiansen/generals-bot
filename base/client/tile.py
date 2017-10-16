@@ -33,6 +33,10 @@ class Tile(object):
 	def __lt__(self, other):
 			return self.army < other.army
 
+	def setNeighbors(self, gamemap):
+		self._map = gamemap
+		self._setNeighbors()
+
 	def setIsSwamp(self, isSwamp):
 		self.isSwamp = isSwamp
 
@@ -44,7 +48,6 @@ class Tile(object):
 				if self.tile >= 0:
 					gamemap.tiles[self.tile].remove(self)
 				gamemap.tiles[tile].append(self)
-				# self._getNeighbors()
 				self.turn_captured = gamemap.turn
 			self.tile = tile
 		if (self.army == 0 or army > 0): # Remember Discovered Armies
@@ -70,12 +73,12 @@ class Tile(object):
 			return abs(self.x - dest.x) + abs(self.y - dest.y)
 		return 0
 
-	def neighbors(self):
-		return self._getNeighbors()
-		# try:
-		# 	return self._neighbors
-		# except AttributeError:
-		# 	return self._getNeighbors()
+	def neighbors(self, includeSwamps=False):
+		neighbors = []
+		for tile in self._neighbors:
+			if (tile.tile != TILE_OBSTACLE or tile.isCity or tile.isGeneral) and tile.tile != TILE_MOUNTAIN and (includeSwamps or not tile.isSwamp):
+				neighbors.append(tile)
+		return neighbors
 
 	def isValidTarget(self): # Check tile to verify reachability
 		for dy, dx in DIRECTIONS:
@@ -120,6 +123,9 @@ class Tile(object):
 				if tile.army > self.army: # Larger targets appear further away
 					distance = distance * (1.5*tile.army/self.army)
 
+				if tile.isSwamp: # Swamps appear further away
+					distance = distance * 10
+
 				if distance < dest_distance and tile.isValidTarget():
 					dest = tile
 					dest_distance = distance
@@ -160,7 +166,7 @@ class Tile(object):
 
 	################################ PRIVATE FUNCTIONS ################################
 
-	def _getNeighbors(self, includeSwamps=False):
+	def _setNeighbors(self):
 		x = self.x
 		y = self.y
 
@@ -168,8 +174,7 @@ class Tile(object):
 		for dy, dx in DIRECTIONS:
 			if self._map.isValidPosition(x+dx, y+dy):
 				tile = self._map.grid[y+dy][x+dx]
-				if (tile.tile != TILE_OBSTACLE or tile in self._map.cities or tile in self._map.generals) and (includeSwamps or not tile.isSwamp):
-					neighbors.append(tile)
+				neighbors.append(tile)
 
 		self._neighbors = neighbors
 		return neighbors

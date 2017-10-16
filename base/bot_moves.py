@@ -32,7 +32,7 @@ def move_path(path):
 
 	move_capture = _move_path_capture(path)
 
-	if target.tile == TILE_EMPTY and not target.isCity and not target.isGeneral and move_capture[1] != target:
+	if not target.isGeneral and move_capture[1] != target:
 		return _move_path_largest(path)
 
 	return move_capture
@@ -86,7 +86,7 @@ def path_proximity_target(gamemap):
 	path = source.path_to(target)
 
 	if not gamemap.canCompletePath(path):
-		path = path_gather(gamemap, elsoDo=path)
+		path = path_gather(gamemap)
 	return path
 
 def path_gather(gamemap, elsoDo=[]):
