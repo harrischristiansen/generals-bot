@@ -128,6 +128,23 @@ class Map(object):
 				return False
 		return True
 
+	def canStepPath(self, path):
+		if len(path) < 2:
+			return False
+		
+		army_total = 0
+		for tile in path: # Verify can obtain at least one tile in path
+			if tile.isSwamp:
+				army_total -= 1
+
+			if tile.tile == self.player_index:
+				army_total += tile.army - 1
+			else:
+				if tile.army + 1 > army_total: # Cannot obtain tile
+					return False
+				return True
+		return True
+
 	################################ PRIVATE FUNCTIONS ################################
 
 	def _getScores(self, data):

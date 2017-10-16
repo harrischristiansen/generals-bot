@@ -3,6 +3,7 @@
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	Generals Bot: Common Move Logic
 '''
+import logging
 import random
 
 from base import bot_base
@@ -84,9 +85,11 @@ def path_proximity_target(gamemap):
 	source = gamemap.find_largest_tile(includeGeneral=True)
 	target = source.nearest_target_tile()
 	path = source.path_to(target)
+	#logging.debug("Proximity %s -> %s via %s" % (source, target, path))
 
-	if not gamemap.canCompletePath(path):
+	if not gamemap.canStepPath(path):
 		path = path_gather(gamemap)
+		#logging.debug("Proximity FAILED, using path %s" % path)
 	return path
 
 def path_gather(gamemap, elsoDo=[]):

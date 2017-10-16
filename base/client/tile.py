@@ -151,7 +151,7 @@ class Tile(object):
 				break
 
 			for next in current.neighbors():
-				if next not in came_from and (next == dest or next.tile == self._map.player_index or next not in self._map.cities): # Add to frontier
+				if next not in came_from: # Add to frontier
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
