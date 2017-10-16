@@ -32,7 +32,7 @@ def move_path(path):
 
 	move_capture = _move_path_capture(path)
 
-	if target.tile == TILE_EMPTY and move_capture[1] != target:
+	if target.tile == TILE_EMPTY and not target.isCity and not target.isGeneral and move_capture[1] != target:
 		return _move_path_largest(path)
 
 	return move_capture
