@@ -113,64 +113,54 @@ class Generals(object):
 		if len(msg) < 2:
 			return True
 
-		command = msg.split(" ")
-		if command[0] == "help":
+		command = msg.split(' ')
+		if len(command) == 1:
+			command = command[0].split(':') # Handle : delimiters
+		base_command = command[0].lower()
+
+		if "help" in base_command:
 			self._print_command_help(from_chat)
 			return True
-		if command[0] == "setup":
+		if "setup" in base_command:
 			self._set_game_speed(4)
 			self._set_game_map()
 			self._set_game_public()
 			return True
-		elif command[0] == "speed" and len(command) >= 2 and len(command[1]) == 1:
-			self._set_game_speed(command[1])
+		elif "speed" in base_command and len(command) >= 2 and command[1][0].isdigit():
+			self._set_game_speed(command[1][0])
 			return True
-		elif command[0] == "team":
+		elif "team" in base_command:
 			if len(command) >= 2 and len(command[1]) == 1:
 				self._set_game_team(command[1])
 			else:
 				return self._add_teammate(username)
 			return True
-		elif command[0] == "public":
+		elif "public" in base_command:
 			self._set_game_public()
 			return True
-		elif command[0] == "surrender":
+		elif "surrender" in base_command:
 			self._map.exit_on_game_over = False
 			self._send(["surrender"])
 			return True
-		elif command[0] == "map":
+		elif "map" in base_command:
 			if len(command) >= 2:
 				self._set_game_map(" ".join(command[1:]))
 			else:
 				self._set_game_map()
 			return True
-		elif len(msg) < 12 and "map" in msg:
+		elif len(msg) < 12 and "map" in msg.lower():
 			self._set_game_map()
 			return True
 
 		return False
 
 	def _print_command_help(self, from_chat=False):
-		pre_help_text = [
-			"| ======= Available Commands =======",
-			"| start: send force start",
-			"| speed 4: set game play speed [1, 2, 3, 4]",
-			"| public: make custom game public",
-			"| map: assign a random custom map",
-			"| map Map Name: assign map by name",
-			"| team 1: join a team [1 - 8]",
-		]
-		game_help_text = [
-			"| ======= Available Commands =======",
-			"| team: because an ally and stop being attacked",
-		]
-
 		if from_chat:
-			for txt in game_help_text if "_map" in dir(self) else pre_help_text:
+			for txt in GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT:
 				self.send_chat(txt)
 				time.sleep(0.33)
 		else:
-			print("\n".join(help_text))
+			print("\n".join(GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT))
 
 	######################### Custom Config #########################
 

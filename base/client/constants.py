@@ -44,3 +44,17 @@ OPP_CITY = 2
 OPP_GENERAL = 3
 
 MAX_NUM_TEAMS = 8
+
+
+PRE_HELP_TEXT = [
+	"| ======= Available Commands =======",
+	"| start: send force start",
+	"| speed 4: set game play speed [1, 2, 3, 4]",
+	"| map: assign a random custom map",
+	"| map Map Name: assign map by name",
+	"| team 1: join a team [1 - 8]",
+]
+GAME_HELP_TEXT = [
+	"| ======= Available Commands =======",
+	"| team: request not to be attacked",
+]
