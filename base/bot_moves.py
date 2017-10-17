@@ -69,7 +69,7 @@ def _move_path_capture(path):
 ######################### Move Path Forward #########################
 
 def should_move_half(gamemap, source):
-	if gamemap.turn > 150:
+	if gamemap.turn > 250:
 		if source in gamemap.generals:
 			return True
 		elif source in gamemap.cities:
