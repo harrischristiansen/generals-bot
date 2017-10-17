@@ -130,7 +130,7 @@ class Generals(object):
 			if len(command) >= 2:
 				self._set_game_team(command[1])
 			else:
-				self._add_teammate(username)
+				return self._add_teammate(username)
 			return True
 		elif command[0] == "public":
 			self._set_game_public()
@@ -173,8 +173,11 @@ class Generals(object):
 	######################### Custom Config #########################
 
 	def _add_teammate(self, username):
-		if "_map" in dir(self):
-			self._map.do_not_attack_players.append(self._map.usernames.index(username))
+		if "_map" in dir(self) and "usernames" in dir(self._map):
+			if username != "" and username != self._map.usernames[self._map.player_index]:
+				self._map.do_not_attack_players.append(self._map.usernames.index(username))
+				return True
+		return False
 
 	######################### Server -> Client #########################
 
