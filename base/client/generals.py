@@ -127,6 +127,9 @@ class Generals(object):
 		elif command[0] == "public":
 			self._set_game_public()
 			return True
+		elif command[0] == "surrender":
+			self._send(["surrender"])
+			return True
 		elif command[0] == "map":
 			if len(command) >= 2:
 				self._set_game_map(" ".join(command[1:]))
@@ -145,6 +148,7 @@ class Generals(object):
 			"| map: assign a random custom map",
 			"| map Map Name: assign map by name",
 			"| team 1: join a team [1 - 8]",
+			"| surrender: surrender",
 		]
 
 		if from_chat:

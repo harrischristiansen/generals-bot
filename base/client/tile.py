@@ -138,7 +138,6 @@ class Tile(object):
 		if dest == None:
 			return []
 
-		# Determine Path To Destination
 		frontier = Queue()
 		frontier.put(self)
 		came_from = {}
@@ -151,7 +150,7 @@ class Tile(object):
 				break
 
 			for next in current.neighbors():
-				if next not in came_from: # Add to frontier
+				if next not in came_from:
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
