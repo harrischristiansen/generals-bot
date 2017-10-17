@@ -118,6 +118,11 @@ class Generals(object):
 		if command[0] == "help":
 			self._print_command_help(from_chat)
 			return True
+		if command[0] == "setup":
+			self._set_game_speed(4)
+			self._set_game_map()
+			self._set_game_public()
+			return True
 		elif command[0] == "speed" and len(command) >= 2:
 			self._set_game_speed(command[1])
 			return True
