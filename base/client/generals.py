@@ -145,7 +145,7 @@ class Generals(object):
 			else:
 				self._set_game_map()
 			return True
-		elif "map" in command:
+		elif len(msg) < 12 and "map" in msg:
 			self._set_game_map()
 			return True
 
