@@ -15,7 +15,7 @@ def move_outward(gamemap, path=[]):
 	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
 		if source.army >= 2 and source not in path: # Find One With Armies
 			for neighbor in bot_base._shuffle(source.neighbors()):
-				if ((neighbor.tile != gamemap.player_index and source.army > neighbor.army + 1) or neighbor in path) and not neighbor.isSwamp: # Capture Somewhere New
+				if ((not neighbor.isAlly() and source.army > neighbor.army + 1) or neighbor in path) and not neighbor.isSwamp: # Capture Somewhere New
 					return (source, neighbor)
 	return (False, False)
 

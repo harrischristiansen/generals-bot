@@ -107,7 +107,7 @@ class Generals(object):
 
 	######################### Bot Commands #########################
 
-	def _handle_command(self, msg, from_chat=False):
+	def _handle_command(self, msg, from_chat=False, username=""):
 		if len(msg) < 12 and any(keyword in msg for keyword in START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return True
@@ -126,8 +126,11 @@ class Generals(object):
 		elif command[0] == "speed" and len(command) >= 2:
 			self._set_game_speed(command[1])
 			return True
-		elif command[0] == "team" and len(command) >= 2:
-			self._set_game_team(command[1])
+		elif command[0] == "team":
+			if len(command) >= 2:
+				self._set_game_team(command[1])
+			else:
+				self._add_teammate(username)
 			return True
 		elif command[0] == "public":
 			self._set_game_public()
@@ -142,6 +145,9 @@ class Generals(object):
 			else:
 				self._set_game_map()
 			return True
+		elif "map" in command:
+			self._set_game_map()
+			return True
 
 		return False
 
@@ -154,7 +160,7 @@ class Generals(object):
 			"| map: assign a random custom map",
 			"| map Map Name: assign map by name",
 			"| team 1: join a team [1 - 8]",
-			"| surrender: surrender",
+			"| team: because an ally and stop being attacked",
 		]
 
 		if from_chat:
@@ -163,6 +169,12 @@ class Generals(object):
 				time.sleep(0.33)
 		else:
 			print("\n".join(help_text))
+
+	######################### Custom Config #########################
+
+	def _add_teammate(self, username):
+		if "_map" in dir(self):
+			self._map.do_not_attack_players.append(self._map.usernames.index(username))
 
 	######################### Server -> Client #########################
 
@@ -189,7 +201,7 @@ class Generals(object):
 
 	def _handle_chat(self, chat_msg):
 		if "username" in chat_msg:
-			self._handle_command(chat_msg["text"], from_chat=True)
+			self._handle_command(chat_msg["text"], from_chat=True, username=chat_msg["username"])
 			logging.info("From %s: %s" % (chat_msg["username"], chat_msg["text"]))
 		else:
 			logging.info("Message: %s" % chat_msg["text"])

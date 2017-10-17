@@ -88,6 +88,18 @@ class Tile(object):
 					return True
 		return False
 
+	def isTeammate(self):
+		if self.tile == self._map.player_index:
+			return True
+		return False
+
+	def isAlly(self):
+		if self.isTeammate():
+			return True
+		if self.tile in self._map.do_not_attack_players:
+			return True
+		return False
+
 	################################ Select Other Tiles ################################
 
 	def nearest_tile_in_path(self, path):
@@ -109,7 +121,7 @@ class Tile(object):
 		for x in range(self._map.cols): # Check Each Square
 			for y in range(self._map.rows):
 				tile = self._map.grid[y][x]
-				if (tile.tile < TILE_EMPTY or tile.tile == self._map.player_index or tile.army > max_target_army): # Non Target Tiles
+				if (tile.tile < TILE_EMPTY or tile.isAlly() or tile.army > max_target_army): # Non Target Tiles
 					continue
 
 				distance = self.distance_to(tile)

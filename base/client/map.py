@@ -34,7 +34,8 @@ class Map(object):
 		self.result = False																# Boolean Game Result (True = Won)
 
 		# Public Options
-		self.exit_on_game_over = True
+		self.exit_on_game_over = True													# Controls if bot exits after game over
+		self.do_not_attack_players = []													# List of player IDs not to attack
 	
 	################################ Game Updates ################################
 

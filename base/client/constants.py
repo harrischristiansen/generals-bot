@@ -13,7 +13,7 @@ REPLAY_URLS = {
 	'eu': "http://eu.generals.io/replays/",
 }
 
-START_KEYWORDS = ["start", "go", "force", "play"]
+START_KEYWORDS = ["start", "go", "force", "play", "ready"]
 
 GENERALS_MAPS = [
 	"who will win the best",
