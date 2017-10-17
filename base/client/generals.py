@@ -123,11 +123,11 @@ class Generals(object):
 			self._set_game_map()
 			self._set_game_public()
 			return True
-		elif command[0] == "speed" and len(command) >= 2:
+		elif command[0] == "speed" and len(command) >= 2 and len(command[1]) == 1:
 			self._set_game_speed(command[1])
 			return True
 		elif command[0] == "team":
-			if len(command) >= 2:
+			if len(command) >= 2 and len(command[1]) == 1:
 				self._set_game_team(command[1])
 			else:
 				return self._add_teammate(username)
