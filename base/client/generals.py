@@ -22,7 +22,6 @@ class Generals(object):
 		self._move_id = 1
 		self._start_data = {}
 		self._stars = []
-		self._map = []
 		self._cities = []
 
 	def close(self):
@@ -152,7 +151,7 @@ class Generals(object):
 		return False
 
 	def _print_command_help(self, from_chat=False):
-		help_text = [
+		pre_help_text = [
 			"| ======= Available Commands =======",
 			"| start: send force start",
 			"| speed 4: set game play speed [1, 2, 3, 4]",
@@ -160,11 +159,14 @@ class Generals(object):
 			"| map: assign a random custom map",
 			"| map Map Name: assign map by name",
 			"| team 1: join a team [1 - 8]",
+		]
+		game_help_text = [
+			"| ======= Available Commands =======",
 			"| team: because an ally and stop being attacked",
 		]
 
 		if from_chat:
-			for txt in help_text:
+			for txt in game_help_text if "_map" in dir(self) else pre_help_text:
 				self.send_chat(txt)
 				time.sleep(0.33)
 		else:
