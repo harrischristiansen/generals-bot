@@ -27,10 +27,6 @@ ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
 	def __init__(self, name=None):
-		# Public Atrributes
-		self.exit_on_game_over = True
-
-		# Private Attributes
 		self._runPygame = True
 		self._name = name
 		self._receivedUpdate = False
@@ -106,7 +102,7 @@ class GeneralsViewer(object):
 			if (pos[0] < TOGGLE_GRID_BTN_WIDTH): # Toggle Grid
 				self._toggleGrid()
 			elif (pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH): # Toggle Exit on Game Over
-				self.exit_on_game_over = not self.exit_on_game_over
+				self._map.exit_on_game_over = not self._map.exit_on_game_over
 			self._receivedUpdate = True
 		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
@@ -139,7 +135,7 @@ class GeneralsViewer(object):
 		self._screen.blit(self._font.render("Toggle Grid", True, WHITE), (10, 5))
 
 		# Toggle Exit on Game Over Button
-		pygame.draw.rect(self._screen, (0,100,0) if self.exit_on_game_over else (90,0,0), [TOGGLE_GRID_BTN_WIDTH, 0, TOGGLE_EXIT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
+		pygame.draw.rect(self._screen, (0,100,0) if self._map.exit_on_game_over else (90,0,0), [TOGGLE_GRID_BTN_WIDTH, 0, TOGGLE_EXIT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
 		self._screen.blit(self._font.render("Auto Quit", True, WHITE), (TOGGLE_GRID_BTN_WIDTH+10, 5))
 
 		# Info Text

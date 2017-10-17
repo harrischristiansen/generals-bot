@@ -26,7 +26,6 @@ class GeneralsBot(object):
 
 		# ----- Start Game -----
 		self._running = True
-		self._exit_on_game_over = True
 		self._move_event = threading.Event()
 		_create_thread(self._start_game_thread)
 		_create_thread(self._start_chat_thread)
@@ -72,7 +71,6 @@ class GeneralsBot(object):
 			if '_moves_realized' in selfDir:
 				self._map.bottomText = "Realized: "+str(self._moves_realized)
 			viewer = self._viewer.updateGrid(gamemap)
-			self._exit_on_game_over = viewer.exit_on_game_over
 
 		# Handle Game Complete
 		if gamemap.complete and not self._has_completed:
@@ -84,7 +82,7 @@ class GeneralsBot(object):
 
 	def _exit_game(self):
 		time.sleep(1.1)
-		if not self._exit_on_game_over:
+		if not self._map.exit_on_game_over:
 			time.sleep(100)
 		self._running = False
 		os._exit(0) # End Program

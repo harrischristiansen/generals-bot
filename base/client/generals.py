@@ -133,6 +133,7 @@ class Generals(object):
 			self._set_game_public()
 			return True
 		elif command[0] == "surrender":
+			self._map.exit_on_game_over = False
 			self._send(["surrender"])
 			return True
 		elif command[0] == "map":

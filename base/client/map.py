@@ -32,6 +32,9 @@ class Map(object):
 		self.scores = self._getScores(data)												# List of Player Scores
 		self.complete = False															# Boolean Game Complete
 		self.result = False																# Boolean Game Result (True = Won)
+
+		# Public Options
+		self.exit_on_game_over = True
 	
 	################################ Game Updates ################################
 
