@@ -258,12 +258,12 @@ class Generals(object):
 
 	def _set_game_map(self, mapname=""):
 		if len(mapname) > 1:
-			mapname = mapname.lower()
-			if mapname in ["win", "good"]:
+			maplower = mapname.lower()
+			if maplower in ["win", "good"]:
 				self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS_WINS)}])
-			elif mapname == "top":
+			elif maplower == "top":
 				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
-			elif mapname == "hot":
+			elif maplower == "hot":
 				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_hot())}])
 			else:
 				self._send(["set_custom_options", self._gameid, {"map":mapname}])
