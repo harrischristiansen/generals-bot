@@ -11,6 +11,7 @@ import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
 from .constants import *
+from . import generals_api
 from . import map
 
 class Generals(object):
@@ -107,7 +108,7 @@ class Generals(object):
 	######################### Bot Commands #########################
 
 	def _handle_command(self, msg, from_chat=False, username=""):
-		if len(msg) < 12 and any(keyword in msg for keyword in START_KEYWORDS):
+		if len(msg) < 12 and any(keyword in msg.lower() for keyword in START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return True
 		if len(msg) < 2:
@@ -158,7 +159,7 @@ class Generals(object):
 		if from_chat:
 			for txt in GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT:
 				self.send_chat(txt)
-				time.sleep(0.33)
+				time.sleep(0.34)
 		else:
 			print("\n".join(GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT))
 
@@ -249,15 +250,23 @@ class Generals(object):
 
 	def _set_game_team(self, team="1"):
 		team = int(team)
-		if team in range(1,MAX_NUM_TEAMS+1):
+		if team in range(1, MAX_NUM_TEAMS+1):
 			self._send(["set_custom_team", self._gameid, team])
 
 	def _set_game_public(self):
 		self._send(["make_custom_public", self._gameid])
 
-	def _set_game_map(self, map=""):
-		if len(map) > 1:
-			self._send(["set_custom_options", self._gameid, {"map":map}])
+	def _set_game_map(self, mapname=""):
+		if len(mapname) > 1:
+			mapname = mapname.lower()
+			if mapname in ["win", "good"]:
+				self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS_WINS)}])
+			elif mapname == "top":
+				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
+			elif mapname == "hot":
+				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_hot())}])
+			else:
+				self._send(["set_custom_options", self._gameid, {"map":mapname}])
 		else:
 			self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS)}])
 

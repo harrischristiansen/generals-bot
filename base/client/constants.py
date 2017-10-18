@@ -28,6 +28,23 @@ GENERALS_MAPS = [
 	"WIN or LOSE",
 	"Russian Roulette ",
 	"The Inquisitor",
+	"Brackets",
+	"big boy battle (v2.0)",
+	"Prison Break-Eclipsies",
+	"Speed V5.0",
+	"The Town",
+	"X-files",
+	"Kingdom of Branches",
+	"Velocity",
+]
+
+GENERALS_MAPS_WINS = [
+	"KILL A KING",
+	"Plots",
+	"Speed",
+	"Experiment G",
+	"WIN or LOSE",
+	"The Inquisitor",
 ]
 
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -51,6 +68,8 @@ PRE_HELP_TEXT = [
 	"| start: send force start",
 	"| speed 4: set game play speed [1, 2, 3, 4]",
 	"| map: assign a random custom map",
+	"| map hot: assign a random map from the hot maps list",
+	"| map top: assign a random map from the top maps list",
 	"| map Map Name: assign map by name",
 	"| team 1: join a team [1 - 8]",
 ]
