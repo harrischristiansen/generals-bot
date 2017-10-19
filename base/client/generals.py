@@ -212,8 +212,9 @@ class Generals(object):
 		self._send(["set_username", userid, username, BOT_KEY])
 
 		logging.debug("Joining game")
-		self._gameid = gameid
+		self._gameid = None
 		if mode == "private":
+			self._gameid = gameid
 			if gameid is None:
 				raise ValueError("Gameid must be provided for private games")
 			self._send(["join_private", gameid, userid, BOT_KEY])

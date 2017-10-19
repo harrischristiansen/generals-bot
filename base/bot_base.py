@@ -16,7 +16,7 @@ from .client.constants import *
 from .viewer import GeneralsViewer
 
 class GeneralsBot(object):
-	def __init__(self, moveMethod, name="PurdueBot", gameType="private", privateRoomID="PurdueBot", showGameViewer=True, public_server=False):
+	def __init__(self, moveMethod, name="PurdueBot", gameType="private", privateRoomID=None, showGameViewer=True, public_server=False):
 		# Save Config
 		self._moveMethod = moveMethod
 		self._name = name
