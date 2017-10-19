@@ -9,7 +9,7 @@ import random
 from base import bot_base, bot_moves
 
 # Show all logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 ######################### Move Making #########################
 

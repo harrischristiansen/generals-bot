@@ -8,7 +8,7 @@ import logging
 from base import bot_moves
 
 # Show all logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 ######################### Move Making #########################
 

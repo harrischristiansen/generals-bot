@@ -181,6 +181,13 @@ class Generals(object):
 				if msg['teams'][i] not in teams:
 					teams[msg['teams'][i]] = []
 				teams[msg['teams'][i]].append(msg['usernames'][i])
+		print(msg)
+		if 'map_title' in msg:
+			mapname = msg['map_title']
+			if mapname and len(mapname) > 1:
+				logging.info("Queue [%s] %d/%d %s" % (mapname, msg['numForce'], msg['numPlayers'], teams))
+				return
+		
 		logging.info("Queue %d/%d %s" % (msg['numForce'], msg['numPlayers'], teams))
 
 	def _make_update(self, data):
@@ -211,7 +218,7 @@ class Generals(object):
 		_spawn(self._start_sending_heartbeat)
 		self._send(["set_username", userid, username, BOT_KEY])
 
-		logging.debug("Joining game")
+		logging.info("Joining game")
 		self._gameid = None
 		if mode == "private":
 			self._gameid = gameid
