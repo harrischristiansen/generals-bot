@@ -149,7 +149,7 @@ class Generals(object):
 			else:
 				self._set_game_map()
 			return True
-		elif len(msg) < 12 and "map" in msg.lower():
+		elif from_chat and len(msg) < 12 and "map" in msg.lower():
 			self._set_game_map()
 			return True
 
@@ -241,7 +241,7 @@ class Generals(object):
 	def _send_forcestart(self, delay=20):
 		time.sleep(delay)
 		self._send(["set_force_start", self._gameid, True])
-		logging.info("Sent force_start")
+		logging.info("Sent force start")
 
 	def _set_game_speed(self, speed="1"):
 		speed = int(speed)
@@ -260,7 +260,7 @@ class Generals(object):
 		if len(mapname) > 1:
 			maplower = mapname.lower()
 			if maplower in ["win", "good"]:
-				self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS_WINS)}])
+				self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS)}])
 			elif maplower == "top":
 				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
 			elif maplower == "hot":
@@ -268,7 +268,7 @@ class Generals(object):
 			else:
 				self._send(["set_custom_options", self._gameid, {"map":mapname}])
 		else:
-			self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS)}])
+			self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
 
 	def _send(self, msg):
 		try:

@@ -11,40 +11,19 @@ BOT_KEY = "O13f0dijsf"
 REPLAY_URLS = {
 	'na': "http://generals.io/replays/",
 	'eu': "http://eu.generals.io/replays/",
+	'bot': "http://bot.generals.io/replays/",
 }
 
-START_KEYWORDS = ["start", "go", "force", "play", "ready"]
+START_KEYWORDS = ["start", "go", "force", "play", "ready", "rdy"]
 
 GENERALS_MAPS = [
-	"who will win the best",
-	"1v1 Ultimate",
-	"King of the Hill (FFA)",
 	"KILL A KING",
-	"The War of Classes",
 	"Plots",
-	"City",
 	"Speed",
 	"Experiment G",
 	"WIN or LOSE",
-	"Russian Roulette ",
 	"The Inquisitor",
-	"Brackets",
-	"big boy battle (v2.0)",
-	"Prison Break-Eclipsies",
-	"Speed V5.0",
-	"The Town",
-	"X-files",
 	"Kingdom of Branches",
-	"Velocity",
-]
-
-GENERALS_MAPS_WINS = [
-	"KILL A KING",
-	"Plots",
-	"Speed",
-	"Experiment G",
-	"WIN or LOSE",
-	"The Inquisitor",
 ]
 
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -67,9 +46,7 @@ PRE_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| start: send force start",
 	"| speed 4: set game play speed [1, 2, 3, 4]",
-	"| map: assign a random custom map",
-	"| map hot: assign a random map from the hot maps list",
-	"| map top: assign a random map from the top maps list",
+	"| map [top, hot]: assign a random map from the top (or hot) maps list",
 	"| map Map Name: assign map by name",
 	"| team 1: join a team [1 - 8]",
 ]
