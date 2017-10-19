@@ -181,7 +181,7 @@ class Generals(object):
 				if msg['teams'][i] not in teams:
 					teams[msg['teams'][i]] = []
 				teams[msg['teams'][i]].append(msg['usernames'][i])
-		print(msg)
+		
 		if 'map_title' in msg:
 			mapname = msg['map_title']
 			if mapname and len(mapname) > 1:
