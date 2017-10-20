@@ -16,13 +16,14 @@ from .client.constants import *
 from .viewer import GeneralsViewer
 
 class GeneralsBot(object):
-	def __init__(self, moveMethod, name="PurdueBot", gameType="private", privateRoomID=None, showGameViewer=True, public_server=False):
+	def __init__(self, moveMethod, name="PurdueBot", gameType="private", privateRoomID=None, showGameViewer=True, public_server=False, start_msg_cmd=""):
 		# Save Config
 		self._moveMethod = moveMethod
 		self._name = name
 		self._gameType = gameType
 		self._privateRoomID = privateRoomID
 		self._public_server = public_server
+		self._start_msg_cmd = start_msg_cmd
 
 		# ----- Start Game -----
 		self._running = True
@@ -48,6 +49,7 @@ class GeneralsBot(object):
 	def _start_game_thread(self):
 		# Create Game
 		self._game = generals.Generals(self._name, self._name, self._gameType, gameid=self._privateRoomID, public_server=self._public_server)
+		_create_thread(self._send_start_msg_cmd)
 
 		# Start Receiving Updates
 		for gamemap in self._game.get_updates():
@@ -109,6 +111,11 @@ class GeneralsBot(object):
 			self._game.send_chat(msg)
 			time.sleep(0.7)
 		return
+
+	def _send_start_msg_cmd(self):
+		time.sleep(0.2)
+		for cmd in self._start_msg_cmd.split("\\n"):
+			self._game._handle_command(cmd)
 
 	######################### Tile Finding #########################
 

@@ -108,7 +108,8 @@ class Generals(object):
 	######################### Bot Commands #########################
 
 	def _handle_command(self, msg, from_chat=False, username=""):
-		if len(msg) < 12 and any(keyword in msg.lower() for keyword in START_KEYWORDS):
+		msg_lower = msg.lower()
+		if len(msg) < 12 and any(keyword in msg_lower for keyword in START_KEYWORDS):
 			self._send_forcestart(delay=0)
 			return True
 		if len(msg) < 2:
@@ -149,7 +150,7 @@ class Generals(object):
 			else:
 				self._set_game_map()
 			return True
-		elif from_chat and len(msg) < 12 and "map" in msg.lower():
+		elif from_chat and len(msg) < 12 and "map" in msg_lower:
 			self._set_game_map()
 			return True
 
