@@ -35,6 +35,8 @@ class GeneralsBot(object):
 		# Start Game Viewer
 		if showGameViewer:
 			window_title = "%s (%s)" % (self._name, self._gameType)
+			if self._privateRoomID != None:
+				window_title = "%s (%s - %s)" % (self._name, self._gameType, self._privateRoomID)
 			self._viewer = GeneralsViewer(window_title)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
 			self._exit_game()
