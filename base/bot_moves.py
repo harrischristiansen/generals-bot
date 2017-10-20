@@ -61,7 +61,7 @@ def _move_path_capture(path):
 		else:
 			capture_army -= tile.army
 
-		if capture_army > 0 and i+1 < len(path):
+		if capture_army > 0 and i+1 < len(path) and path[i].army > 1:
 			return (path[i], path[i+1])
 
 	return (False, False)
