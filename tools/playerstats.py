@@ -68,7 +68,7 @@ def _get_map_name(replay_id):
 	data = _get_url(URL_REPLAY+replay_id+".gior")
 	lz = lzstring.LZString()
 	#return bytes(data.text, "utf-8")
-	return lz.decompress(data.text)
+	return lz.decompress(data.content)
 	return list(data.text)
 
 def _get_json_url(url):
@@ -80,4 +80,5 @@ def _get_url(url):
 def _is_valid_name(name):
 	return all(ord(c) < 128 for c in name)
 
-print(_get_map_name("HY43dQdab"))
+#print(_get_map_name("HY43dQdab"))
+print(opponentstats("myssix", 15))

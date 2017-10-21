@@ -161,7 +161,7 @@ class Tile(object):
 			if current == dest: # Found Destination
 				break
 
-			for next in current.neighbors():
+			for next in current.neighbors(includeSwamps=True):
 				if next not in came_from:
 					#priority = self.distance(next, dest)
 					frontier.put(next)

@@ -134,6 +134,8 @@ class Generals(object):
 		elif "team" in base_command:
 			if len(command) >= 2 and len(command[1]) == 1:
 				self._set_game_team(command[1])
+			elif base_command in ["unteamall"]:
+				self._remove_all_teammates()
 			elif base_command in ["unteam", "noteam", "cancelteam"]:
 				self._remove_teammate(username)
 			else:
@@ -182,6 +184,10 @@ class Generals(object):
 					self._map.do_not_attack_players.remove(self._map.usernames.index(username))
 					return True
 		return False
+
+	def _remove_all_teammates(self):
+		self._map.do_not_attack_players = []
+		return True
 
 	######################### Server -> Client #########################
 
