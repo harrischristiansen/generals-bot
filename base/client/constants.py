@@ -53,4 +53,5 @@ PRE_HELP_TEXT = [
 GAME_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| team: request not to be attacked",
+	"| unteam: cancel team",
 ]

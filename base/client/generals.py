@@ -134,6 +134,8 @@ class Generals(object):
 		elif "team" in base_command:
 			if len(command) >= 2 and len(command[1]) == 1:
 				self._set_game_team(command[1])
+			elif base_command in ["unteam", "noteam", "cancelteam"]:
+				self._remove_teammate(username)
 			else:
 				return self._add_teammate(username)
 			return True
@@ -170,6 +172,13 @@ class Generals(object):
 		if "_map" in dir(self) and "usernames" in dir(self._map):
 			if username != "" and username != self._map.usernames[self._map.player_index]:
 				self._map.do_not_attack_players.append(self._map.usernames.index(username))
+				return True
+		return False
+
+	def _remove_teammate(self, username):
+		if "_map" in dir(self) and "usernames" in dir(self._map):
+			if username != "" and username != self._map.usernames[self._map.player_index]:
+				self._map.do_not_attack_players.remove(self._map.usernames.index(username))
 				return True
 		return False
 

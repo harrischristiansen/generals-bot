@@ -5,6 +5,7 @@
 '''
 
 import requests
+import lzstring
 
 NUM_REPLAYS_TO_USE = 2000
 
@@ -65,6 +66,9 @@ def _get_list_replays(playername, count):
 
 def _get_map_name(replay_id):
 	data = _get_url(URL_REPLAY+replay_id+".gior")
+	lz = lzstring.LZString()
+	#return bytes(data.text, "utf-8")
+	return lz.decompress(data.text)
 	return list(data.text)
 
 def _get_json_url(url):
@@ -76,4 +80,4 @@ def _get_url(url):
 def _is_valid_name(name):
 	return all(ord(c) < 128 for c in name)
 
-print(opponentstats("myssix", 5))
+print(_get_map_name("HY43dQdab"))
