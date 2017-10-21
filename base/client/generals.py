@@ -178,8 +178,9 @@ class Generals(object):
 	def _remove_teammate(self, username):
 		if "_map" in dir(self) and "usernames" in dir(self._map):
 			if username != "" and username != self._map.usernames[self._map.player_index]:
-				self._map.do_not_attack_players.remove(self._map.usernames.index(username))
-				return True
+				if self._map.usernames.index(username) in self._map.do_not_attack_players:
+					self._map.do_not_attack_players.remove(self._map.usernames.index(username))
+					return True
 		return False
 
 	######################### Server -> Client #########################
