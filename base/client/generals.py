@@ -144,7 +144,7 @@ class Generals(object):
 		elif "public" in base_command:
 			self._set_game_public()
 			return True
-		elif "surrender" in base_command:
+		elif "surrender!" in base_command:
 			self._map.exit_on_game_over = False
 			self._send(["surrender"])
 			return True

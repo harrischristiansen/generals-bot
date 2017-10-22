@@ -7,7 +7,7 @@
 import requests
 import lzstring
 
-NUM_REPLAYS_TO_USE = 2000
+NUM_REPLAYS_TO_USE = 2500
 
 URL_REPLAYS_FOR_USER = "http://generals.io/api/replaysForUsername?u="
 URL_REPLAY = "https://generalsio-replays-na.s3.amazonaws.com/"

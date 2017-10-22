@@ -13,6 +13,7 @@ BLACK = (0,0,0)
 GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
+GOLD = (217, 163, 0)
 PLAYER_COLORS = [(255,0,0), (0,0,255), (0,128,0), (128,0,128), (0,128,128), (0,70,0), (128,0,0), (255,165,0), (30,250,30)]
 
 # Table Properies
@@ -178,9 +179,8 @@ class GeneralsViewer(object):
 					pos_left_circle = int(pos_left + (CELL_WIDTH/2))
 					pos_top_circle = int(pos_top + (CELL_HEIGHT/2))
 					if tile in self._map.generals:
-						pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2.5))
-					else:
-						pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2))
+						pygame.draw.rect(self._screen, GOLD, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
+					pygame.draw.circle(self._screen, color, [pos_left_circle, pos_top_circle], int(CELL_WIDTH/2))
 				else:
 					# Draw Rect
 					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
