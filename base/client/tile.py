@@ -43,14 +43,14 @@ class Tile(object):
 	def update(self, gamemap, tile, army, isCity=False, isGeneral=False):
 		self._map = gamemap
 
-		if (self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == gamemap.player_index)): # Remember Discovered Tiles
-			if ((tile >= 0 or self.tile >= 0) and self.tile != tile):
+		if self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == gamemap.player_index): # Remember Discovered Tiles
+			if (tile >= 0 or self.tile >= 0) and self.tile != tile:
 				if self.tile >= 0:
 					gamemap.tiles[self.tile].remove(self)
 				gamemap.tiles[tile].append(self)
 				self.turn_captured = gamemap.turn
 			self.tile = tile
-		if (self.army == 0 or army > 0): # Remember Discovered Armies
+		if self.army == 0 or army > 0 or self.isSwamp: # Remember Discovered Armies
 			self.army = army
 
 		if isCity:
