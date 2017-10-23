@@ -86,7 +86,7 @@ def should_move_half(gamemap, source):
 
 def path_proximity_target(gamemap):
 	# Find path from largest tile to closest target
-	source = gamemap.find_largest_tile(includeGeneral=True)
+	source = gamemap.find_largest_tile(includeGeneral=0.5)
 	target = source.nearest_target_tile()
 	path = source.path_to(target)
 	#logging.debug("Proximity %s -> %s via %s" % (source, target, path))
@@ -97,8 +97,8 @@ def path_proximity_target(gamemap):
 	return path
 
 def path_gather(gamemap, elsoDo=[]):
-	source = gamemap.find_city(includeGeneral=True)
-	target = gamemap.find_largest_tile(notInPath=[source])
+	target = gamemap.find_largest_tile()
+	source = gamemap.find_largest_tile(notInPath=[target], includeGeneral=0.5)
 	if source and target and source != target:
 		return source.path_to(target)
 	return elsoDo

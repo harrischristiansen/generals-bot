@@ -90,12 +90,11 @@ class Map(object):
 	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
 		if ofType == None:
 			ofType = self.player_index
-		general = self.generals[ofType]
 
 		largest = None
 		for tile in self.tiles[ofType]: # Check each ofType tile
 			if largest == None or largest.army < tile.army: # New largest
-				if tile != general and tile not in notInPath: # Exclude general and path
+				if not tile.isGeneral and tile not in notInPath: # Exclude general and path
 					largest = tile
 
 		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
@@ -103,7 +102,7 @@ class Map(object):
 				includeGeneral = general.army * includeGeneral
 				if (includeGeneral < 6):
 					includeGeneral = 6
-			if largest == None: 
+			if largest == None:
 				largest = general
 			elif includeGeneral == True and largest.army < general.army:
 				largest = general
