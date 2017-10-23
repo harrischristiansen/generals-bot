@@ -15,6 +15,7 @@ class Tile(object):
 		self.y = y					# Integer Y Coordinate
 		self.tile = TILE_EMPTY		# Integer Tile Type (TILE_OBSTACLE, TILE_FOG, TILE_MOUNTAIN, TILE_EMPTY, or player_ID)
 		self.turn_captured = 0		# Integer Turn Tile Last Captured
+		self.turn_held = 0			# Integer Last Turn Held
 		self.army = 0				# Integer Army Count
 		self.isCity = False			# Boolean isCity
 		self.isSwamp = False		# Boolean isSwamp
@@ -43,12 +44,15 @@ class Tile(object):
 	def update(self, gamemap, tile, army, isCity=False, isGeneral=False):
 		self._map = gamemap
 
-		if self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == gamemap.player_index): # Remember Discovered Tiles
-			if (tile >= 0 or self.tile >= 0) and self.tile != tile:
+		if self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == gamemap.player_index): # Tile is held
+			if (tile >= 0 or self.tile >= 0) and self.tile != tile: # Remember Discovered Tiles
+				self.turn_captured = gamemap.turn
 				if self.tile >= 0:
 					gamemap.tiles[self.tile].remove(self)
-				gamemap.tiles[tile].append(self)
-				self.turn_captured = gamemap.turn
+				if tile >= 0:
+					gamemap.tiles[tile].append(self)
+			if tile == gamemap.player_index:
+				self.turn_held = gamemap.turn
 			self.tile = tile
 		if self.army == 0 or army > 0 or self.isSwamp: # Remember Discovered Armies
 			self.army = army
@@ -84,7 +88,8 @@ class Tile(object):
 		if self.tile < TILE_EMPTY:
 			return False
 		for tile in self.neighbors(includeSwamps=True):
-			return True
+			if tile.turn_held > 0:
+				return True
 		return False
 
 	def isSelf(self):
