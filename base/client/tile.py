@@ -73,10 +73,10 @@ class Tile(object):
 			return abs(self.x - dest.x) + abs(self.y - dest.y)
 		return 0
 
-	def neighbors(self, includeSwamps=False):
+	def neighbors(self, includeSwamps=False, includeCities=True):
 		neighbors = []
 		for tile in self._neighbors:
-			if (tile.tile != TILE_OBSTACLE or tile.isCity or tile.isGeneral) and tile.tile != TILE_MOUNTAIN and (includeSwamps or not tile.isSwamp):
+			if (tile.tile != TILE_OBSTACLE or tile.isCity or tile.isGeneral) and tile.tile != TILE_MOUNTAIN and (includeSwamps or not tile.isSwamp) and (includeCities or not tile.isCity):
 				neighbors.append(tile)
 		return neighbors
 
@@ -88,13 +88,13 @@ class Tile(object):
 					return True
 		return False
 
-	def isTeammate(self):
+	def isOnTeam(self):
 		if self.tile == self._map.player_index:
 			return True
 		return False
 
-	def isAlly(self):
-		if self.isTeammate():
+	def shouldNotAttack(self):
+		if self.isOnTeam():
 			return True
 		if self.tile in self._map.do_not_attack_players:
 			return True
@@ -121,20 +121,19 @@ class Tile(object):
 		for x in range(self._map.cols): # Check Each Square
 			for y in range(self._map.rows):
 				tile = self._map.grid[y][x]
-				if (tile.tile < TILE_EMPTY or tile.isAlly() or tile.army > max_target_army): # Non Target Tiles
+				if (tile.tile < TILE_EMPTY or tile.shouldNotAttack() or tile.army > max_target_army): # Non Target Tiles
 					continue
 
 				distance = self.distance_to(tile)
 				if tile in self._map.generals: # Generals appear closer
-					distance = distance * 0.13
+					distance = distance * 0.09
 				elif tile in self._map.cities: # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 4))[1]
-				elif tile.tile == TILE_EMPTY: # Empties appear further away
-					distance = distance * 3.8
 
+				if tile.tile == TILE_EMPTY: # Empties appear further away
+					distance = distance * 3.8
 				if tile.army > self.army: # Larger targets appear further away
 					distance = distance * (1.5*tile.army/self.army)
-
 				if tile.isSwamp: # Swamps appear further away
 					distance = distance * 10
 
@@ -146,7 +145,7 @@ class Tile(object):
 
 	################################ Pathfinding ################################
 
-	def path_to(self, dest):
+	def path_to(self, dest, includeCities=False):
 		if dest == None:
 			return []
 
@@ -161,14 +160,17 @@ class Tile(object):
 			if current == dest: # Found Destination
 				break
 
-			for next in current.neighbors(includeSwamps=True):
+			for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
 				if next not in came_from:
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
 
 		if dest not in came_from: # Did not find dest
-			return []
+			if includeCities:
+				return []
+			else:
+				return self.path_to(dest, includeCities=True)
 
 		# Create Path List
 		path = _path_reconstruct(came_from, dest)
