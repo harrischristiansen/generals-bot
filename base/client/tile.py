@@ -81,15 +81,17 @@ class Tile(object):
 		return neighbors
 
 	def isValidTarget(self): # Check tile to verify reachability
-		for dy, dx in DIRECTIONS:
-			if self._map.isValidPosition(self.x+dx, self.y+dy):
-				tile = self._map.grid[self.y+dy][self.x+dx]
-				if tile.tile != TILE_OBSTACLE or tile in self._map.cities or tile in self._map.generals:
-					return True
+		if self.tile < TILE_EMPTY:
+			return False
+		for tile in self.neighbors(includeSwamps=True):
+			return True
 		return False
 
+	def isSelf(self):
+		return self.tile == self._map.player_index
+
 	def isOnTeam(self):
-		if self.tile == self._map.player_index:
+		if self.isSelf():
 			return True
 		return False
 
@@ -121,13 +123,13 @@ class Tile(object):
 		for x in range(self._map.cols): # Check Each Square
 			for y in range(self._map.rows):
 				tile = self._map.grid[y][x]
-				if (tile.tile < TILE_EMPTY or tile.shouldNotAttack() or tile.army > max_target_army): # Non Target Tiles
+				if not tile.isValidTarget() or tile.shouldNotAttack() or tile.army > max_target_army: # Non Target Tiles
 					continue
 
 				distance = self.distance_to(tile)
-				if tile in self._map.generals: # Generals appear closer
+				if tile.isGeneral: # Generals appear closer
 					distance = distance * 0.09
-				elif tile in self._map.cities: # Cities vary distance based on size, but appear closer
+				elif tile.isCity: # Cities vary distance based on size, but appear closer
 					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 4))[1]
 
 				if tile.tile == TILE_EMPTY: # Empties appear further away
@@ -137,7 +139,7 @@ class Tile(object):
 				if tile.isSwamp: # Swamps appear further away
 					distance = distance * 10
 
-				if distance < dest_distance and tile.isValidTarget():
+				if distance < dest_distance:
 					dest = tile
 					dest_distance = distance
 
@@ -161,7 +163,7 @@ class Tile(object):
 				break
 
 			for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
-				if next not in came_from:
+				if next not in came_from and (next.isSelf() or next.army<999):
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
