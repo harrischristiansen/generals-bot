@@ -12,8 +12,8 @@ from .client.constants import *
 ######################### Move Priority Capture #########################
 
 def move_priority(gamemap):
-	tiles = gamemap.cities
-	tiles.extend([t for t in gamemap.generals if t is not None])
+	tile = [t for t in gamemap.generals if t is not None]
+	tiles.extend(gamemap.cities)
 	for tile in tiles:
 		if not tile.shouldNotAttack():
 			for neighbor in tile.neighbors():
