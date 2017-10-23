@@ -68,7 +68,7 @@ def _move_path_capture(path):
 		if capture_army > 0 and i+1 < len(path) and path[i].army > 1:
 			return (path[i], path[i+1])
 
-	return (False, False)
+	return _move_path_largest(path)
 
 ######################### Move Path Forward #########################
 
