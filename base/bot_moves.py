@@ -89,11 +89,11 @@ def path_proximity_target(gamemap):
 	source = gamemap.find_largest_tile(includeGeneral=0.5)
 	target = source.nearest_target_tile()
 	path = source.path_to(target)
-	#logging.debug("Proximity %s -> %s via %s" % (source, target, path))
+	#logging.info("Proximity %s -> %s via %s" % (source, target, path))
 
 	if not gamemap.canStepPath(path):
 		path = path_gather(gamemap)
-		#logging.debug("Proximity FAILED, using path %s" % path)
+		#logging.info("Proximity FAILED, using path %s" % path)
 	return path
 
 def path_gather(gamemap, elsoDo=[]):

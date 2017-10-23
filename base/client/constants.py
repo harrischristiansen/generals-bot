@@ -24,6 +24,7 @@ GENERALS_MAPS = [
 	"WIN or LOSE",
 	"The Inquisitor",
 	"Kingdom of Branches",
+	"Hidden 1",
 ]
 
 DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]

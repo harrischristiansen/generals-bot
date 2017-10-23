@@ -130,7 +130,7 @@ class Tile(object):
 				if tile.isGeneral: # Generals appear closer
 					distance = distance * 0.09
 				elif tile.isCity: # Cities vary distance based on size, but appear closer
-					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 4))[1]
+					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 20))[1]
 
 				if tile.tile == TILE_EMPTY: # Empties appear further away
 					distance = distance * 3.8
@@ -155,6 +155,8 @@ class Tile(object):
 		frontier.put(self)
 		came_from = {}
 		came_from[self] = None
+		army_count = {}
+		army_count[self] = self.army
 
 		while not frontier.empty():
 			current = frontier.get()
@@ -163,10 +165,14 @@ class Tile(object):
 				break
 
 			for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
-				if next not in came_from and (next.isSelf() or next.army<999):
+				if next not in came_from and (next.isOnTeam() or next == dest or next.army < army_count[current]):
 					#priority = self.distance(next, dest)
 					frontier.put(next)
 					came_from[next] = current
+					if next.isOnTeam():
+						army_count[next] = army_count[current] + (next.army - 1)
+					else:
+						army_count[next] = army_count[current] - (next.army + 1)
 
 		if dest not in came_from: # Did not find dest
 			if includeCities:
