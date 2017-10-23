@@ -17,7 +17,7 @@ def move_priority(gamemap):
 	for tile in tiles:
 		if not tile.shouldNotAttack():
 			for neighbor in tile.neighbors():
-				if neighbor.isSelf() and neighbor.army > tile.army + 1:
+				if neighbor.isSelf() and neighbor.army > max(1, tile.army + 1):
 					#logging.info("Priority Move from %s -> %s" % (neighbor, tile)) # TODO: Note, priority moves are repeatedly sent, indiating move making is sending repeated moves
 					return (neighbor, tile)
 	return (False, False)
