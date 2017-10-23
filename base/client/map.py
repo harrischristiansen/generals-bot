@@ -90,6 +90,7 @@ class Map(object):
 	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
 		if ofType == None:
 			ofType = self.player_index
+		general = self.generals[ofType]
 
 		largest = None
 		for tile in self.tiles[ofType]: # Check each ofType tile
