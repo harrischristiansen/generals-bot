@@ -9,6 +9,19 @@ import random
 from base import bot_base
 from .client.constants import *
 
+######################### Move Priority Capture #########################
+
+def move_priority(gamemap):
+	tiles = gamemap.cities
+	tiles.extend([t for t in gamemap.generals if t is not None])
+	for tile in tiles:
+		if not tile.shouldNotAttack():
+			for neighbor in tile.neighbors():
+				if neighbor.isSelf() and neighbor.army > tile.army + 1:
+					#logging.info("Priority Move from %s -> %s" % (neighbor, tile)) # TODO: Note, priority moves are repeatedly sent, indiating move making is sending repeated moves
+					return (neighbor, tile)
+	return (False, False)
+
 ######################### Move Outward #########################
 
 def move_outward(gamemap, path=[]):
