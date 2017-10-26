@@ -7,7 +7,7 @@
 import requests
 import lzstring
 
-NUM_REPLAYS_TO_USE = 3000
+NUM_REPLAYS_TO_USE = 400
 
 URL_REPLAYS_FOR_USER = "http://generals.io/api/replaysForUsername?u="
 URL_REPLAY = "https://generalsio-replays-na.s3.amazonaws.com/"
@@ -81,4 +81,4 @@ def _is_valid_name(name):
 	return all(ord(c) < 128 for c in name)
 
 #print(_get_map_name("HY43dQdab"))
-print(opponentstats("myssix", 15))
+print(opponentstats("myssix", 10))

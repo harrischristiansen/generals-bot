@@ -123,13 +123,13 @@ class GeneralsBot(object):
 
 	def find_primary_target(self, target=None):
 		target_type = OPP_EMPTY - 1
-		if target != None and target.tile == self._map.player_index: # Acquired Target
+		if target != None and target.shouldNotAttack(): # Acquired Target
 			target = None
 		if target != None: # Determine Previous Target Type
 			target_type = OPP_EMPTY
-			if target in self._map.generals:
+			if target.isGeneral:
 				target_type = OPP_GENERAL
-			elif target in self._map.cities:
+			elif target.isCity:
 				target_type = OPP_CITY
 			elif target.army > 0:
 				target_type = OPP_ARMY
@@ -145,17 +145,17 @@ class GeneralsBot(object):
 					continue
 
 				if target_type <= OPP_GENERAL: # Search for Generals
-					if source.tile >= 0 and source in self._map.generals and source.army < max_target_size:
+					if source.tile >= 0 and source.isGeneral and source.army < max_target_size:
 						return source
 
 				if target_type <= OPP_CITY: # Search for Smallest Cities
-					if source in self._map.cities and source.army < max_target_size:
+					if source.isCity and source.army < max_target_size:
 						if target_type < OPP_CITY or source.army < target.army:
 							target = source
 							target_type = OPP_CITY
 
 				if target_type <= OPP_ARMY: # Search for Largest Opponent Armies
-					if source.tile >= 0 and (target == None or source.army > target.army) and source not in self._map.cities:
+					if source.tile >= 0 and (target == None or source.army > target.army) and not source.isCity:
 						target = source
 						target_type = OPP_ARMY
 
@@ -192,7 +192,7 @@ class GeneralsBot(object):
 	def away_king_moves(self, source):
 		general = self._map.generals[self._map.player_index]
 
-		if source.y == general.y and source.x == general.x: # Moving from General
+		if source == general: # Moving from General
 			return self.moves_random()
 
 		dir_y = 1

@@ -88,11 +88,11 @@ def _move_path_capture(path):
 def should_move_half(gamemap, source):
 	if gamemap.turn > 250:
 		if source in gamemap.generals:
-			return True
+			return random.choice([True, True, True, False])
 		elif source in gamemap.cities:
-			moveHalf = random.choice([False, False, False, True])
 			if gamemap.turn - source.turn_captured < 16:
 				return True
+			return random.choice([False, False, False, True])
 	return False
 
 ######################### Proximity Targeting - Pathfinding #########################
