@@ -298,7 +298,7 @@ class Generals(object):
 				else:
 					self.send_chat("Could not find map named "+mapname+" (Note: names are case sensitive)")
 		else:
-			self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
+			self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_both())}])
 
 	def _send(self, msg):
 		try:

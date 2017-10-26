@@ -22,6 +22,11 @@ def list_hot():
 		_list_hot = _get_list_maps("http://generals.io/api/maps/lists/hot")
 	return _list_hot
 
+def list_both():
+	maps = list_top()
+	maps.extend(list_hot())
+	return maps
+
 def list_search(query):
 		return _get_list_maps("http://generals.io/api/maps/search?q="+query)
 

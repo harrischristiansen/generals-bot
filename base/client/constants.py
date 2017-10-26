@@ -47,7 +47,7 @@ PRE_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| start: send force start",
 	"| speed 4: set game play speed [1, 2, 3, 4]",
-	"| map [top, hot]: assign a random map from the top (or hot) maps list",
+	"| map [top, hot]: assign a random map (from the top or hot list)",
 	"| map Map Name: assign map by name",
 	"| team 1: join a team [1 - 8]",
 ]
