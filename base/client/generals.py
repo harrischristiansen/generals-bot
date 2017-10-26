@@ -1,6 +1,7 @@
 '''
+	@ Harris Christiansen (Harris@HarrisChristiansen.com)
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
-	Client Adopted from @toshima Generals Python Client - https://github.com/toshima/generalsio
+	Generals.io Web Socket Handling and Bot Commands
 '''
 
 import logging
@@ -291,7 +292,11 @@ class Generals(object):
 			elif maplower == "hot":
 				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_hot())}])
 			else:
-				self._send(["set_custom_options", self._gameid, {"map":mapname}])
+				maps = generals_api.list_search(mapname)
+				if mapname in maps:
+					self._send(["set_custom_options", self._gameid, {"map":mapname}])
+				else:
+					self.send_chat("Could not find map named "+mapname+" (Note: names are case sensitive)")
 		else:
 			self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
 
