@@ -20,6 +20,7 @@ class Generals(object):
 				 force_start=True, public_server=False):
 		self._connect_and_join(userid, username, mode, gameid, force_start, public_server)
 
+		self._username = username
 		self._seen_update = False
 		self._move_id = 1
 		self._start_data = {}
@@ -137,8 +138,10 @@ class Generals(object):
 				self._set_game_team(command[1])
 			elif base_command in ["unteamall"]:
 				self._remove_all_teammates()
-			elif base_command in ["unteam", "noteam", "cancelteam"]:
+			elif base_command in ["unteam", "cancelteam"]:
 				self._remove_teammate(username)
+			elif base_command in ["noteam"]:
+				_spawn(self._start_avoiding_team)
 			else:
 				return self._add_teammate(username)
 			return True
@@ -193,20 +196,20 @@ class Generals(object):
 	######################### Server -> Client #########################
 
 	def _log_queue_update(self, msg):
-		teams = {}
+		self.teams = {}
 		if "teams" in msg:
 			for i in range(len(msg['teams'])):
-				if msg['teams'][i] not in teams:
-					teams[msg['teams'][i]] = []
-				teams[msg['teams'][i]].append(msg['usernames'][i])
+				if msg['teams'][i] not in self.teams:
+					self.teams[msg['teams'][i]] = []
+				self.teams[msg['teams'][i]].append(msg['usernames'][i])
 		
 		if 'map_title' in msg:
 			mapname = msg['map_title']
 			if mapname and len(mapname) > 1:
-				logging.info("Queue [%s] %d/%d %s" % (mapname, msg['numForce'], msg['numPlayers'], teams))
+				logging.info("Queue [%s] %d/%d %s" % (mapname, msg['numForce'], msg['numPlayers'], self.teams))
 				return
 		
-		logging.info("Queue %d/%d %s" % (msg['numForce'], msg['numPlayers'], teams))
+		logging.info("Queue %d/%d %s" % (msg['numForce'], msg['numPlayers'], self.teams))
 
 	def _make_update(self, data):
 		if not self._seen_update:
@@ -273,6 +276,21 @@ class Generals(object):
 		speed = int(speed)
 		if speed in [1, 2, 3, 4]:
 			self._send(["set_custom_options", self._gameid, {"game_speed":speed}])
+
+	def _start_avoiding_team(self):
+		while True:
+			if not "teams" in dir(self):
+				time.sleep(0.1)
+				continue
+			for i, members in self.teams.items():
+				if self._username in members:
+					if len(members) > 1: # More than 1 person on bots team
+						for team in range(1, MAX_NUM_TEAMS+1):
+							if not team in self.teams:
+								self._set_game_team(team)
+								break
+
+			time.sleep(0.1)
 
 	def _set_game_team(self, team="1"):
 		team = int(team)
