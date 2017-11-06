@@ -121,6 +121,7 @@ class Generals(object):
 		if len(command) == 1:
 			command = command[0].split(':') # Handle : delimiters
 		base_command = command[0].lower()
+		arg_command = " ".join(command[1:])
 
 		if "help" in base_command:
 			self._print_command_help(from_chat)
@@ -134,8 +135,11 @@ class Generals(object):
 			self._set_game_speed(command[1][0])
 			return True
 		elif "team" in base_command:
-			if len(command) >= 2 and len(command[1]) == 1:
-				self._set_game_team(command[1])
+			if len(command) >= 2:
+				if len(command[1]) == 1:
+					self._set_game_team(command[1])
+				else:
+					return self._add_teammate(arg_command)
 			elif base_command in ["unteamall"]:
 				self._remove_all_teammates()
 			elif base_command in ["unteam", "cancelteam"]:
@@ -154,7 +158,7 @@ class Generals(object):
 			return True
 		elif "map" in base_command:
 			if len(command) >= 2:
-				self._set_game_map(" ".join(command[1:]))
+				self._set_game_map(arg_command)
 			else:
 				self._set_game_map()
 			return True
@@ -176,7 +180,7 @@ class Generals(object):
 
 	def _add_teammate(self, username):
 		if "_map" in dir(self) and "usernames" in dir(self._map):
-			if username != "" and username != self._map.usernames[self._map.player_index]:
+			if username != "" and username != self._map.usernames[self._map.player_index] and username in self._map.usernames:
 				self._map.do_not_attack_players.append(self._map.usernames.index(username))
 				return True
 		return False
