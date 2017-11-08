@@ -85,11 +85,14 @@ def _move_path_capture(path):
 
 ######################### Move Path Forward #########################
 
-def should_move_half(gamemap, source):
+def should_move_half(gamemap, source, dest=None):
+	if dest != None and dest.isCity:
+		return False
+
 	if gamemap.turn > 250:
-		if source in gamemap.generals:
+		if source.isGeneral:
 			return random.choice([True, True, True, False])
-		elif source in gamemap.cities:
+		elif source.isCity:
 			if gamemap.turn - source.turn_captured < 16:
 				return True
 			return random.choice([False, False, False, True])

@@ -31,7 +31,7 @@ def make_move(currentBot, currentMap):
 	return
 
 def place_move(source, dest):
-	_bot.place_move(source, dest, move_half=bot_moves.should_move_half(_map, source))
+	_bot.place_move(source, dest, move_half=bot_moves.should_move_half(_map, source, dest))
 
 ######################### Move Priority #########################
 
