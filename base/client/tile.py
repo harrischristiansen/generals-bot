@@ -13,7 +13,7 @@ class Tile(object):
 		# Public Properties
 		self.x = x					# Integer X Coordinate
 		self.y = y					# Integer Y Coordinate
-		self.tile = TILE_EMPTY		# Integer Tile Type (TILE_OBSTACLE, TILE_FOG, TILE_MOUNTAIN, TILE_EMPTY, or player_ID)
+		self.tile = TILE_FOG		# Integer Tile Type (TILE_OBSTACLE, TILE_FOG, TILE_MOUNTAIN, TILE_EMPTY, or player_ID)
 		self.turn_captured = 0		# Integer Turn Tile Last Captured
 		self.turn_held = 0			# Integer Last Turn Held
 		self.army = 0				# Integer Army Count
@@ -44,7 +44,7 @@ class Tile(object):
 	def update(self, gamemap, tile, army, isCity=False, isGeneral=False):
 		self._map = gamemap
 
-		if self.tile < 0 or tile >= 0 or (tile < TILE_MOUNTAIN and self.tile == gamemap.player_index): # Tile is held
+		if self.tile < 0 or tile >= TILE_MOUNTAIN or (tile < TILE_MOUNTAIN and self.isSelf()): # Tile should be updated
 			if (tile >= 0 or self.tile >= 0) and self.tile != tile: # Remember Discovered Tiles
 				self.turn_captured = gamemap.turn
 				if self.tile >= 0:

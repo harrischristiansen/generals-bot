@@ -4,6 +4,8 @@
 	Constants: Constants used throughout the code
 '''
 
+SHOULD_DIRTY_MAP_ON_MOVE = True
+
 ENDPOINT_BOT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
 BOT_KEY = "O13f0dijsf"

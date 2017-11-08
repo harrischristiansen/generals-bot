@@ -213,6 +213,18 @@ class GeneralsBot(object):
 	def place_move(self, source, dest, move_half=False):
 		if self._map.isValidPosition(dest.x, dest.y):
 			self._game.move(source.y, source.x, dest.y, dest.x, move_half)
+			if SHOULD_DIRTY_MAP_ON_MOVE:
+				self._update_map_dirty(source, dest, move_half)
+			return True
+		return False
+
+	def _update_map_dirty(self, source, dest, move_half):
+		if dest.isOnTeam():
+			return False
+
+		army = source.army if not move_half else source.army/2
+		if army > dest.army+1: # Captured Tile, Dirty Map State
+			dest.update(self._map, source.tile, (army - dest.army - 1))
 			return True
 		return False
 
