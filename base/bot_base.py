@@ -117,7 +117,7 @@ class GeneralsBot(object):
 	def _send_start_msg_cmd(self):
 		time.sleep(0.2)
 		for cmd in self._start_msg_cmd.split("\\n"):
-			self._game._handle_command(cmd)
+			self._game.handle_command(cmd)
 
 	######################### Tile Finding #########################
 

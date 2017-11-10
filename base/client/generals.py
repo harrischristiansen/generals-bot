@@ -1,18 +1,17 @@
 '''
 	@ Harris Christiansen (Harris@HarrisChristiansen.com)
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
-	Generals.io Web Socket Handling and Bot Commands
+	Generals.io Web Socket Communication
 '''
 
 import logging
 import json
-import random
 import threading
 import time
 from websocket import create_connection, WebSocketConnectionClosedException
 
 from .constants import *
-from . import generals_api
+from . import bot_cmds
 from . import map
 
 class Generals(object):
@@ -20,7 +19,7 @@ class Generals(object):
 				 force_start=True, public_server=False):
 		self._connect_and_join(userid, username, mode, gameid, force_start, public_server)
 
-		self._username = username
+		self.username = username
 		self._seen_update = False
 		self._move_id = 1
 		self._start_data = {}
@@ -94,7 +93,7 @@ class Generals(object):
 	######################### Send Chat Messages #########################
 
 	def send_chat(self, msg):
-		if self._handle_command(msg):
+		if self.handle_command(msg):
 			return
 		
 		try:
@@ -106,96 +105,6 @@ class Generals(object):
 			pass
 
 	######################### PRIVATE FUNCTIONS - PRIVATE FUNCTIONS #########################
-
-	######################### Bot Commands #########################
-
-	def _handle_command(self, msg, from_chat=False, username=""):
-		msg_lower = msg.lower()
-		if len(msg) < 12 and any(keyword in msg_lower for keyword in START_KEYWORDS):
-			self._send_forcestart(delay=0)
-			return True
-		if len(msg) < 2:
-			return True
-
-		command = msg.split(' ')
-		if len(command) == 1:
-			command = command[0].split(':') # Handle : delimiters
-		base_command = command[0].lower()
-		arg_command = " ".join(command[1:])
-
-		if "help" in base_command:
-			self._print_command_help(from_chat)
-			return True
-		if "setup" in base_command:
-			self._set_game_speed(4)
-			self._set_game_map()
-			self._set_game_public()
-			return True
-		elif "speed" in base_command and len(command) >= 2 and command[1][0].isdigit():
-			self._set_game_speed(command[1][0])
-			return True
-		elif "team" in base_command:
-			if len(command) >= 2:
-				if len(command[1]) == 1:
-					self._set_game_team(command[1])
-				else:
-					return self._add_teammate(arg_command)
-			elif base_command in ["unteamall"]:
-				self._remove_all_teammates()
-			elif base_command in ["unteam", "cancelteam"]:
-				self._remove_teammate(username)
-			elif base_command in ["noteam"]:
-				_spawn(self._start_avoiding_team)
-			else:
-				return self._add_teammate(username)
-			return True
-		elif "public" in base_command:
-			self._set_game_public()
-			return True
-		elif "surrender!" in base_command:
-			self._map.exit_on_game_over = False
-			self._send(["surrender"])
-			return True
-		elif "map" in base_command:
-			if len(command) >= 2:
-				self._set_game_map(arg_command)
-			else:
-				self._set_game_map()
-			return True
-		elif from_chat and len(msg) < 12 and "map" in msg_lower:
-			self._set_game_map()
-			return True
-
-		return False
-
-	def _print_command_help(self, from_chat=False):
-		if from_chat:
-			for txt in GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT:
-				self.send_chat(txt)
-				time.sleep(0.34)
-		else:
-			print("\n".join(GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT))
-
-	######################### Custom Config #########################
-
-	def _add_teammate(self, username):
-		if "_map" in dir(self) and "usernames" in dir(self._map):
-			if username != "" and username != self._map.usernames[self._map.player_index] and username in self._map.usernames:
-				self._map.do_not_attack_players.append(self._map.usernames.index(username))
-				return True
-		return False
-
-	def _remove_teammate(self, username):
-		if "_map" in dir(self) and "usernames" in dir(self._map):
-			if username != "" and username != self._map.usernames[self._map.player_index]:
-				if self._map.usernames.index(username) in self._map.do_not_attack_players:
-					self._map.do_not_attack_players.remove(self._map.usernames.index(username))
-					return True
-		return False
-
-	def _remove_all_teammates(self):
-		self._map.do_not_attack_players = []
-		return True
 
 	######################### Server -> Client #########################
 
@@ -219,6 +128,7 @@ class Generals(object):
 		if not self._seen_update:
 			self._seen_update = True
 			self._map = map.Map(self._start_data, data)
+			self._bot_cmds().setMap(self._map)
 			logging.info("Joined Game: %s - %s" % (self._map.replay_url, self._map.usernames))
 			return self._map
 
@@ -229,10 +139,17 @@ class Generals(object):
 
 	def _handle_chat(self, chat_msg):
 		if "username" in chat_msg:
-			self._handle_command(chat_msg["text"], from_chat=True, username=chat_msg["username"])
+			self.handle_command(chat_msg["text"], from_chat=True, username=chat_msg["username"])
 			logging.info("From %s: %s" % (chat_msg["username"], chat_msg["text"]))
 		else:
 			logging.info("Message: %s" % chat_msg["text"])
+
+	def handle_command(self, msg, from_chat=False, username=""):
+		return self._bot_cmds().handle_command(msg, from_chat, username)
+	def _bot_cmds(self):
+		if not "_commands" in dir(self):
+			self._commands = bot_cmds.BotCommands(self)
+		return self._commands
 
 	######################### Client -> Server #########################
 
@@ -260,7 +177,7 @@ class Generals(object):
 			raise ValueError("Invalid mode")
 
 		if (force_start):
-			_spawn(self._send_forcestart)
+			_spawn(self.send_forcestart)
 
 	def _start_sending_heartbeat(self):
 		while True:
@@ -271,56 +188,30 @@ class Generals(object):
 				break
 			time.sleep(0.1)
 
-	def _send_forcestart(self, delay=20):
+	def send_forcestart(self, delay=20):
 		time.sleep(delay)
 		self._send(["set_force_start", self._gameid, True])
 		logging.info("Sent force start")
 
-	def _set_game_speed(self, speed="1"):
+	def set_game_speed(self, speed="1"):
 		speed = int(speed)
 		if speed in [1, 2, 3, 4]:
 			self._send(["set_custom_options", self._gameid, {"game_speed":speed}])
 
-	def _start_avoiding_team(self):
-		while True:
-			if not "teams" in dir(self):
-				time.sleep(0.1)
-				continue
-			for i, members in self.teams.items():
-				if self._username in members:
-					if len(members) > 1: # More than 1 person on bots team
-						for team in range(1, MAX_NUM_TEAMS+1):
-							if not team in self.teams:
-								self._set_game_team(team)
-								break
-
-			time.sleep(0.1)
-
-	def _set_game_team(self, team="1"):
+	def set_game_team(self, team="1"):
 		team = int(team)
 		if team in range(1, MAX_NUM_TEAMS+1):
 			self._send(["set_custom_team", self._gameid, team])
 
-	def _set_game_public(self):
+	def set_game_public(self):
 		self._send(["make_custom_public", self._gameid])
 
-	def _set_game_map(self, mapname=""):
+	def set_game_map(self, mapname=""):
 		if len(mapname) > 1:
-			maplower = mapname.lower()
-			if maplower in ["win", "good"]:
-				self._send(["set_custom_options", self._gameid, {"map":random.choice(GENERALS_MAPS)}])
-			elif maplower == "top":
-				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_top())}])
-			elif maplower == "hot":
-				self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_hot())}])
-			else:
-				maps = generals_api.list_search(mapname)
-				if mapname in maps:
-					self._send(["set_custom_options", self._gameid, {"map":mapname}])
-				else:
-					self.send_chat("Could not find map named "+mapname+" (Note: names are case sensitive)")
-		else:
-			self._send(["set_custom_options", self._gameid, {"map":random.choice(generals_api.list_both())}])
+			self._send(["set_custom_options", self._gameid, {"map":mapname}])
+
+	def send_surrender(self):
+		self._send(["surrender"])
 
 	def _send(self, msg):
 		try:
