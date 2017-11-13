@@ -4,6 +4,7 @@
 	Game Viewer
 '''
 
+import logging
 import pygame
 import threading
 import time
@@ -27,11 +28,13 @@ TOGGLE_EXIT_BTN_WIDTH = 65
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
-	def __init__(self, name=None):
+	def __init__(self, name=None, moveEvent=None):
 		self._runPygame = True
 		self._name = name
+		self._moveEvent = moveEvent					# self._moveEvent([source_x, source_y], [target_x, target_y])
 		self._receivedUpdate = False
 		self._showGrid = True
+		self._clicked = None
 
 	def mainViewerLoop(self):
 		while not self._receivedUpdate: # Wait for first update
@@ -45,6 +48,8 @@ class GeneralsViewer(object):
 					self._runPygame = False # Flag done
 				elif event.type == pygame.MOUSEBUTTONDOWN: # Mouse Click
 					self._handleClick(pygame.mouse.get_pos())
+				elif event.type == pygame.KEYDOWN: # Key Press Down
+					self._handleKeypress(event.key)
 
 			if (self._receivedUpdate):
 				self._drawViewer()
@@ -108,7 +113,8 @@ class GeneralsViewer(object):
 		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
 			row = (pos[1] - ABOVE_GRID_HEIGHT) // (CELL_HEIGHT + CELL_MARGIN)
-			print("Click ", pos, "Grid coordinates: ", row, column)
+			self._clicked = (column, row)
+			logging.debug("Click %s, Grid Coordinates: %s" % (pos, self._clicked))
 
 	def _toggleGrid(self):
 		self._showGrid = not self._showGrid
@@ -117,6 +123,32 @@ class GeneralsViewer(object):
 			window_height += self._grid_height
 		self._window_size[1] = window_height
 		self._screen = pygame.display.set_mode(self._window_size)
+
+	''' ======================== Handle Keypresses ======================== '''
+
+	def _handleKeypress(self, key):
+		if self._clicked == None or self._moveEvent == None:
+			return False
+		column = self._clicked[0]
+		row = self._clicked[1]
+
+		target = None
+		if (key == pygame.K_LEFT):
+			if column > 0:
+				target = (column-1, row)
+		elif (key == pygame.K_RIGHT):
+			if column < self._map.cols - 1:
+				target = (column+1, row)
+		elif (key == pygame.K_UP):
+			if row > 0:
+				target = (column, row-1)
+		elif (key == pygame.K_DOWN):
+			if row < self._map.rows - 1:
+				target = (column, row+1)
+
+		if target != None:
+			self._moveEvent(self._clicked, target)
+			self._clicked = target
 
 	''' ======================== Viewer Drawing ======================== '''
 

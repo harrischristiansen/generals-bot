@@ -176,7 +176,7 @@ class Generals(object):
 		else:
 			raise ValueError("Invalid mode")
 
-		if (force_start):
+		if force_start:
 			_spawn(self.send_forcestart)
 
 	def _start_sending_heartbeat(self):

@@ -101,7 +101,7 @@ class Map(object):
 		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
 			if includeGeneral < 1:
 				includeGeneral = general.army * includeGeneral
-				if (includeGeneral < 6):
+				if includeGeneral < 6:
 					includeGeneral = 6
 			if largest == None:
 				largest = general

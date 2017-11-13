@@ -1,2 +1,3 @@
 websocket-client
 pygame
+requests

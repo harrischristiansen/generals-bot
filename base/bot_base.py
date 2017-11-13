@@ -16,7 +16,7 @@ from .client.constants import *
 from .viewer import GeneralsViewer
 
 class GeneralsBot(object):
-	def __init__(self, moveMethod, name="PurdueBot", gameType="private", privateRoomID=None, showGameViewer=True, public_server=False, start_msg_cmd=""):
+	def __init__(self, moveMethod, moveEvent=None, name="PurdueBot", gameType="private", privateRoomID=None, showGameViewer=True, public_server=False, start_msg_cmd=""):
 		# Save Config
 		self._moveMethod = moveMethod
 		self._name = name
@@ -37,11 +37,11 @@ class GeneralsBot(object):
 			window_title = "%s (%s)" % (self._name, self._gameType)
 			if self._privateRoomID != None:
 				window_title = "%s (%s - %s)" % (self._name, self._gameType, self._privateRoomID)
-			self._viewer = GeneralsViewer(window_title)
+			self._viewer = GeneralsViewer(window_title, moveEvent=moveEvent)
 			self._viewer.mainViewerLoop() # Consumes Main Thread
 			self._exit_game()
 
-		while (self._running):
+		while self._running:
 			time.sleep(10)
 
 		self._exit_game()
