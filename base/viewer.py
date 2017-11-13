@@ -9,6 +9,8 @@ import pygame
 import threading
 import time
 
+from .client.constants import *
+
 # Color Definitions
 BLACK = (0,0,0)
 GRAY_DARK = (110,110,110)
@@ -51,7 +53,7 @@ class GeneralsViewer(object):
 				elif event.type == pygame.KEYDOWN: # Key Press Down
 					self._handleKeypress(event.key)
 
-			if (self._receivedUpdate):
+			if self._receivedUpdate:
 				self._drawViewer()
 				self._receivedUpdate = False
 
@@ -92,7 +94,7 @@ class GeneralsViewer(object):
 		self._screen = pygame.display.set_mode(self._window_size)
 
 		window_title = "Generals IO Bot"
-		if (self._name != None):
+		if self._name != None:
 			window_title += " - " + str(self._name)
 		pygame.display.set_caption(window_title)
 		self._font = pygame.font.SysFont('Arial', CELL_HEIGHT-10)
@@ -104,13 +106,13 @@ class GeneralsViewer(object):
 	''' ======================== Handle Clicks ======================== '''
 
 	def _handleClick(self, pos):
-		if (pos[1] < ABOVE_GRID_HEIGHT):
-			if (pos[0] < TOGGLE_GRID_BTN_WIDTH): # Toggle Grid
+		if pos[1] < ABOVE_GRID_HEIGHT:
+			if pos[0] < TOGGLE_GRID_BTN_WIDTH: # Toggle Grid
 				self._toggleGrid()
-			elif (pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH): # Toggle Exit on Game Over
+			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH: # Toggle Exit on Game Over
 				self._map.exit_on_game_over = not self._map.exit_on_game_over
 			self._receivedUpdate = True
-		elif (self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < self._window_size[1]-SCORES_ROW_HEIGHT): # Click inside Grid
+		elif self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < (self._window_size[1] - SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
 			row = (pos[1] - ABOVE_GRID_HEIGHT) // (CELL_HEIGHT + CELL_MARGIN)
 			self._clicked = (column, row)
@@ -133,16 +135,16 @@ class GeneralsViewer(object):
 		row = self._clicked[1]
 
 		target = None
-		if (key == pygame.K_LEFT):
+		if key == pygame.K_LEFT:
 			if column > 0:
 				target = (column-1, row)
-		elif (key == pygame.K_RIGHT):
+		elif key == pygame.K_RIGHT:
 			if column < self._map.cols - 1:
 				target = (column+1, row)
-		elif (key == pygame.K_UP):
+		elif key == pygame.K_UP:
 			if row > 0:
 				target = (column, row-1)
-		elif (key == pygame.K_DOWN):
+		elif key == pygame.K_DOWN:
 			if row < self._map.rows - 1:
 				target = (column, row+1)
 
@@ -180,7 +182,7 @@ class GeneralsViewer(object):
 		score_width = self._window_size[0] / len(self._scores)
 		for i, score in enumerate(self._scores):
 			score_color = PLAYER_COLORS[int(score['i'])]
-			if (score['dead'] == True):
+			if score['dead'] == True:
 				score_color = GRAY_DARK
 			pygame.draw.rect(self._screen, score_color, [score_width*i, pos_top, score_width, SCORES_ROW_HEIGHT])
 			self._screen.blit(self._font.render(self._map.usernames[int(score['i'])], True, WHITE), (score_width*i+3, pos_top+1))
@@ -193,20 +195,20 @@ class GeneralsViewer(object):
 				# Determine BG Color
 				color = WHITE
 				color_font = WHITE
-				if self._map._tile_grid[row][column] == -2: # Mountain
+				if tile.tile == TILE_MOUNTAIN: # Mountain
 					color = BLACK
-				elif self._map._tile_grid[row][column] == -3: # Fog
+				elif tile.tile == TILE_FOG: # Fog
 					color = GRAY
-				elif self._map._tile_grid[row][column] == -4: # Obstacle
+				elif tile.tile == TILE_OBSTACLE: # Obstacle
 					color = GRAY_DARK
-				elif self._map._tile_grid[row][column] >= 0: # Player
-					color = PLAYER_COLORS[self._map._tile_grid[row][column]]
+				elif tile.tile >= 0: # Player
+					color = PLAYER_COLORS[tile.tile]
 				else:
 					color_font = BLACK
 
 				pos_left = (CELL_MARGIN + CELL_WIDTH) * column + CELL_MARGIN
 				pos_top = (CELL_MARGIN + CELL_HEIGHT) * row + CELL_MARGIN + ABOVE_GRID_HEIGHT
-				if (tile in self._map.cities or tile in self._map.generals): # City/General
+				if tile.isCity or tile.isGeneral: # City/General
 					# Draw Circle
 					pos_left_circle = int(pos_left + (CELL_WIDTH/2))
 					pos_top_circle = int(pos_top + (CELL_HEIGHT/2))
@@ -218,19 +220,16 @@ class GeneralsViewer(object):
 					pygame.draw.rect(self._screen, color, [pos_left, pos_top, CELL_WIDTH, CELL_HEIGHT])
 
 				# Draw Text Value
-				if (tile.army != 0): # Don't draw on empty tiles
+				if tile.army != 0: # Don't draw on empty tiles
 					textVal = str(tile.army)
 					self._screen.blit(self._font.render(textVal, True, color_font), (pos_left, pos_top+2))
 
 				# Draw Swamps
-				if (tile.isSwamp):
+				if tile.isSwamp:
 					self._screen.blit(self._font.render("±", True, color_font), (pos_left+9, pos_top+7))
 
 				# Draw Path
-				if (self._path != None and (column,row) in self._path):
+				if self._path != None and (column,row) in self._path:
 					self._screen.blit(self._fontLrg.render("*", True, color_font), (pos_left+5, pos_top-3))
-				if (self._collect_path != None and (column,row) in self._collect_path):
+				if self._collect_path != None and (column,row) in self._collect_path:
 					self._screen.blit(self._fontLrg.render("*", True, PLAYER_COLORS[8]), (pos_left+6, pos_top+6))
-	 
-		
-

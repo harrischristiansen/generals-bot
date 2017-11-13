@@ -185,8 +185,8 @@ class GeneralsBot(object):
 			dir_x = -1
 
 		# Return List of Moves
-		moves = random.sample([(0, dir_x), (dir_y, 0)],2)
-		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)],2))
+		moves = random.sample([(0, dir_x), (dir_y, 0)], 2)
+		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)], 2))
 		return moves
 
 	def away_king_moves(self, source):
@@ -224,6 +224,7 @@ class GeneralsBot(object):
 
 		army = source.army if not move_half else source.army/2
 		if army > dest.army+1: # Captured Tile, Dirty Map State
+			source.update(self._map, source.tile, 1)
 			dest.update(self._map, source.tile, (army - dest.army - 1))
 			return True
 		return False

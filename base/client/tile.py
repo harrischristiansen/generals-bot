@@ -54,7 +54,7 @@ class Tile(object):
 			if tile == gamemap.player_index:
 				self.turn_held = gamemap.turn
 			self.tile = tile
-		if self.army == 0 or army > 0 or self.isSwamp: # Remember Discovered Armies
+		if self.army == 0 or army > 0 or tile >= TILE_MOUNTAIN or self.isSwamp: # Remember Discovered Armies
 			self.army = army
 
 		if isCity:
