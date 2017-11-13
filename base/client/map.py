@@ -91,6 +91,8 @@ class Map(object):
 		if ofType == None:
 			ofType = self.player_index
 		general = self.generals[ofType]
+		if general == None:
+			logging.error("ERROR: find_largest_tile encountered general=None for player %d with list %s" % (ofType, self.generals))
 
 		largest = None
 		for tile in self.tiles[ofType]: # Check each ofType tile
@@ -98,7 +100,7 @@ class Map(object):
 				if not tile.isGeneral and tile not in notInPath: # Exclude general and path
 					largest = tile
 
-		if includeGeneral > 0 and general not in notInPath: # Handle includeGeneral
+		if includeGeneral > 0 and general != None and general not in notInPath: # Handle includeGeneral
 			if includeGeneral < 1:
 				includeGeneral = general.army * includeGeneral
 				if includeGeneral < 6:

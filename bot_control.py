@@ -46,6 +46,7 @@ def add_next_move(source_xy, dest_xy):
 
 	move = (source, dest)
 	nextMove.append(move)
+	_bot._path = [t[1] for t in nextMove]
 
 def move_manual():
 	global nextMove, last_manual

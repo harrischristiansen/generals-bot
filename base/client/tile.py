@@ -135,10 +135,10 @@ class Tile(object):
 				if tile.isGeneral: # Generals appear closer
 					distance = distance * 0.09
 				elif tile.isCity: # Cities vary distance based on size, but appear closer
-					distance = distance * sorted((0.18, (tile.army / (3.2*self.army)), 20))[1]
+					distance = distance * sorted((0.17, (tile.army / (3.2*self.army)), 20))[1]
 
 				if tile.tile == TILE_EMPTY: # Empties appear further away
-					distance = distance * 3.8
+					distance = distance * 4.3
 				if tile.army > self.army: # Larger targets appear further away
 					distance = distance * (1.5*tile.army/self.army)
 				if tile.isSwamp: # Swamps appear further away

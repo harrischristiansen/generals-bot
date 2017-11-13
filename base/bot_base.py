@@ -219,13 +219,17 @@ class GeneralsBot(object):
 		return False
 
 	def _update_map_dirty(self, source, dest, move_half):
-		if dest.isOnTeam():
-			return False
+		source.update(self._map, source.tile, 1)
+		if dest.isOnTeam(): # Moved Internal Tile
+			dest.update(self._map, source.tile, (source.army - 1 + dest.army))
+			return True
 
 		army = source.army if not move_half else source.army/2
-		if army > dest.army+1: # Captured Tile, Dirty Map State
-			source.update(self._map, source.tile, 1)
-			dest.update(self._map, source.tile, (army - dest.army - 1))
+		if army > dest.army+1: # Captured Tile
+			if dest.isGeneral:
+				dest.update(self._map, source.tile, (army - dest.army - 1), isCity=True)
+			else:
+				dest.update(self._map, source.tile, (army - dest.army - 1))
 			return True
 		return False
 
