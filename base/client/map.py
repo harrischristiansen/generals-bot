@@ -4,6 +4,8 @@
 	Map: Objects for representing Generals IO Map
 '''
 
+import logging
+
 from .constants import *
 from .tile import Tile
 
