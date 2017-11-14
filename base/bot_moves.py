@@ -12,15 +12,20 @@ from .client.constants import *
 ######################### Move Priority Capture #########################
 
 def move_priority(gamemap):
+	priority_move = (False, False)
+
 	tiles = [t for t in gamemap.generals if t is not None]
 	tiles.extend(gamemap.cities)
 	for tile in tiles:
 		if not tile.shouldNotAttack():
 			for neighbor in tile.neighbors():
 				if neighbor.isSelf() and neighbor.army > max(1, tile.army + 1):
-					#logging.info("Priority Move from %s -> %s" % (neighbor, tile)) # TODO: Note, priority moves are repeatedly sent, indiating move making is sending repeated moves
-					return (neighbor, tile)
-	return (False, False)
+					if priority_move[0] == False or priority_move[0].army < neighbor.army:
+						priority_move = (neighbor, tile)
+			if priority_move[0] != False:
+				#logging.info("Priority Move from %s -> %s" % (priority_move[0], priority_move[1])) # TODO: Note, priority moves are repeatedly sent, indiating move making is sending repeated moves
+				break
+	return priority_move
 
 ######################### Move Outward #########################
 
