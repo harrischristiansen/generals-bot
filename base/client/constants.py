@@ -52,9 +52,11 @@ PRE_HELP_TEXT = [
 	"| map [top, hot]: assign a random map (from the top or hot list)",
 	"| map Map Name: assign map by name",
 	"| team 1: join a team [1 - 8]",
+	"| Code available at: git.io/myssix",
 ]
 GAME_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| team: request not to be attacked",
 	"| unteam: cancel team",
+	"| Code available at: git.io/myssix",
 ]
