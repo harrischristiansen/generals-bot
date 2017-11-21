@@ -22,36 +22,24 @@ def make_move(currentBot, currentMap):
 
 	# Make Move
 	if _map.turn % 8 == 0:
+		if move_collect_to_path():
+			return
+	if _map.turn % 2 == 0:
+		if make_primary_move():
+			return
+	if not move_outward():
 		if not move_collect_to_path():
-			if not make_primary_move():
-				move_outward()
-	elif _map.turn % 2 == 0:
-		if not make_primary_move():
-			if not move_outward():
-				move_collect_to_path()
-	else:
-		if not move_outward():
-			if not move_collect_to_path():
-				make_primary_move()
+			make_primary_move()
 	return
 
 def place_move(source, dest):
-	moveHalf = False
-	if _map.turn > 150:
-		if source in _map.generals:
-			moveHalf = True
-		elif source in _map.cities:
-			moveHalf = random.choice([False, False, False, True])
-			if (_map.turn - source.turn_captured) < 16:
-				moveHalf = True
-	
-	_bot.place_move(source, dest, move_half=moveHalf)
+	_bot.place_move(source, dest, move_half=bot_moves.should_move_half(_map, source, dest))
 
 ######################### Primary Move Making #########################
 
 def make_primary_move():
 	update_primary_target()
-	if len(_path) > 1:
+	if len(_map.path) > 1:
 		return move_primary_path_forward()
 	elif _target != None:
 		new_primary_path()
@@ -60,12 +48,11 @@ def make_primary_move():
 ######################### Primary Targeting #########################
 
 _target = None
-_path = []
 _path_position = 0
 def update_primary_target():
 	global _target
 	movesLeft = 100
-	pathLength = len(_path)
+	pathLength = len(_map.path)
 	if pathLength > 2:
 		movesLeft = pathLength - _path_position - 1
 
@@ -73,7 +60,7 @@ def update_primary_target():
 		_target = _map.grid[_target.y][_target.x]
 		if movesLeft <= 2: # Make target appear smaller to avoid un-targeting # TEMP-FIX
 			_target.army = _target.army / 5
-	newTarget = _bot.find_primary_target(_target)
+	newTarget = _map.find_primary_target(_target)
 
 	if _target != newTarget:
 		_target = newTarget
@@ -84,7 +71,7 @@ def update_primary_target():
 def move_primary_path_forward():
 	global _path_position
 	try:
-		source = _path[_path_position]
+		source = _map.path[_path_position]
 	except IndexError:
 		#logging.debug("Invalid Current Path Position")
 		return new_primary_path()
@@ -94,7 +81,7 @@ def move_primary_path_forward():
 		return new_primary_path()
 
 	try:
-		dest = _path[_path_position+1] # Determine Destination
+		dest = _map.path[_path_position+1] # Determine Destination
 		if dest.tile == _map.player_index or source.army > (dest.army + 1):
 			place_move(source, dest)
 		else:
@@ -108,24 +95,23 @@ def move_primary_path_forward():
 	return True
 
 def new_primary_path(restoreOldPosition=False):
-	global _bot, _path, _path_position, _target
+	global _bot, _path_position, _target
 
 	# Store Old Tile
 	old_tile = None
-	if _path_position > 0 and len(_path) > 0: # Store old path position
-		old_tile = _path[_path_position]
+	if _path_position > 0 and len(_map.path) > 0: # Store old path position
+		old_tile = _map.path[_path_position]
 	_path_position = 0
 	
 	# Determine Source and Path
 	source = _map.find_city()
 	if source == None:
-		source = _bot.find_largest_tile(includeGeneral=True)
-	_path = source.path_to(_target) # Find new path to target
-	_bot._path = _path
+		source = _map.find_largest_tile(includeGeneral=True)
+	_map.path = source.path_to(_target) # Find new path to target
 
 	# Restore Old Tile
 	if restoreOldPosition and old_tile != None:
-		for i, tile in enumerate(_path):
+		for i, tile in enumerate(_map.path):
 			if (tile.x, tile.y) == (old_tile.x, old_tile.y):
 				_path_position = i
 				return True
@@ -135,7 +121,7 @@ def new_primary_path(restoreOldPosition=False):
 ######################### Move Outward #########################
 
 def move_outward():
-	(source, dest) = bot_moves.move_outward(_map, _path)
+	(source, dest) = bot_moves.move_outward(_map, _map.path)
 	if source:
 		place_move(source, dest)
 		return True
@@ -143,36 +129,29 @@ def move_outward():
 
 ######################### Collect To Path #########################
 
-_collect_path = []
 def find_collect_path():
-	global _collect_path
-
 	# Find Largest Tile
-	source = _bot.find_largest_tile(notInPath=_path, includeGeneral=0.33)
+	source = _map.find_largest_tile(notInPath=_map.path, includeGeneral=0.33)
 	if (source == None or source.army < 4):
-		_collect_path = []
-		_bot._collect_path = []
-		return _collect_path
+		_map.collect_path = []
+		return _map.collect_path
 
 	# Determine Target Tile
 	dest = None
 	if source.army > 40:
-		dest = _bot.find_closest_target(source)
+		dest = source.nearest_target_tile()
 	if dest == None:
-		dest = source.nearest_tile_in_path(_path)
+		dest = source.nearest_tile_in_path(_map.path)
 
-	# Determine Path
-	_collect_path = source.path_to(dest)
-	_bot._collect_path = _collect_path
-
-	return _collect_path
+	# Return Path
+	return source.path_to(dest)
 
 def move_collect_to_path():
 	# Update Path
-	collect_path = find_collect_path()
+	_map.collect_path = find_collect_path()
 
 	# Perform Move
-	(move_from, move_to) = bot_moves.move_path(collect_path)
+	(move_from, move_to) = bot_moves.move_path(_map.collect_path)
 	if move_from != None:
 		place_move(move_from, move_to)
 		return True

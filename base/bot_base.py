@@ -68,10 +68,6 @@ class GeneralsBot(object):
 
 		# Update GeneralsViewer Grid
 		if '_viewer' in selfDir:
-			if '_path' in selfDir:
-				self._map.path = self._path
-			if '_collect_path' in selfDir:
-				self._map.collect_path = self._collect_path
 			if '_moves_realized' in selfDir:
 				self._map.bottomText = "Realized: "+str(self._moves_realized)
 			viewer = self._viewer.updateGrid(gamemap)
@@ -97,9 +93,9 @@ class GeneralsBot(object):
 		self._moves_realized = 0
 		while self._running:
 			self._move_event.wait()
-			self._move_event.clear()
 			self._make_move()
-			self._moves_realized+=1
+			self._move_event.clear()
+			self._moves_realized += 1
 
 	def _make_move(self):
 		self._moveMethod(self, self._map)
@@ -118,97 +114,8 @@ class GeneralsBot(object):
 		time.sleep(0.2)
 		for cmd in self._start_msg_cmd.split("\\n"):
 			self._game.handle_command(cmd)
-
-	######################### Tile Finding #########################
-
-	def find_primary_target(self, target=None):
-		target_type = OPP_EMPTY - 1
-		if target != None and target.shouldNotAttack(): # Acquired Target
-			target = None
-		if target != None: # Determine Previous Target Type
-			target_type = OPP_EMPTY
-			if target.isGeneral:
-				target_type = OPP_GENERAL
-			elif target.isCity:
-				target_type = OPP_CITY
-			elif target.army > 0:
-				target_type = OPP_ARMY
-
-		# Determine Max Target Size
-		largest = self._map.find_largest_tile(includeGeneral=True)
-		max_target_size = largest.army * 1.25
-
-		for x in _shuffle(range(self._map.cols)): # Check Each Tile
-			for y in _shuffle(range(self._map.rows)):
-				source = self._map.grid[y][x]
-				if not source.isValidTarget() or source.tile == self._map.player_index: # Don't target invalid tiles
-					continue
-
-				if target_type <= OPP_GENERAL: # Search for Generals
-					if source.tile >= 0 and source.isGeneral and source.army < max_target_size:
-						return source
-
-				if target_type <= OPP_CITY: # Search for Smallest Cities
-					if source.isCity and source.army < max_target_size:
-						if target_type < OPP_CITY or source.army < target.army:
-							target = source
-							target_type = OPP_CITY
-
-				if target_type <= OPP_ARMY: # Search for Largest Opponent Armies
-					if source.tile >= 0 and (target == None or source.army > target.army) and not source.isCity:
-						target = source
-						target_type = OPP_ARMY
-
-				if target_type < OPP_EMPTY: # Search for Empty Squares
-					if source.tile == TILE_EMPTY and source.army < largest.army:
-						target = source
-						target_type = OPP_EMPTY
-
-		return target
 	
-	######################### Movement Helpers #########################
-
-	def toward_dest_moves(self, source, dest=None):
-		# Determine Destination
-		if dest == None:
-			dest = self.find_primary_target()
-			if dest == None:
-				return self.away_king_moves(source)
-
-		# Compute X/Y Directions
-		dir_y = 1
-		if source.y > dest.y:
-			dir_y = -1
-
-		dir_x = 1
-		if source.x > dest.x:
-			dir_x = -1
-
-		# Return List of Moves
-		moves = random.sample([(0, dir_x), (dir_y, 0)], 2)
-		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)], 2))
-		return moves
-
-	def away_king_moves(self, source):
-		general = self._map.generals[self._map.player_index]
-
-		if source == general: # Moving from General
-			return self.moves_random()
-
-		dir_y = 1
-		if source.y < general.y:
-			dir_y = -1
-
-		dir_x = 1
-		if source.x < general.x:
-			dir_x = -1
-
-		moves = random.sample([(0, dir_x), (dir_y, 0)],2)
-		moves.extend(random.sample([(0, -dir_x), (-dir_y, 0)],2))
-		return moves
-
-	def moves_random(self):
-		return random.sample(DIRECTIONS, 4)
+	######################### Move Making #########################
 
 	def place_move(self, source, dest, move_half=False):
 		if self._map.isValidPosition(dest.x, dest.y):
@@ -239,8 +146,3 @@ def _create_thread(f):
 	t = threading.Thread(target=f)
 	t.daemon = True
 	t.start()
-
-def _shuffle(seq):
-	shuffled = list(seq)
-	random.shuffle(shuffled)
-	return iter(shuffled)

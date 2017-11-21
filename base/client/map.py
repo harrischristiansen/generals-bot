@@ -17,7 +17,7 @@ class Map(object):
 		self.usernames = start_data['usernames'] 										# List of String Usernames
 		self.replay_url = REPLAY_URLS["na"] + start_data['replay_id'] 					# String Replay URL          # TODO: Use Client Region
 
-		# First Game Data
+		# Map Properties
 		self._applyUpdateDiff(data)
 		self.rows = self.rows 															# Integer Number Grid Rows
 		self.cols = self.cols 															# Integer Number Grid Cols
@@ -34,6 +34,10 @@ class Map(object):
 		self.scores = self._getScores(data)												# List of Player Scores
 		self.complete = False															# Boolean Game Complete
 		self.result = False																# Boolean Game Result (True = Won)
+
+		# Public/Shared Components
+		self.path = []
+		self.collect_path = []
 
 		# Public Options
 		self.exit_on_game_over = True													# Controls if bot exits after game over
@@ -115,6 +119,51 @@ class Map(object):
 				largest = general
 
 		return largest
+
+	def find_primary_target(self, target=None):
+		target_type = OPP_EMPTY - 1
+		if target != None and target.shouldNotAttack(): # Acquired Target
+			target = None
+		if target != None: # Determine Previous Target Type
+			target_type = OPP_EMPTY
+			if target.isGeneral:
+				target_type = OPP_GENERAL
+			elif target.isCity:
+				target_type = OPP_CITY
+			elif target.army > 0:
+				target_type = OPP_ARMY
+
+		# Determine Max Target Size
+		largest = self.find_largest_tile(includeGeneral=True)
+		max_target_size = largest.army * 1.25
+
+		for x in _shuffle(range(self.cols)): # Check Each Tile
+			for y in _shuffle(range(self.rows)):
+				source = self.grid[y][x]
+				if not source.isValidTarget() or source.tile == self.player_index: # Don't target invalid tiles
+					continue
+
+				if target_type <= OPP_GENERAL: # Search for Generals
+					if source.tile >= 0 and source.isGeneral and source.army < max_target_size:
+						return source
+
+				if target_type <= OPP_CITY: # Search for Smallest Cities
+					if source.isCity and source.army < max_target_size:
+						if target_type < OPP_CITY or source.army < target.army:
+							target = source
+							target_type = OPP_CITY
+
+				if target_type <= OPP_ARMY: # Search for Largest Opponent Armies
+					if source.tile >= 0 and (target == None or source.army > target.army) and not source.isCity:
+						target = source
+						target_type = OPP_ARMY
+
+				if target_type < OPP_EMPTY: # Search for Empty Squares
+					if source.tile == TILE_EMPTY and source.army < largest.army:
+						target = source
+						target_type = OPP_EMPTY
+
+		return target
 
 	################################ Validators ################################
 
@@ -217,3 +266,8 @@ def _apply_diff(cache, diff):
 		i += 1
 
 	assert i == len(diff)
+
+def _shuffle(seq):
+	shuffled = list(seq)
+	random.shuffle(shuffled)
+	return iter(shuffled)

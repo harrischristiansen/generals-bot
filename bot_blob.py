@@ -23,11 +23,10 @@ def make_move(currentBot, currentMap):
 		return
 
 	if _map.turn % 3 == 0:
-		if not move_outward():
-			move_toward()
-	else:
-		if not move_toward():
-			move_outward()
+		if move_outward():
+			return True
+	if not move_toward():
+		move_outward()
 	return
 
 def place_move(source, dest):
@@ -45,7 +44,7 @@ def move_priority():
 ######################### Move Outward #########################
 
 def move_outward():
-	(source, dest) = bot_moves.move_outward(_map, _path)
+	(source, dest) = bot_moves.move_outward(_map, _map.path)
 	if source and dest:
 		place_move(source, dest)
 		return True
@@ -53,10 +52,9 @@ def move_outward():
 
 ######################### Move Toward #########################
 
-_path = []
 def move_toward():
-	_bot._path = _path = bot_moves.path_proximity_target(_map)
-	(move_from, move_to) = bot_moves.move_path(_path)
+	_map.path = bot_moves.path_proximity_target(_map)
+	(move_from, move_to) = bot_moves.move_path(_map.path)
 	if move_from and move_to:
 		place_move(move_from, move_to)
 		return True
