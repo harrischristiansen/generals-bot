@@ -33,7 +33,7 @@ def move_outward(gamemap, path=[]):
 	move_swamp = (False, False)
 	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
 		if source.army >= 2 and source not in path: # Find One With Armies
-			for neighbor in bot_base._shuffle(source.neighbors()):
+			for neighbor in _shuffle(source.neighbors()):
 				if (not neighbor.shouldNotAttack() and source.army > neighbor.army + 1) or neighbor in path: # Capture Somewhere New
 					if not neighbor.isSwamp:
 						return (source, neighbor)
@@ -123,3 +123,10 @@ def path_gather(gamemap, elsoDo=[]):
 	if source and target and source != target:
 		return source.path_to(target)
 	return elsoDo
+
+######################### Helpers #########################
+
+def _shuffle(seq):
+	shuffled = list(seq)
+	random.shuffle(shuffled)
+	return iter(shuffled)
