@@ -22,7 +22,7 @@ class BotCommands(object):
 
 	def handle_command(self, msg, from_chat=False, username=""):
 		msg_lower = msg.lower()
-		if len(msg) < 12 and any(keyword in msg_lower for keyword in START_KEYWORDS):
+		if len(msg) < 12 and any(k in msg_lower for k in START_KEYWORDS):
 			self._bot.send_forcestart(delay=0)
 			return True
 		if len(msg) < 2:
@@ -34,8 +34,11 @@ class BotCommands(object):
 		base_command = command[0].lower()
 		arg_command = " ".join(command[1:])
 
-		if "help" in base_command:
+		if any(k in base_command for k in HELP_KEYWORDS):
 			self._print_command_help(from_chat)
+			return True
+		if any(k in base_command for k in HI_KEYWORDS):
+			self._print_command_hello()
 			return True
 		if "setup" in base_command:
 			self._bot.set_game_speed(4)
@@ -74,6 +77,18 @@ class BotCommands(object):
 			else:
 				self._set_game_map()
 			return True
+		elif "normal" in base_command:
+			self._set_normal_map()
+			return True
+		elif "swamp" in base_command:
+			if len(command) == 2:
+				try:
+					self._set_swamp_map(float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._set_swamp_map()
+			return True
 		elif from_chat and len(msg) < 12 and "map" in msg_lower:
 			self._set_game_map()
 			return True
@@ -82,11 +97,21 @@ class BotCommands(object):
 
 	def _print_command_help(self, from_chat=False):
 		if from_chat:
+			self._bot.sent_hello = True
 			for txt in GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT:
 				self._bot.send_chat(txt)
 				time.sleep(0.34)
 		else:
 			print("\n".join(GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT))
+
+	def _print_command_hello(self):
+		if "sent_hello" in dir(self._bot):
+			return True
+		self._bot.sent_hello = True
+
+		for txt in HELLO_TEXT:
+			self._bot.send_chat(txt)
+			time.sleep(0.34)
 
 	######################### Teammates #########################
 
@@ -144,6 +169,18 @@ class BotCommands(object):
 		else:
 			self._bot.set_game_map(random.choice(generals_api.list_both()))
 
+	def _set_normal_map(self):
+		width = round(random.uniform(0, 1), 2)
+		height = round(random.uniform(0, 1), 2)
+		city = round(random.uniform(0, 1), 2)
+		mountain = round(random.uniform(0, 1), 2)
+		self._bot.set_normal_map(width, height, city, mountain)
+
+	def _set_swamp_map(self, swamp=-1):
+		if swamp == -1:
+			swamp = round(random.uniform(0, 1), 2)
+		if swamp >= 0 and swamp <= 1:
+			self._bot.set_normal_map(swamp=swamp)
 
 def _spawn(f):
 	t = threading.Thread(target=f)

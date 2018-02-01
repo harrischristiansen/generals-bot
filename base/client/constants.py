@@ -17,6 +17,8 @@ REPLAY_URLS = {
 }
 
 START_KEYWORDS = ["start", "go", "force", "play", "ready", "rdy"]
+HI_KEYWORDS = ["hi", "hello", "hey", "sup"]
+HELP_KEYWORDS = ["help", "config", "change", "myssix"]
 
 GENERALS_MAPS = [
 	"KILL A KING",
@@ -46,17 +48,25 @@ MAX_NUM_TEAMS = 8
 
 
 PRE_HELP_TEXT = [
+	"| Hi, I am Myssix - a generals.io bot",
 	"| ======= Available Commands =======",
 	"| start: send force start",
 	"| speed 4: set game play speed [1, 2, 3, 4]",
 	"| map [top, hot]: assign a random map (from the top or hot list)",
 	"| map Map Name: assign map by name",
 	"| team 1: join a team [1 - 8]",
+	"| normal: set map to classic (no map)",
+	"| swamp 0.5: set swamp value for classic map",
 	"| Code available at: git.io/myssix",
 ]
 GAME_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| team: request not to be attacked",
 	"| unteam: cancel team",
+	"| Code available at: git.io/myssix",
+]
+HELLO_TEXT = [
+	"| Hi, I am Myssix - a generals.io bot",
+	"| Say help for a list of available commands",
 	"| Code available at: git.io/myssix",
 ]

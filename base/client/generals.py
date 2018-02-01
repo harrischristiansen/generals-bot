@@ -210,6 +210,19 @@ class Generals(object):
 		if len(mapname) > 1:
 			self._send(["set_custom_options", self._gameid, {"map":mapname}])
 
+	def set_normal_map(self, width=-1, height=-1, city=-1, mountain=-1, swamp=-1):
+		self._send(["set_custom_options", self._gameid, {"map":None}])
+		if width >= 0 and width <=1:
+			self._send(["set_custom_options", self._gameid, {"width":width}])
+		if height >= 0 and height <=1:
+			self._send(["set_custom_options", self._gameid, {"height":height}])
+		if city >= 0 and city <=1:
+			self._send(["set_custom_options", self._gameid, {"city_density":city}])
+		if mountain >= 0 and mountain <=1:
+			self._send(["set_custom_options", self._gameid, {"mountain_density":mountain}])
+		if swamp >= 0 and swamp <=1:
+			self._send(["set_custom_options", self._gameid, {"swamp_density":swamp}])
+
 	def send_surrender(self):
 		self._send(["surrender"])
 
