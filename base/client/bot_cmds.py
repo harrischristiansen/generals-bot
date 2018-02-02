@@ -68,7 +68,7 @@ class BotCommands(object):
 			return True
 		elif "surrender!" in base_command:
 			if "_map" in dir(self):
-				self._map.exit_on_game_over = False
+				#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
 				self._bot.send_surrender()
 			return True
 		elif "map" in base_command:
