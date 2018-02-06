@@ -17,8 +17,8 @@ REPLAY_URLS = {
 }
 
 START_KEYWORDS = ["start", "go", "force", "play", "ready", "rdy"]
-HI_KEYWORDS = ["hi", "hello", "hey", "sup"]
-HELP_KEYWORDS = ["help", "config", "change", "myssix"]
+HI_KEYWORDS = ["hi", "hello", "hey", "sup", "myssix"]
+HELP_KEYWORDS = ["help", "config", "change"]
 
 GENERALS_MAPS = [
 	"KILL A KING",

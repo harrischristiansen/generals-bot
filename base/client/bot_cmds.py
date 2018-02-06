@@ -164,6 +164,9 @@ class BotCommands(object):
 				maps = generals_api.list_search(mapname)
 				if mapname in maps:
 					self._bot.set_game_map(mapname)
+				elif len(maps) >= 1:
+					self._bot.set_game_map(maps[0])
+					self._bot.send_chat("I could not find "+mapname+", so I set the map to "+maps[0]+" (Note: names are case sensitive)")
 				else:
 					self._bot.send_chat("Could not find map named "+mapname+" (Note: names are case sensitive)")
 		else:
