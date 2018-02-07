@@ -34,10 +34,10 @@ class BotCommands(object):
 		base_command = command[0].lower()
 		arg_command = " ".join(command[1:])
 
-		if any(k in base_command for k in HELP_KEYWORDS):
+		if base_command.startswith(tuple(HELP_KEYWORDS)):
 			self._print_command_help(from_chat)
 			return True
-		if any(k in base_command for k in HI_KEYWORDS):
+		if base_command.startswith(tuple(HELLO_KEYWORDS)):
 			self._print_command_hello()
 			return True
 		if "setup" in base_command:
