@@ -34,6 +34,9 @@ class BotCommands(object):
 		base_command = command[0].lower()
 		arg_command = " ".join(command[1:])
 
+		if self._handlePlayerCommand(msg, username):
+			return True
+
 		if base_command.startswith(tuple(HELP_KEYWORDS)):
 			self._print_command_help(from_chat)
 			return True
@@ -184,6 +187,20 @@ class BotCommands(object):
 			swamp = round(random.uniform(0, 1), 2)
 		if swamp >= 0 and swamp <= 1:
 			self._bot.set_normal_map(swamp=swamp)
+
+	######################### Player Requested Commands #########################
+
+	def _handlePlayerCommand(self, msg, username):
+		if username == "Plots85":
+			self._bot.send_chat("HI PLOTS85, I LOVE YOU!")
+			return True
+
+		if "eetin" in username:
+			if "yeet" in msg:
+				self._bot.send_chat("YEETINATOR IS THE BEST! ALL HAIL YEETINATOR! /bowdown")
+				return True
+
+		return False
 
 def _spawn(f):
 	t = threading.Thread(target=f)

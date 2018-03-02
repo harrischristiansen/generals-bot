@@ -41,4 +41,4 @@ Project available on [GitHub](https://github.com/harrischristiansen/generals-bot
 
 ## Contributors
 
-@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (harris@harrischristiansen.com)  
+@harrischristiansen [HarrisChristiansen.com](http://www.harrischristiansen.com) (code@harrischristiansen.com)  
