@@ -14,6 +14,7 @@ from . import generals_api
 class BotCommands(object):
 	def __init__(self, bot):
 		self._bot = bot
+		self._permitted_username = ""
 
 	def setMap(self, gamemap):
 		self._map = gamemap
@@ -51,50 +52,56 @@ class BotCommands(object):
 		elif "speed" in base_command and len(command) >= 2 and command[1][0].isdigit():
 			self._bot.set_game_speed(command[1][0])
 			return True
-		elif "team" in base_command:
-			if len(command) >= 2:
-				if len(command[1]) == 1:
-					self._bot.set_game_team(command[1])
-				else:
-					return self._add_teammate(arg_command)
-			elif base_command in ["unteamall"]:
-				self._remove_all_teammates()
-			elif base_command in ["unteam", "cancelteam"]:
-				self._remove_teammate(username)
-			elif base_command in ["noteam"]:
-				_spawn(self._start_avoiding_team)
-			else:
-				return self._add_teammate(username)
-			return True
 		elif "public" in base_command:
 			self._bot.set_game_public()
 			return True
-		elif "surrender!" in base_command:
-			if "_map" in dir(self):
-				#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
-				self._bot.send_surrender()
-			return True
-		elif "map" in base_command:
-			if len(command) >= 2:
-				self._set_game_map(arg_command)
-			else:
+		else: # OPTIONALLY-RESTRICTED Commands
+			if self._permitted_username != "" and self._permitted_username != username: # Only allow permitted user
+				return False
+
+			if "take" in base_command and username != "":
+				self._permitted_username = username
+			elif "team" in base_command:
+				if len(command) >= 2:
+					if len(command[1]) == 1:
+						self._bot.set_game_team(command[1])
+					else:
+						return self._add_teammate(arg_command)
+				elif base_command in ["unteamall"]:
+					self._remove_all_teammates()
+				elif base_command in ["unteam", "cancelteam"]:
+					self._remove_teammate(username)
+				elif base_command in ["noteam"]:
+					_spawn(self._start_avoiding_team)
+				else:
+					return self._add_teammate(username)
+				return True
+			elif "surrender!" in base_command:
+				if "_map" in dir(self):
+					#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
+					self._bot.send_surrender()
+				return True
+			elif "map" in base_command:
+				if len(command) >= 2:
+					self._set_game_map(arg_command)
+				else:
+					self._set_game_map()
+				return True
+			elif "normal" in base_command:
+				self._set_normal_map()
+				return True
+			elif "swamp" in base_command:
+				if len(command) == 2:
+					try:
+						self._set_swamp_map(float(arg_command))
+						return True
+					except ValueError:
+						None
+				self._set_swamp_map()
+				return True
+			elif from_chat and len(msg) < 12 and "map" in msg_lower:
 				self._set_game_map()
-			return True
-		elif "normal" in base_command:
-			self._set_normal_map()
-			return True
-		elif "swamp" in base_command:
-			if len(command) == 2:
-				try:
-					self._set_swamp_map(float(arg_command))
-					return True
-				except ValueError:
-					None
-			self._set_swamp_map()
-			return True
-		elif from_chat and len(msg) < 12 and "map" in msg_lower:
-			self._set_game_map()
-			return True
+				return True
 
 		return False
 
