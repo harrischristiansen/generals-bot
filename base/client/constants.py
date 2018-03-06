@@ -52,11 +52,11 @@ PRE_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| start: send force start",
 	"| speed 4: set game play speed [1, 2, 3, 4]",
-	"| map [top, hot]: assign a random map (from the top or hot list)",
-	"| map Map Name: assign map by name",
+	"| map [top, hot]: set a random map (optionally from the top or hot list)",
+	"| map Map Name: set map by name",
 	"| team 1: join a team [1 - 8]",
-	"| normal: set map to classic (no map)",
-	"| swamp 0.5: set swamp value for classic map",
+	"| normal: set map to default (no map)",
+	"| swamp 0.5: set swamp value for normal map",
 	"| Code available at: git.io/myssix",
 ]
 GAME_HELP_TEXT = [
