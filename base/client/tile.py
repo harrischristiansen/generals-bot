@@ -143,6 +143,8 @@ class Tile(object):
 					distance = distance * (1.5*tile.army/self.army)
 				if tile.isSwamp: # Swamps appear further away
 					distance = distance * 10
+					if tile.turn_held > 0: # Swamps which have been held appear even further away
+						distance = distance * 20
 
 				if distance < dest_distance:
 					dest = tile
