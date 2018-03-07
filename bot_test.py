@@ -1,5 +1,5 @@
 '''
-	@ Harris Christiansen (Harris@HarrisChristiansen.com)
+	@ Harris Christiansen (code@HarrisChristiansen.com)
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
 	bot_test: Used for testing various move methods
 '''
