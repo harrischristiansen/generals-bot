@@ -99,6 +99,10 @@ class BotCommands(object):
 						None
 				self._set_swamp_map()
 				return True
+			elif "unpause" in base_command:
+				self._bot.isPaused = False
+			elif "pause" in base_command:
+				self._bot.isPaused = True
 			elif from_chat and len(msg) < 12 and "map" in msg_lower:
 				self._set_game_map()
 				return True

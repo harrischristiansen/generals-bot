@@ -20,6 +20,7 @@ class Generals(object):
 		self._connect_and_join(userid, username, mode, gameid, force_start, public_server)
 
 		self.username = username
+		self.isPaused = False
 		self._seen_update = False
 		self._move_id = 1
 		self._start_data = {}
@@ -83,6 +84,9 @@ class Generals(object):
 	def move(self, y1, x1, y2, x2, move_half=False):
 		if not self._seen_update:
 			raise ValueError("Cannot move before first map seen")
+
+		if self.isPaused:
+			return False
 
 		cols = self._map.cols
 		a = y1 * cols + x1
