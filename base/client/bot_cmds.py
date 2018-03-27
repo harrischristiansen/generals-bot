@@ -76,7 +76,7 @@ class BotCommands(object):
 				else:
 					return self._add_teammate(username)
 				return True
-			elif "surrender!" in base_command:
+			elif "goodbye!" in base_command:
 				if "_map" in dir(self):
 					#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
 					self._bot.send_surrender()
