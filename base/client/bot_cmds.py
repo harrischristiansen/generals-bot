@@ -25,6 +25,7 @@ class BotCommands(object):
 		msg_lower = msg.lower()
 		if len(msg) < 12 and any(k in msg_lower for k in START_KEYWORDS):
 			self._bot.send_forcestart(delay=0)
+			self._bot.isPaused = False
 			return True
 		if len(msg) < 2:
 			return True
@@ -90,6 +91,63 @@ class BotCommands(object):
 			elif "normal" in base_command:
 				self._set_normal_map()
 				return True
+			elif "maxsize" in base_command:
+				self._bot.set_normal_map(width=1.0, height=1.0)
+				return True
+			elif "mincity" in base_command:
+				self._bot.set_normal_map(city=0.0)
+				return True
+			elif "maxcity" in base_command:
+				self._bot.set_normal_map(city=1.0)
+				return True
+			elif "minmountain" in base_command:
+				self._bot.set_normal_map(mountain=0.0)
+				return True
+			elif "maxmountain" in base_command:
+				self._bot.set_normal_map(mountain=1.0)
+				return True
+			elif "maxswamp" in base_command:
+				self._bot.set_normal_map(swamp=1.0)
+				return True
+			elif "maxall" in base_command:
+				self._bot.set_normal_map(1.0, 1.0, 1.0, 1.0, 1.0)
+				return True
+			elif "width" in base_command:
+				if len(command) == 2:
+					try:
+						self._bot.set_normal_map(width=float(arg_command))
+						return True
+					except ValueError:
+						None
+				self._bot.set_normal_map(width=1.0)
+				return True
+			elif "height" in base_command:
+				if len(command) == 2:
+					try:
+						self._bot.set_normal_map(height=float(arg_command))
+						return True
+					except ValueError:
+						None
+				self._bot.set_normal_map(height=1.0)
+				return True
+			elif "city" in base_command:
+				if len(command) == 2:
+					try:
+						self._bot.set_normal_map(city=float(arg_command))
+						return True
+					except ValueError:
+						None
+				self._bot.set_normal_map(city=1.0)
+				return True
+			elif "mountain" in base_command:
+				if len(command) == 2:
+					try:
+						self._bot.set_normal_map(mountain=float(arg_command))
+						return True
+					except ValueError:
+						None
+				self._bot.set_normal_map(mountain=1.0)
+				return True
 			elif "swamp" in base_command:
 				if len(command) == 2:
 					try:
@@ -101,8 +159,10 @@ class BotCommands(object):
 				return True
 			elif "unpause" in base_command:
 				self._bot.isPaused = False
+				return True
 			elif "pause" in base_command:
 				self._bot.isPaused = True
+				return True
 			elif from_chat and len(msg) < 12 and "map" in msg_lower:
 				self._set_game_map()
 				return True

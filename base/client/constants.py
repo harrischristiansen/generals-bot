@@ -63,6 +63,8 @@ GAME_HELP_TEXT = [
 	"| ======= Available Commands =======",
 	"| team: request not to be attacked",
 	"| unteam: cancel team",
+	"| pause: pause army movement",
+	"| unpause: unpause army movement",
 	"| Code available at: git.io/myssix",
 ]
 HELLO_TEXT = [
