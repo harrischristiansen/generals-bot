@@ -21,8 +21,44 @@ class BotCommands(object):
 
 	######################### Bot Commands #########################
 
-	def handle_command(self, msg, from_chat=False, username=""):
+	def _get_command(self, msg, isFromChat, username):
 		msg_lower = msg.lower()
+		command = msg.split(' ')
+		command_len = len(command)
+		if command_len == 1:
+			command = command[0].split(':') # Handle : delimiters
+		base_command = command[0].lower()
+		arg_command = " ".join(command[1:])
+
+		if command_len > 1 and "_map" in dir(self) and "usernames" in dir(self._map): # Handle directed commands (ex: myssix pause)
+			if base_command == self._map.usernames[self._map.player_index].lower():
+				command = command[1:]
+				command_len = len(command)
+				base_command = command[0].lower()
+				arg_command = " ".join(command[1:])
+
+		return (msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username)
+
+	def handle_command(self, msg, isFromChat=False, username=""):
+		commandlist = self._get_command(msg, isFromChat, username)
+
+		if self._handleStartCommand(commandlist):
+			return True
+
+		if self._handleChatCommand(commandlist):
+			return True
+
+		if self._handleUnrestrictedCommand(commandlist):
+			return True
+
+		if self._handleRestrictedCommand(commandlist):
+			return True
+
+		return False
+
+	def _handleStartCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
+
 		if len(msg) < 12 and any(k in msg_lower for k in START_KEYWORDS):
 			self._bot.send_forcestart(delay=0)
 			self._bot.isPaused = False
@@ -30,147 +66,176 @@ class BotCommands(object):
 		if len(msg) < 2:
 			return True
 
-		command = msg.split(' ')
-		if len(command) == 1:
-			command = command[0].split(':') # Handle : delimiters
-		base_command = command[0].lower()
-		arg_command = " ".join(command[1:])
+		return False
+
+	def _handleChatCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
 
 		if self._handlePlayerCommand(msg, username):
 			return True
-
 		if base_command.startswith(tuple(HELP_KEYWORDS)):
-			self._print_command_help(from_chat)
+			self._print_command_help(isFromChat)
 			return True
 		if base_command.startswith(tuple(HELLO_KEYWORDS)):
 			self._print_command_hello()
 			return True
+
+		return False
+
+	def _handleUnrestrictedCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
+
 		if "setup" in base_command:
 			self._bot.set_game_speed(4)
 			self._set_game_map()
 			self._bot.set_game_public()
 			return True
-		elif "speed" in base_command and len(command) >= 2 and command[1][0].isdigit():
+		if "speed" in base_command and command_len >= 2 and command[1][0].isdigit():
 			self._bot.set_game_speed(command[1][0])
 			return True
-		elif "public" in base_command:
+		if "public" in base_command:
 			self._bot.set_game_public()
 			return True
-		else: # OPTIONALLY-RESTRICTED Commands
-			if self._permitted_username != "" and self._permitted_username != username: # Only allow permitted user
-				return False
-
-			if "take" in base_command and username != "":
-				self._permitted_username = username
-			elif "team" in base_command:
-				if len(command) >= 2:
-					if len(command[1]) == 1:
-						self._bot.set_game_team(command[1])
-					else:
-						return self._add_teammate(arg_command)
-				elif base_command in ["unteamall"]:
-					self._remove_all_teammates()
-				elif base_command in ["unteam", "cancelteam"]:
-					self._remove_teammate(username)
-				elif base_command in ["noteam"]:
-					_spawn(self._start_avoiding_team)
-				else:
-					return self._add_teammate(username)
-				return True
-			elif "bye!" in base_command:
-				if "_map" in dir(self):
-					#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
-					self._bot.send_surrender()
-				return True
-			elif "map" in base_command:
-				if len(command) >= 2:
-					self._set_game_map(arg_command)
-				else:
-					self._set_game_map()
-				return True
-			elif "normal" in base_command:
-				self._set_normal_map()
-				return True
-			elif "maxsize" in base_command:
-				self._bot.set_normal_map(width=1.0, height=1.0)
-				return True
-			elif "mincity" in base_command:
-				self._bot.set_normal_map(city=0.0)
-				return True
-			elif "maxcity" in base_command:
-				self._bot.set_normal_map(city=1.0)
-				return True
-			elif "minmountain" in base_command:
-				self._bot.set_normal_map(mountain=0.0)
-				return True
-			elif "maxmountain" in base_command:
-				self._bot.set_normal_map(mountain=1.0)
-				return True
-			elif "maxswamp" in base_command:
-				self._bot.set_normal_map(swamp=1.0)
-				return True
-			elif "maxall" in base_command:
-				self._bot.set_normal_map(1.0, 1.0, 1.0, 1.0, 1.0)
-				return True
-			elif "width" in base_command:
-				if len(command) == 2:
-					try:
-						self._bot.set_normal_map(width=float(arg_command))
-						return True
-					except ValueError:
-						None
-				self._bot.set_normal_map(width=1.0)
-				return True
-			elif "height" in base_command:
-				if len(command) == 2:
-					try:
-						self._bot.set_normal_map(height=float(arg_command))
-						return True
-					except ValueError:
-						None
-				self._bot.set_normal_map(height=1.0)
-				return True
-			elif "city" in base_command:
-				if len(command) == 2:
-					try:
-						self._bot.set_normal_map(city=float(arg_command))
-						return True
-					except ValueError:
-						None
-				self._bot.set_normal_map(city=1.0)
-				return True
-			elif "mountain" in base_command:
-				if len(command) == 2:
-					try:
-						self._bot.set_normal_map(mountain=float(arg_command))
-						return True
-					except ValueError:
-						None
-				self._bot.set_normal_map(mountain=1.0)
-				return True
-			elif "swamp" in base_command:
-				if len(command) == 2:
-					try:
-						self._set_swamp_map(float(arg_command))
-						return True
-					except ValueError:
-						None
-				self._set_swamp_map()
-				return True
-			elif "unpause" in base_command:
-				self._bot.isPaused = False
-				return True
-			elif "pause" in base_command:
-				self._bot.isPaused = True
-				return True
-			elif from_chat and len(msg) < 12 and "map" in msg_lower:
-				self._set_game_map()
-				return True
 
 		return False
 
-	def _print_command_help(self, from_chat=False):
-		if from_chat:
+	def _handleRestrictedCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
+
+		if self._permitted_username != "" and self._permitted_username != username: # Only allow permitted user
+			return False
+
+		if self._handleSetupCommand(commandlist):
+			return True
+
+		if self._handleGameCommand(commandlist):
+			return True
+
+		return False
+
+	def _handleSetupCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
+
+		if "map" in base_command:
+			if command_len >= 2:
+				self._set_game_map(arg_command)
+			else:
+				self._set_game_map()
+			return True
+		elif "normal" in base_command:
+			self._set_normal_map()
+			return True
+		elif "maxsize" in base_command:
+			self._bot.set_normal_map(width=1.0, height=1.0)
+			return True
+		elif "mincity" in base_command:
+			self._bot.set_normal_map(city=0.0)
+			return True
+		elif "maxcity" in base_command:
+			self._bot.set_normal_map(city=1.0)
+			return True
+		elif "minmountain" in base_command:
+			self._bot.set_normal_map(mountain=0.0)
+			return True
+		elif "maxmountain" in base_command:
+			self._bot.set_normal_map(mountain=1.0)
+			return True
+		elif "maxswamp" in base_command:
+			self._bot.set_normal_map(swamp=1.0)
+			return True
+		elif "maxall" in base_command:
+			self._bot.set_normal_map(1.0, 1.0, 1.0, 1.0, 1.0)
+			return True
+		elif "width" in base_command:
+			if command_len == 2:
+				try:
+					self._bot.set_normal_map(width=float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._bot.set_normal_map(width=1.0)
+			return True
+		elif "height" in base_command:
+			if command_len == 2:
+				try:
+					self._bot.set_normal_map(height=float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._bot.set_normal_map(height=1.0)
+			return True
+		elif "city" in base_command:
+			if command_len == 2:
+				try:
+					self._bot.set_normal_map(city=float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._bot.set_normal_map(city=1.0)
+			return True
+		elif "mountain" in base_command:
+			if command_len == 2:
+				try:
+					self._bot.set_normal_map(mountain=float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._bot.set_normal_map(mountain=1.0)
+			return True
+		elif "swamp" in base_command:
+			if command_len == 2:
+				try:
+					self._set_swamp_map(float(arg_command))
+					return True
+				except ValueError:
+					None
+			self._set_swamp_map()
+			return True
+		elif isFromChat and len(msg) < 12 and "map" in msg_lower:
+			self._set_game_map()
+			return True
+
+		return False
+
+	def _handleGameCommand(self, commandlist):
+		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
+
+		if "take" in base_command and username != "":
+			self._permitted_username = username
+		elif "team" in base_command:
+			if command_len >= 2:
+				if len(command[1]) == 1:
+					self._bot.set_game_team(command[1])
+				else:
+					return self._add_teammate(arg_command)
+			elif base_command in ["unteamall"]:
+				self._remove_all_teammates()
+			elif base_command in ["unteam", "cancelteam"]:
+				self._remove_teammate(username)
+			elif base_command in ["noteam"]:
+				_spawn(self._start_avoiding_team)
+			else:
+				return self._add_teammate(username)
+			return True
+		elif "bye!" in base_command:
+			if "_map" in dir(self):
+				#self._map.exit_on_game_over = False # Wait 2 minutes before exiting
+				self._bot.send_surrender()
+			return True
+		
+		elif "unpause" in base_command:
+			self._bot.isPaused = False
+			return True
+		elif "pause" in base_command:
+			self._bot.isPaused = True
+			return True
+
+		return False
+
+	######################### Sending Messages #########################
+
+	def _print_command_help(self, isFromChat=False):
+		if isFromChat:
 			self._bot.sent_hello = True
 			for txt in GAME_HELP_TEXT if "_map" in dir(self) else PRE_HELP_TEXT:
 				self._bot.send_chat(txt)
