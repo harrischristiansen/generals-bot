@@ -50,7 +50,7 @@ def move_outward_tile(gamemap, path, source):
 			if not neighbor.isSwamp:
 				if target == None:
 					target = neighbor
-				elif target.army > neighbor.army:
+				elif (target.army > neighbor.army and not target.isCity) or neighbor.isCity:
 					target = neighbor
 			elif neighbor.turn_held == 0: # Move into swamps that we have never held before
 				target = neighbor
