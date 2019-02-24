@@ -19,6 +19,9 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
+	if _map.turn < 25:
+		return
+
 	if not move_outward():
 		move_toward()
 
