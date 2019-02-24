@@ -44,7 +44,7 @@ def move_priority():
 ######################### Move Outward #########################
 
 def move_outward():
-	(source, dest) = bot_moves.move_outward(_map, _map.path)
+	(source, dest) = bot_moves.move_outward(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

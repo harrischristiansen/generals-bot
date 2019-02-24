@@ -8,7 +8,7 @@ SHOULD_DIRTY_MAP_ON_MOVE = True
 
 ENDPOINT_BOT = "ws://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 ENDPOINT_PUBLIC = "ws://ws.generals.io/socket.io/?EIO=3&transport=websocket"
-BOT_KEY = "O13f0dijsf"
+BOT_KEY = "sd09fjd203i0ejwi"
 
 REPLAY_URLS = {
 	'na': "http://generals.io/replays/",
