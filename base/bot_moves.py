@@ -13,10 +13,10 @@ from .client.constants import *
 
 def move_priority(gamemap):
 	priority_move = (False, False)
+	generals_and_cities = [t for t in gamemap.generals if t is not None]
+	generals_and_cities.extend(gamemap.cities)
 
-	tiles = [t for t in gamemap.generals if t is not None]
-	tiles.extend(gamemap.cities)
-	for tile in tiles:
+	for tile in generals_and_cities:
 		if not tile.shouldNotAttack():
 			for neighbor in tile.neighbors():
 				if neighbor.isSelf() and neighbor.army > max(1, tile.army + 1):

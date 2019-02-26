@@ -248,7 +248,7 @@ class BotCommands(object):
 			return True
 		self._bot.sent_hello = True
 
-		for txt in HELLO_TEXT:
+		for txt in GAME_HELLO_TEXT if "_map" in dir(self) else HELLO_TEXT:
 			self._bot.send_chat(txt)
 			time.sleep(0.34)
 

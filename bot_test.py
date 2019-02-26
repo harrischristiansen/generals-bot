@@ -19,11 +19,12 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
-	if _map.turn < 25:
+	if _map.turn < 25 and currentBot._gameType != "private":
 		return
 
-	if not move_outward():
-		move_toward()
+	if not move_priority():
+		if not move_outward():
+			move_toward()
 
 def place_move(source, dest):
 	_bot.place_move(source, dest)
@@ -61,4 +62,4 @@ def move_toward():
 # Start Game
 import startup
 if __name__ == '__main__':
-	startup.startup(make_move, "PurdueBot-T")
+	startup.startup(make_move, botName="PurdueBot-T")

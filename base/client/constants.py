@@ -72,3 +72,7 @@ HELLO_TEXT = [
 	" Say 'go' to start, or 'help' for a list of additional commands",
 	" Code available at: git.io/myssix",
 ]
+GAME_HELLO_TEXT = [
+	" Hi, I am Myssix - a generals.io bot",
+	" Say 'help' for available commands - Code available at: git.io/myssix",
+]
