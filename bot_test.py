@@ -19,11 +19,11 @@ def make_move(currentBot, currentMap):
 	_bot = currentBot
 	_map = currentMap
 
-	if _map.turn < 25 and currentBot._gameType != "private":
+	if _map.turn < 24 and currentBot._gameType != "private":
 		return
 
 	if not move_priority():
-		if not move_outward():
+		if _map.turn < 50 or not move_outward():
 			move_toward()
 
 def place_move(source, dest):
