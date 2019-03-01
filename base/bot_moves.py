@@ -34,30 +34,13 @@ def move_outward(gamemap, path=[]):
 
 	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
 		if source.army >= 2 and source not in path: # Find One With Armies
-			move = move_outward_tile(gamemap, path, source)
-			if move:
-				if not move[1].isSwamp:
-					return move
-				elif move.turn_held == 0:
-					move_swamp = move
+			target = source.neighbor_to_attack(path)
+			if target:
+				if not target.isSwamp:
+					return (source, target)
+				move_swamp = (source, target)
 
 	return move_swamp
-
-def move_outward_tile(gamemap, path, source):
-	target = None
-	for neighbor in source.neighbors():
-		if (not neighbor.shouldNotAttack() and source.army > neighbor.army + 1) or neighbor in path: # Capture Somewhere New
-			if not neighbor.isSwamp:
-				if target == None:
-					target = neighbor
-				elif (target.army > neighbor.army and not target.isCity) or neighbor.isCity:
-					target = neighbor
-			elif neighbor.turn_held == 0: # Move into swamps that we have never held before
-				target = neighbor
-	
-	if target:
-		return (source, target)
-	return None
 
 
 ######################### Move Path Forward #########################

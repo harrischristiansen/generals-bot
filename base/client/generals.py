@@ -113,6 +113,10 @@ class Generals(object):
 	######################### Server -> Client #########################
 
 	def _log_queue_update(self, msg):
+		if 'queueTimeLeft' in msg:
+			logging.info("Queue (%ds) %d/%d" % (msg['queueTimeLeft'], msg['numForce'], msg['numPlayers']))
+			return
+
 		self.teams = {}
 		if "teams" in msg:
 			for i in range(len(msg['teams'])):

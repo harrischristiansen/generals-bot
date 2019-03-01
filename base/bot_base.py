@@ -131,12 +131,12 @@ class GeneralsBot(object):
 
 		if dest.isOnTeam(): # Moved Internal Tile
 			dest_army = army - 1 + dest.army
-			dest.update(self._map, source.tile, dest_army)
+			dest.update(self._map, source.tile, dest_army, isDirty=True)
 			return True
 		
 		elif army > dest.army+1: # Captured Tile
 			dest_army = army - 1 - dest.army
-			dest.update(self._map, source.tile, dest_army, isCity=dest.isGeneral)
+			dest.update(self._map, source.tile, dest_army, isCity=dest.isGeneral, isDirty=True)
 			return True
 		return False
 

@@ -5,6 +5,8 @@
 '''
 
 from queue import Queue
+import time
+import logging
 
 from .constants import *
 
@@ -24,9 +26,10 @@ class Tile(object):
 		# Private Properties
 		self._map = gamemap			# Pointer to Map Object
 		self._general_index = -1	# Player Index if tile is a general
+		self._dirtyUpdateTime = 0	# Last time Tile was updated by bot, not server
 
 	def __repr__(self):
-		return "(%d,%d) %d (%d)" % (self.x, self.y, self.tile, self.army)
+		return "(%2d,%2d)[%2d,%3d]" % (self.x, self.y, self.tile, self.army)
 
 	'''def __eq__(self, other):
 			return (other != None and self.x==other.x and self.y==other.y)'''
@@ -41,8 +44,11 @@ class Tile(object):
 	def setIsSwamp(self, isSwamp):
 		self.isSwamp = isSwamp
 
-	def update(self, gamemap, tile, army, isCity=False, isGeneral=False):
+	def update(self, gamemap, tile, army, isCity=False, isGeneral=False, isDirty=False):
 		self._map = gamemap
+
+		if (isDirty):
+			self._dirtyUpdateTime = time.time()
 
 		if self.tile < 0 or tile >= TILE_MOUNTAIN or (tile < TILE_MOUNTAIN and self.isSelf()): # Tile should be updated
 			if (tile >= 0 or self.tile >= 0) and self.tile != tile: # Remember Discovered Tiles
@@ -72,6 +78,9 @@ class Tile(object):
 
 	################################ Tile Properties ################################
 
+	def isDirty(self):
+		return (time.time() - self._dirtyUpdateTime) < 0.6
+
 	def distance_to(self, dest):
 		if dest != None:
 			return abs(self.x - dest.x) + abs(self.y - dest.y)
@@ -92,6 +101,9 @@ class Tile(object):
 				return True
 		return False
 
+	def isEmpty(self):
+		return self.tile == TILE_EMPTY
+
 	def isSelf(self):
 		return self.tile == self._map.player_index
 
@@ -100,14 +112,49 @@ class Tile(object):
 			return True
 		return False
 
-	def shouldNotAttack(self):
-		if self.isOnTeam():
-			return True
-		if self.tile in self._map.do_not_attack_players:
-			return True
-		return False
+	def shouldNotAttack(self): # DEPRECATED: Use Tile.shouldAttack
+		return not self.shouldAttack()
 
-	################################ Select Other Tiles ################################
+	def shouldAttack(self):
+		if not self.isValidTarget():
+			return False
+		if self.isOnTeam():
+			return False
+		if self.tile in self._map.do_not_attack_players:
+			return False
+		if self.isDirty():
+			return False
+		return True
+
+	################################ Select Neighboring Tile ################################
+
+	def neighbor_to_attack(self, path=[]):
+		if not self.isSelf():
+			return None
+
+		target = None
+		for neighbor in self.neighbors(includeSwamps=True):
+			if (neighbor.shouldAttack() and self.army > neighbor.army + 1) or neighbor in path: # Move into caputurable target Tiles
+				if not neighbor.isSwamp:
+					if target == None:
+						target = neighbor
+					elif neighbor.isCity and (not target.isCity or target.army > neighbor.army):
+						target = neighbor
+					elif not neighbor.isEmpty and neighbor.army <= 1 and target.isEmpty: # Special case, prioritize opponents with 1 army over empty tiles
+						target = neighbor
+					elif target.army > neighbor.army and not target.isCity:
+						if neighbor.isEmpty:
+							if target.army > 1:
+								target = neighbor
+						else:
+							target = neighbor
+				elif neighbor.turn_held == 0: # Move into swamps that we have never held before
+					target = neighbor
+		
+		return target
+
+
+	################################ Select Distant Tile ################################
 
 	def nearest_tile_in_path(self, path):
 		dest = None
@@ -121,7 +168,10 @@ class Tile(object):
 		return dest
 
 	def nearest_target_tile(self):
-		max_target_army = self.army * 2 + 14
+		if not self.isSelf():
+			return None
+
+		max_target_army = self.army * 4 + 14
 
 		dest = None
 		dest_distance = 9999
@@ -138,15 +188,20 @@ class Tile(object):
 					distance = distance * sorted((0.17, (tile.army / (3.2*self.army)), 20))[1]
 
 				if tile.tile == TILE_EMPTY: # Empties appear further away
-					distance = distance * 4.3
+					if tile.isCity:
+						distance = distance * 1.6
+					else:
+						distance = distance * 4.3
+
 				if tile.army > self.army: # Larger targets appear further away
-					distance = distance * (1.5*tile.army/self.army)
+					distance = distance * (1.6*tile.army/self.army)
+
 				if tile.isSwamp: # Swamps appear further away
 					distance = distance * 10
 					if tile.turn_held > 0: # Swamps which have been held appear even further away
-						distance = distance * 20
+						distance = distance * 3
 
-				if distance < dest_distance:
+				if distance < dest_distance: # ----- Set nearest target -----
 					dest = tile
 					dest_distance = distance
 

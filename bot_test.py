@@ -5,8 +5,11 @@
 '''
 
 import logging
+import time
 from base import bot_moves
 
+PRINT_TIMING = False
+PRINT_MOVES = False
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -22,11 +25,19 @@ def make_move(currentBot, currentMap):
 	if _map.turn < 24 and currentBot._gameType != "private":
 		return
 
+	start_time = time.time()
+
 	if not move_priority():
-		if _map.turn < 50 or not move_outward():
+		if _map.turn < 42 or not move_outward():
 			move_toward()
 
+	if PRINT_TIMING:
+		move_time = time.time() - start_time
+		logging.info("Move (%d) took: %1.7fs" % move_time)
+
 def place_move(source, dest):
+	if PRINT_MOVES:
+		logging.info("Move: %s -> %s" % (source, dest))
 	_bot.place_move(source, dest)
 
 ######################### Move Priority #########################
