@@ -127,7 +127,7 @@ class GeneralsBot(object):
 
 	def _update_map_dirty(self, source, dest, move_half):
 		army = source.army if not move_half else source.army/2
-		source.update(self._map, source.tile, 1)
+		source.update(self._map, source.tile, 1, isDirty=True)
 
 		if dest.isOnTeam(): # Moved Internal Tile
 			dest_army = army - 1 + dest.army

@@ -59,7 +59,8 @@ class Map(object):
 				army_count = self._army_grid[y][x]
 				isCity = (y,x) in self._visible_cities
 				isGeneral = (y,x) in self._visible_generals
-				self.grid[y][x].update(self, tile_type, army_count, isCity, isGeneral)
+				if self.grid[y][x].isDirty() == False:
+					self.grid[y][x].update(self, tile_type, army_count, isCity, isGeneral)
 
 		return self
 
