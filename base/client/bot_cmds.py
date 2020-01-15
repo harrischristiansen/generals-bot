@@ -327,6 +327,10 @@ class BotCommands(object):
 	######################### Player Requested Commands #########################
 
 	def _handlePlayerCommand(self, msg, username):
+		if "Boomer" in username:
+			self._bot.send_chat("Okay Boomer <3")
+			return True
+
 		if username == "Plots85":
 			self._bot.send_chat("HI PLOTS85, I LOVE YOU!")
 			return True

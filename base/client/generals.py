@@ -26,6 +26,7 @@ class Generals(object):
 		self._start_data = {}
 		self._stars = []
 		self._cities = []
+		self._messagesToSave = []
 
 	def close(self):
 		with self._lock:
@@ -63,8 +64,10 @@ class Generals(object):
 			elif msg[0] == "pre_game_start":
 				logging.info("pre_game_start")
 			elif msg[0] == "game_start":
+				self._messagesToSave.append(msg)
 				self._start_data = msg[1]
 			elif msg[0] == "game_update":
+				self._messagesToSave.append(msg)
 				yield self._make_update(msg[1])
 			elif msg[0] in ["game_won", "game_lost"]:
 				yield self._make_result(msg[0], msg[1])
@@ -143,6 +146,7 @@ class Generals(object):
 		return self._map.update(data)
 
 	def _make_result(self, update, data):
+		self._saveMessagesToDisk()
 		return self._map.updateResult(update)
 
 	def _handle_chat(self, chat_msg):
@@ -240,6 +244,16 @@ class Generals(object):
 				self._ws.send("42" + json.dumps(msg))
 		except WebSocketConnectionClosedException:
 			pass
+
+	######################### Game Replay #########################
+
+	def _saveMessagesToDisk(self):
+		fileName = "game_" + self._map.replay_url + ".txt"
+		fileName = fileName.replace("/", ".")
+		fileName = fileName.replace(":", "")
+
+		with open("games/"+fileName, 'w+') as file:
+			file.write(str(self._messagesToSave))
 
 
 def _spawn(f):
