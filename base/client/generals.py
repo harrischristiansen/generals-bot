@@ -133,7 +133,7 @@ class Generals(object):
 				logging.info("Queue [%s] %d/%d %s" % (mapname, msg['numForce'], msg['numPlayers'], self.teams))
 				return
 		
-		logging.info("Queue %d/%d %s" % (msg['numForce'], msg['numPlayers'], self.teams))
+		logging.info("Queue %s/%s %s" % (str(len(msg['numForce'])), str(msg['numPlayers']), self.teams))
 
 	def _make_update(self, data):
 		if not self._seen_update:
