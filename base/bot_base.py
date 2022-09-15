@@ -31,6 +31,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_game_thread)
 		_create_thread(self._start_chat_thread)
 		_create_thread(self._start_moves_thread)
+		_create_thread(self._start_timelimitCounter)
 
 		# Start Game Viewer
 		if showGameViewer:
@@ -79,6 +80,12 @@ class GeneralsBot(object):
 				logging.info("Moves: %d, Realized: %d" % (self._map.turn, self._moves_realized))
 			_create_thread(self._exit_game)
 		self._has_completed = gamemap.complete
+
+	######################### Game Exit / Timelimit #########################
+
+	def _start_timelimitCounter(self):
+		time.sleep(60 * 25)
+		self._exit_game()
 
 	def _exit_game(self):
 		time.sleep(1.1)

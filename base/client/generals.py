@@ -4,10 +4,13 @@
 	Generals.io Web Socket Communication
 '''
 
+import certifi
 import logging
 import json
+import ssl
 import threading
 import time
+import requests
 from websocket import create_connection, WebSocketConnectionClosedException
 
 from .constants import *
@@ -15,10 +18,8 @@ from . import bot_cmds
 from . import map
 
 class Generals(object):
-	def __init__(self, userid, username, mode="1v1", gameid=None,
-				 force_start=True, public_server=False):
-		self._connect_and_join(userid, username, mode, gameid, force_start, public_server)
-
+	def __init__(self, userid, username, mode="1v1", gameid=None, public_server=False):
+		self._should_forcestart = mode == "private" or mode == "team"
 		self.username = username
 		self.isPaused = False
 		self._seen_update = False
@@ -27,6 +28,9 @@ class Generals(object):
 		self._stars = []
 		self._cities = []
 		self._messagesToSave = []
+		self._numberPlayers = 0
+
+		self._connect_and_join(userid, username, mode, gameid, self._should_forcestart, public_server)
 
 	def close(self):
 		with self._lock:
@@ -67,7 +71,7 @@ class Generals(object):
 				self._messagesToSave.append(msg)
 				self._start_data = msg[1]
 			elif msg[0] == "game_update":
-				self._messagesToSave.append(msg)
+				#self._messagesToSave.append(msg)
 				yield self._make_update(msg[1])
 			elif msg[0] in ["game_won", "game_lost"]:
 				yield self._make_result(msg[0], msg[1])
@@ -135,6 +139,12 @@ class Generals(object):
 		
 		logging.info("Queue %s/%s %s" % (str(len(msg['numForce'])), str(msg['numPlayers']), self.teams))
 
+		numberPlayers = msg['numPlayers']
+		if self._numberPlayers != numberPlayers:
+			self._numberPlayers = numberPlayers
+			if self._should_forcestart:
+				_spawn(self.send_forcestart)
+
 	def _make_update(self, data):
 		if not self._seen_update:
 			self._seen_update = True
@@ -166,8 +176,13 @@ class Generals(object):
 	######################### Client -> Server #########################
 
 	def _connect_and_join(self, userid, username, mode, gameid, force_start, public_server):
-		logging.debug("Creating connection")
-		self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC)
+		logging.debug("Creating connection: %s" % certifi.where())
+		# ssl_context = ssl.create_default_context(cafile=certifi.where())
+		ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+		ssl_context.load_verify_locations(certifi.where())
+		# ctx.load_cert_chain(certfile=certifi.where())
+		# self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC, ssl=ssl_context)
+		self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC, sslopt={"cert_reqs": ssl.CERT_NONE})
 		self._lock = threading.RLock()
 		_spawn(self._start_sending_heartbeat)
 		self._send(["set_username", userid, username, BOT_KEY])
@@ -188,9 +203,6 @@ class Generals(object):
 		else:
 			raise ValueError("Invalid mode")
 
-		if force_start:
-			_spawn(self.send_forcestart)
-
 	def _start_sending_heartbeat(self):
 		while True:
 			try:
@@ -200,7 +212,7 @@ class Generals(object):
 				break
 			time.sleep(0.1)
 
-	def send_forcestart(self, delay=20):
+	def send_forcestart(self, delay=10):
 		time.sleep(delay)
 		self._send(["set_force_start", self._gameid, True])
 		logging.info("Sent force start")
