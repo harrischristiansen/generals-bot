@@ -31,7 +31,7 @@ class GeneralsBot(object):
 		_create_thread(self._start_game_thread)
 		_create_thread(self._start_chat_thread)
 		_create_thread(self._start_moves_thread)
-		_create_thread(self._start_timelimitCounter)
+		_create_thread(self._start_timelimitCounter, daemonThread = False)
 
 		# Start Game Viewer
 		if showGameViewer:
@@ -149,7 +149,7 @@ class GeneralsBot(object):
 
 ######################### Global Helpers #########################
 
-def _create_thread(f):
+def _create_thread(f, daemonThread = True):
 	t = threading.Thread(target=f)
-	t.daemon = True
+	t.daemon = daemonThread
 	t.start()
