@@ -291,8 +291,8 @@ class Generals(object):
 
 	def changeToNewRoom(self):
 		self.close()
-		gameid = self.roomid + "x"
-		self._connect_and_join(self.userid, self.username, self.gamemode, gameid, self._should_forcestart, self.public_server)
+		self.roomid = self.roomid + "x"
+		self._connect_and_join(self.userid, self.username, self.gamemode, self.roomid, self._should_forcestart, self.public_server)
 		_spawn(self._send_start_msg_cmd)
 
 
