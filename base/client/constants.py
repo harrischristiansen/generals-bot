@@ -10,6 +10,11 @@ ENDPOINT_BOT = "wss://botws.generals.io/socket.io/?EIO=3&transport=websocket"
 ENDPOINT_PUBLIC = "wss://ws.generals.io/socket.io/?EIO=3&transport=websocket"
 BOT_KEY = "sd09fjd203i0ejwi"
 
+BANNED_PLAYERS = [
+	"lilBlakey",
+	"hunterjacksoncarr@"
+]
+
 REPLAY_URLS = {
 	'na': "http://generals.io/replays/",
 	'eu': "http://eu.generals.io/replays/",

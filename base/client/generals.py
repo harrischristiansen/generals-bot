@@ -18,9 +18,14 @@ from . import bot_cmds
 from . import map
 
 class Generals(object):
-	def __init__(self, userid, username, mode="1v1", gameid=None, public_server=False):
+	def __init__(self, userid, username, mode="1v1", gameid=None, public_server=False, start_command=""):
 		self._should_forcestart = mode == "private" or mode == "team"
+		self.userid = userid
 		self.username = username
+		self.gamemode = mode
+		self.roomid = gameid
+		self.public_server = public_server
+		self._start_msg_cmd = start_command
 		self.isPaused = False
 		self._seen_update = False
 		self._move_id = 1
@@ -31,6 +36,7 @@ class Generals(object):
 		self._numberPlayers = 0
 
 		self._connect_and_join(userid, username, mode, gameid, self._should_forcestart, public_server)
+		_spawn(self._send_start_msg_cmd)
 
 	def close(self):
 		with self._lock:
@@ -144,6 +150,14 @@ class Generals(object):
 			self._numberPlayers = numberPlayers
 			if self._should_forcestart:
 				_spawn(self.send_forcestart)
+
+		if "usernames" in msg:
+			for username in BANNED_PLAYERS:
+				for userInMatch in msg['usernames']:
+					if userInMatch != None:
+						if userInMatch.lower().find(username.lower()) != -1:
+							logging.info("Found banned player: %s" % username)
+							self.changeToNewRoom()
 
 	def _make_update(self, data):
 		if not self._seen_update:
@@ -266,6 +280,21 @@ class Generals(object):
 
 		with open("games/"+fileName, 'w+') as file:
 			file.write(str(self._messagesToSave))
+
+	######################### Change Rooms #########################
+
+
+	def _send_start_msg_cmd(self):
+		time.sleep(0.2)
+		for cmd in self._start_msg_cmd.split("\\n"):
+			self.handle_command(cmd)
+
+	def changeToNewRoom(self):
+		self.close()
+		gameid = self.roomid + "x"
+		self._connect_and_join(self.userid, self.username, self.gamemode, gameid, self._should_forcestart, self.public_server)
+		_spawn(self._send_start_msg_cmd)
+
 
 
 def _spawn(f):
