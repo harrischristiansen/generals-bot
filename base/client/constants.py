@@ -11,8 +11,22 @@ ENDPOINT_PUBLIC = "wss://ws.generals.io/socket.io/?EIO=3&transport=websocket"
 BOT_KEY = "sd09fjd203i0ejwi"
 
 BANNED_PLAYERS = [
+	"hanwi4",
+'''
 	"lilBlakey",
 	"hunterjacksoncarr@"
+	"ExpiredCat",
+	"hunter2.0",
+	"okloveme",
+	"hunterjacksoncarr@",
+	"creeded",
+	"Centro2",
+	"hunter4.0",
+'''
+]
+
+BANNED_CHAT_PLAYERS = [
+	"UYHS4J",
 ]
 
 REPLAY_URLS = {

@@ -102,6 +102,9 @@ class BotCommands(object):
 	def _handleRestrictedCommand(self, commandlist):
 		(msg, msg_lower, command, command_len, base_command, arg_command, isFromChat, username) = commandlist
 
+		if username in BANNED_CHAT_PLAYERS:
+			return False
+
 		if self._permitted_username != "" and self._permitted_username != username: # Only allow permitted user
 			return False
 
