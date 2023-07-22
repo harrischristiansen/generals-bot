@@ -52,8 +52,6 @@ class Generals(object):
 				logging.info("Connection Closed")
 				break
 
-			logging.info("Received message type: {}".format(msg))
-
 			if not msg.strip():
 				continue
 
