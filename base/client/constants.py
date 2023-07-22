@@ -6,8 +6,8 @@
 
 SHOULD_DIRTY_MAP_ON_MOVE = True
 
-ENDPOINT_BOT = "wss://botws.generals.io/socket.io/?EIO=3&transport=websocket"
-ENDPOINT_PUBLIC = "wss://ws.generals.io/socket.io/?EIO=3&transport=websocket"
+ENDPOINT_BOT = "://botws.generals.io/socket.io/?EIO=4"
+ENDPOINT_PUBLIC = "://ws.generals.io/socket.io/?EIO=4"
 BOT_KEY = "sd09fjd203i0ejwi"
 
 BANNED_PLAYERS = [

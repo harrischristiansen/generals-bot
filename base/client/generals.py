@@ -35,7 +35,7 @@ class Generals(object):
 		self._messagesToSave = []
 		self._numberPlayers = 0
 
-		self._connect_and_join(userid, username, mode, gameid, self._should_forcestart, public_server)
+		self._connect_and_join(userid, username, mode, gameid, self._should_forcestart)
 		_spawn(self._send_start_msg_cmd)
 
 	def close(self):
@@ -49,18 +49,24 @@ class Generals(object):
 			try:
 				msg = self._ws.recv()
 			except WebSocketConnectionClosedException:
+				logging.info("Connection Closed")
 				break
+
+			logging.info("Received message type: {}".format(msg))
 
 			if not msg.strip():
-				break
+				continue
 
 			# ignore heartbeats and connection acks
-			if msg in {"3", "40"}:
+			if msg in {"2", "3", "40"}:
 				continue
 
 			# remove numeric prefix
 			while msg and msg[0].isdigit():
 				msg = msg[1:]
+
+			if msg == "probe":
+				continue
 
 			msg = json.loads(msg)
 			if not isinstance(msg, list):
@@ -189,17 +195,45 @@ class Generals(object):
 
 	######################### Client -> Server #########################
 
-	def _connect_and_join(self, userid, username, mode, gameid, force_start, public_server):
-		logging.debug("Creating connection: %s" % certifi.where())
+	def _endpointWS(self):
+		return "wss" + (ENDPOINT_BOT if not self.public_server else ENDPOINT_PUBLIC) + "&transport=websocket"
+
+	def _endpointRequests(self):
+		return "https" + (ENDPOINT_BOT if not self.public_server else ENDPOINT_PUBLIC) + "&transport=polling"
+
+	def _getSID(self):
+		request = requests.get(self._endpointRequests() + "&t=ObyKmaZ")
+		result = request.text
+		while result and result[0].isdigit():
+			result = result[1:]
+
+		msg = json.loads(result)
+		sid = msg["sid"]
+		self._gio_sessionID = sid
+		_spawn(self._verifySID)
+		return sid
+
+	def _verifySID(self):
+		sid = self._gio_sessionID
+		checkOne = requests.post(self._endpointRequests() + "&t=ObyKmbC&sid=" + sid, data="40")
+		# checkTwo = requests.get(self._endpointRequests() + "&t=ObyKmbC.0&sid=" + sid)
+		# logging.debug("Check two: %s" % checkTwo.text)
+
+	def _connect_and_join(self, userid, username, mode, gameid, force_start):
+		endpoint = self._endpointWS() + "&sid=" + self._getSID()
+		logging.debug("Creating connection with endpoint %s: %s" % (endpoint, certifi.where()))
 		# ssl_context = ssl.create_default_context(cafile=certifi.where())
 		ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 		ssl_context.load_verify_locations(certifi.where())
 		# ctx.load_cert_chain(certfile=certifi.where())
-		# self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC, ssl=ssl_context)
-		self._ws = create_connection(ENDPOINT_BOT if not public_server else ENDPOINT_PUBLIC, sslopt={"cert_reqs": ssl.CERT_NONE})
+		# self._ws = create_connection(endpoint, ssl=ssl_context)
+		self._ws = create_connection(endpoint, sslopt={"cert_reqs": ssl.CERT_NONE})
 		self._lock = threading.RLock()
+		self._ws.send("2probe")
+		self._ws.send("5")
 		_spawn(self._start_sending_heartbeat)
-		self._send(["set_username", userid, username, BOT_KEY])
+		# logging.debug("Setting Username: %s" % username)
+		# self._send(["set_username", userid, username, BOT_KEY])
 
 		logging.info("Joining game")
 		self._gameid = None
@@ -221,10 +255,11 @@ class Generals(object):
 		while True:
 			try:
 				with self._lock:
-					self._ws.send("2")
+					self._ws.send("3")
 			except WebSocketConnectionClosedException:
+				logging.info("Connection Closed - heartbeat")
 				break
-			time.sleep(0.1)
+			time.sleep(19)
 
 	def send_forcestart(self, delay=10):
 		time.sleep(delay)

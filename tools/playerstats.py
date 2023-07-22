@@ -9,7 +9,7 @@ import lzstring
 
 NUM_REPLAYS_TO_USE = 4000
 
-URL_REPLAYS_FOR_USER = "http://generals.io/api/replaysForUsername?u="
+URL_REPLAYS_FOR_USER = "https://generals.io/api/replaysForUsername?u="
 URL_REPLAY = "https://generalsio-replays-na.s3.amazonaws.com/"
 COUNT_BY = 200
 
@@ -28,7 +28,7 @@ def opponentstats(playername, mingames=0):
 
 	opponents = {}
 	for replay in replays:
-		if replay['type'] == "custom":
+		if replay['type'] == "classic":
 			didBeatPlayer = True
 			for opponent in replay['ranking']:
 				name = opponent['name']
