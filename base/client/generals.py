@@ -51,6 +51,8 @@ class Generals(object):
 			except WebSocketConnectionClosedException:
 				logging.info("Connection Closed")
 				break
+			
+			# logging.info("Received message type: {}".format(msg))
 
 			if not msg.strip():
 				continue
@@ -297,10 +299,10 @@ class Generals(object):
 	def send_surrender(self):
 		self._send(["surrender"])
 
-	def _send(self, msg):
+	def _send(self, msg, prefix="42"):
 		try:
 			with self._lock:
-				self._ws.send("42" + json.dumps(msg))
+				self._ws.send(prefix + json.dumps(msg))
 		except WebSocketConnectionClosedException:
 			pass
 
@@ -325,7 +327,7 @@ class Generals(object):
 	def changeToNewRoom(self):
 		self.close()
 		self.roomid = self.roomid + "x"
-		self._connect_and_join(self.userid, self.username, self.gamemode, self.roomid, self._should_forcestart, self.public_server)
+		self._connect_and_join(self.userid, self.username, self.gamemode, self.roomid, self._should_forcestart)
 		_spawn(self._send_start_msg_cmd)
 
 
