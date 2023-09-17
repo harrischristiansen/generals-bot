@@ -88,7 +88,7 @@ class GeneralsBot(object):
 
 	def _exit_game(self):
 		time.sleep(0.15)
-		if not self._map.exit_on_game_over:
+		if self._map != None and not self._map.exit_on_game_over:
 			time.sleep(100)
 		self._running = False
 		os._exit(0) # End Program

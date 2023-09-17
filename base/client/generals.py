@@ -89,6 +89,8 @@ class Generals(object):
 				yield self._make_result(msg[0], msg[1])
 			elif msg[0] == "chat_message":
 				self._handle_chat(msg[2])
+			elif msg[0] == "error_queue_full":
+				self.changeToNewRoom()
 			elif msg[0] == "error_set_username":
 				None
 			elif msg[0] == "game_over":
