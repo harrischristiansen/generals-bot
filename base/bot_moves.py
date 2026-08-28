@@ -17,6 +17,8 @@ def move_priority(gamemap):
 	generals_and_cities.extend(gamemap.cities)
 
 	for tile in generals_and_cities:
+		if tile.isCity and tile.isEmpty() and tile.visibleToEnemy(): # Don't reveal ourselves capturing a neutral city an enemy can see
+			continue
 		if not tile.shouldNotAttack():
 			for neighbor in tile.neighbors():
 				if neighbor.isSelf() and neighbor.army > max(1, tile.army + 1):
@@ -33,7 +35,7 @@ def move_outward(gamemap, path=[]):
 	move_swamp = (False, False)
 
 	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
-		if source.army >= 2 and source not in path: # Find One With Armies
+		if source.army >= 2 and source not in path and source not in gamemap.path: # Find One With Armies, but don't displace a tile the active movement path needs
 			target = source.neighbor_to_attack(path)
 			if target:
 				if not target.isSwamp:

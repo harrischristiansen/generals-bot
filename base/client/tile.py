@@ -93,16 +93,32 @@ class Tile(object):
 				neighbors.append(tile)
 		return neighbors
 
-	def isValidTarget(self): # Check tile to verify reachability
+	def neighbors8(self):
+		tiles = []
+		for dy in (-1, 0, 1):
+			for dx in (-1, 0, 1):
+				if dx == 0 and dy == 0:
+					continue
+				if self._map.isValidPosition(self.x+dx, self.y+dy):
+					tiles.append(self._map.grid[self.y+dy][self.x+dx])
+		return tiles
+
+	def isValidTarget(self): # Check tile to verify it's known/reachable
 		if self.tile < TILE_EMPTY:
 			return False
-		for tile in self.neighbors(includeSwamps=True):
+		for tile in self.neighbors8():
 			if tile.turn_held > 0:
 				return True
 		return False
 
 	def isEmpty(self):
 		return self.tile == TILE_EMPTY
+
+	def visibleToEnemy(self):
+		for tile in self.neighbors8():
+			if tile.tile >= 0 and not tile.isSelf():
+				return True
+		return False
 
 	def isSelf(self):
 		return self.tile == self._map.player_index
@@ -135,6 +151,8 @@ class Tile(object):
 		target = None
 		for neighbor in self.neighbors(includeSwamps=True):
 			if (neighbor.shouldAttack() and self.army > neighbor.army + 1) or neighbor in path: # Move into caputurable target Tiles
+				if neighbor.isCity and neighbor.isEmpty() and neighbor not in path and neighbor.visibleToEnemy(): # Don't opportunistically take a neutral city an enemy can see (an already enemy-owned city is always worth taking)
+					continue
 				if not neighbor.isSwamp:
 					if target == None:
 						target = neighbor
