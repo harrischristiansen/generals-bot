@@ -250,6 +250,8 @@ class Generals(object):
 			self._send(["join_team", userid, BOT_KEY])
 		elif mode == "ffa":
 			self._send(["play", userid, BOT_KEY])
+		elif mode == "4v4":
+			self._send(["play_big_team", userid, BOT_KEY])
 		else:
 			raise ValueError("Invalid mode")
 

@@ -10,7 +10,7 @@ from base import bot_base
 def startup(moveMethod, moveEvent=None, botName="PurdueBot"):
     parser = argparse.ArgumentParser()
     parser.add_argument('-name', metavar='str', type=str, default=os.environ.get('GENERALS_BOT_NAME', botName), help='Name of Bot')
-    parser.add_argument('-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa"], default=os.environ.get('GENERALS_BOT_MODE', 'private'), help='Game Type: private, 1v1, or ffa')
+    parser.add_argument('-g', '--gameType', metavar='str', type=str, choices=["private","1v1","ffa","4v4"], default=os.environ.get('GENERALS_BOT_MODE', 'private'), help='Game Type: private, 1v1, or ffa')
     parser.add_argument('-r', '--roomID', metavar='str', type=str, default=os.environ.get("GENERALS_BOT_ROOM_ID", "PurdueBot"), help='Private Room ID (optional)')
     parser.add_argument('-c', '--command', metavar='str', type=str, default="", help='Initial Setup Command (optional)')
     parser.add_argument('--no-ui', action='store_false', help="Hide UI (no game viewer)")
