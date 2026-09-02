@@ -96,5 +96,8 @@ ENV/
 # Wildcard Ignore
 *_ignore.*
 
+# Local bot-vs-bot arena worktrees (tools/arena)
+.arena-worktrees/
+
 # PyBuilder
 .idea
