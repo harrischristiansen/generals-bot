@@ -25,7 +25,7 @@ def make_move(currentBot, currentMap):
 	if not move_priority():
 		if not move_manual():
 			last_manual += 1
-			if _map.isCollecting:
+			if _map.isCollecting or _map.autoCollectActive:
 				move_collect()
 			elif not move_outward():
 				if last_manual > 5:

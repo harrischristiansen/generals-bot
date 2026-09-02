@@ -22,7 +22,7 @@ def make_move(currentBot, currentMap):
 	if move_priority():
 		return
 
-	if _map.isCollecting:
+	if _map.isCollecting or _map.autoCollectActive:
 		move_collect()
 		return
 

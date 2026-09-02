@@ -17,6 +17,9 @@ GRAY_DARK = (110,110,110)
 GRAY = (160,160,160)
 WHITE = (255,255,255)
 GOLD = (217, 163, 0)
+GREEN = (0,100,0)
+RED = (90,0,0)
+YELLOW = (180,150,0)
 PLAYER_COLORS = [(255,0,0), (0,0,255), (0,128,0), (128,0,128), (0,128,128), (0,70,0), (128,0,0), (255,165,0), (30,250,30), (255,0,0), (0,0,255), (0,128,0), (128,0,128), (0,128,128), (0,70,0), (128,0,0), (255,165,0), (30,250,30)]
 
 # Table Properies
@@ -27,6 +30,7 @@ SCORES_ROW_HEIGHT = 28
 ACTIONBAR_ROW_HEIGHT = 25
 TOGGLE_GRID_BTN_WIDTH = 75
 TOGGLE_EXIT_BTN_WIDTH = 65
+TOGGLE_COLLECT_BTN_WIDTH = 65
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
@@ -111,6 +115,8 @@ class GeneralsViewer(object):
 				self._toggleGrid()
 			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH: # Toggle Exit on Game Over
 				self._map.exit_on_game_over = not self._map.exit_on_game_over
+			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH+TOGGLE_COLLECT_BTN_WIDTH: # Toggle Manual Collecting
+				self._map.isCollecting = not self._map.isCollecting
 			self._receivedUpdate = True
 		elif self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < (self._window_size[1] - SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
@@ -172,6 +178,17 @@ class GeneralsViewer(object):
 		# Toggle Exit on Game Over Button
 		pygame.draw.rect(self._screen, (0,100,0) if self._map.exit_on_game_over else (90,0,0), [TOGGLE_GRID_BTN_WIDTH, 0, TOGGLE_EXIT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
 		self._screen.blit(self._font.render("Auto Quit", True, WHITE), (TOGGLE_GRID_BTN_WIDTH+10, 5))
+
+		# Toggle Manual Collecting Button
+		collect_btn_left = TOGGLE_GRID_BTN_WIDTH + TOGGLE_EXIT_BTN_WIDTH
+		if self._map.isCollecting:
+			collect_color = GREEN
+		elif self._map.autoCollectActive:
+			collect_color = YELLOW
+		else:
+			collect_color = RED
+		pygame.draw.rect(self._screen, collect_color, [collect_btn_left, 0, TOGGLE_COLLECT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
+		self._screen.blit(self._font.render("Collect", True, WHITE), (collect_btn_left+10, 5))
 
 		# Info Text
 		self._screen.blit(self._fontLrg.render("Turn: %d" % self._map.turn, True, WHITE), (self._window_size[0]-200, 5))

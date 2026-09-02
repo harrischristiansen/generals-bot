@@ -28,7 +28,7 @@ def make_move(currentBot, currentMap):
 	start_time = time.time()
 
 	if not move_priority():
-		if _map.isCollecting:
+		if _map.isCollecting or _map.autoCollectActive:
 			move_collect()
 		elif _map.turn < 42 or not move_outward():
 			move_toward()
