@@ -22,6 +22,10 @@ def make_move(currentBot, currentMap):
 	if move_priority():
 		return
 
+	if _map.isCollecting:
+		move_collect()
+		return
+
 	if _map.turn % 3 == 0:
 		if move_outward():
 			return True
@@ -36,6 +40,15 @@ def place_move(source, dest):
 
 def move_priority():
 	(source, dest) = bot_moves.move_priority(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Collect #########################
+
+def move_collect():
+	(source, dest) = bot_moves.move_collect_to_general(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

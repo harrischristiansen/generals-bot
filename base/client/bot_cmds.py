@@ -232,6 +232,14 @@ class BotCommands(object):
 		elif "pause" in base_command:
 			self._bot.isPaused = True
 			return True
+		elif "resume" in base_command:
+			if "_map" in dir(self):
+				self._map.isCollecting = False
+			return True
+		elif "collect" in base_command:
+			if "_map" in dir(self):
+				self._map.isCollecting = True
+			return True
 
 		return False
 

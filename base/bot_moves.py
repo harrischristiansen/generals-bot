@@ -44,6 +44,18 @@ def move_outward(gamemap, path=[]):
 
 	return move_swamp
 
+######################### Move Collect To General #########################
+
+def move_collect_to_general(gamemap):
+	general = gamemap.generals[gamemap.player_index]
+	if general == None:
+		return (False, False)
+
+	source = gamemap.find_largest_tile()
+	if source == None or source.army < 2:
+		return (False, False)
+
+	return move_path(source.path_to(general))
 
 ######################### Move Path Forward #########################
 

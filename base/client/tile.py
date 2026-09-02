@@ -93,15 +93,8 @@ class Tile(object):
 				neighbors.append(tile)
 		return neighbors
 
-	def neighbors8(self):
-		tiles = []
-		for dy in (-1, 0, 1):
-			for dx in (-1, 0, 1):
-				if dx == 0 and dy == 0:
-					continue
-				if self._map.isValidPosition(self.x+dx, self.y+dy):
-					tiles.append(self._map.grid[self.y+dy][self.x+dx])
-		return tiles
+	def neighbors8(self): # Precomputed 8-directional (king-move) adjacency, matching generals.io's vision/discovery rule (self.neighbors() is the 4-directional move graph)
+		return self._neighbors8
 
 	def isValidTarget(self): # Check tile to verify it's known/reachable
 		if self.tile < TILE_EMPTY:
@@ -196,7 +189,7 @@ class Tile(object):
 		for x in range(self._map.cols): # Check Each Square
 			for y in range(self._map.rows):
 				tile = self._map.grid[y][x]
-				if not tile.isValidTarget() or tile.shouldNotAttack() or tile.army > max_target_army: # Non Target Tiles
+				if tile.shouldNotAttack() or tile.army > max_target_army: # Non Target Tiles
 					continue
 
 				distance = self.distance_to(tile)
@@ -278,6 +271,17 @@ class Tile(object):
 				neighbors.append(tile)
 
 		self._neighbors = neighbors
+
+		neighbors8 = []
+		for dy in (-1, 0, 1):
+			for dx in (-1, 0, 1):
+				if dx == 0 and dy == 0:
+					continue
+				if self._map.isValidPosition(x+dx, y+dy):
+					neighbors8.append(self._map.grid[y+dy][x+dx])
+
+		self._neighbors8 = neighbors8
+
 		return neighbors
 
 def _path_reconstruct(came_from, dest):

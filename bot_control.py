@@ -25,7 +25,9 @@ def make_move(currentBot, currentMap):
 	if not move_priority():
 		if not move_manual():
 			last_manual += 1
-			if not move_outward():
+			if _map.isCollecting:
+				move_collect()
+			elif not move_outward():
 				if last_manual > 5:
 					move_toward()
 		else:
@@ -63,6 +65,15 @@ def move_manual():
 
 def move_priority():
 	(source, dest) = bot_moves.move_priority(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Collect #########################
+
+def move_collect():
+	(source, dest) = bot_moves.move_collect_to_general(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

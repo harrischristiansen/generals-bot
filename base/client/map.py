@@ -42,6 +42,10 @@ class Map(object):
 		# Public Options
 		self.exit_on_game_over = True													# Controls if bot exits after game over
 		self.do_not_attack_players = []													# List of player IDs not to attack
+		self.isCollecting = False														# If True, bot gathers all armies onto its general instead of playing normally
+		self.generalKnownToEnemy = False												# Sticky: True once any enemy has ever seen our general
+		self.last_tile_lost_turn = -1													# Turn we last lost a tile to an enemy capture
+		self.autoCollectActive = False													# True while auto-defense collect is currently engaged
 	
 	################################ Game Updates ################################
 

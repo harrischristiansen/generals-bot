@@ -65,6 +65,8 @@ OPP_GENERAL = 3
 
 MAX_NUM_TEAMS = 8
 
+AUTO_COLLECT_ATTACK_MEMORY_TURNS = 3   # How many turns of "no captures" before auto-collect stands down
+
 
 PRE_HELP_TEXT = [
 	"| Hi, I am Myssix - a generals.io bot",
@@ -84,6 +86,8 @@ GAME_HELP_TEXT = [
 	"| unteam: cancel team",
 	"| pause: pause army movement",
 	"| unpause: unpause army movement",
+	"| collect: gather all armies onto your general",
+	"| resume: resume normal play after collect",
 	"| Code available at: git.io/myssix",
 ]
 HELLO_TEXT = [
