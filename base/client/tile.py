@@ -4,7 +4,6 @@
 	Tile: Objects for representing Generals IO Tiles
 '''
 
-from queue import Queue
 import time
 import logging
 
@@ -224,28 +223,31 @@ class Tile(object):
 		if dest == None:
 			return []
 
-		frontier = Queue()
-		frontier.put(self)
-		came_from = {}
-		came_from[self] = None
-		army_count = {}
-		army_count[self] = self.army
+		came_from = {self: None}
+		army_count = {self: self.army}
 
-		while not frontier.empty():
-			current = frontier.get()
+		frontier = [self] # BFS one depth layer at a time, so equal-length routes to the same tile can be compared before one is locked in
+		while frontier and dest not in came_from:
+			next_frontier = {} # next Tile -> (predecessor Tile, army_count) best candidate reaching it at this depth
 
-			if current == dest: # Found Destination
-				break
+			for current in frontier:
+				for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
+					if next in came_from or not (next.isOnTeam() or next == dest or next.army < army_count[current]):
+						continue
 
-			for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
-				if next not in came_from and (next.isOnTeam() or next == dest or next.army < army_count[current]):
-					#priority = self.distance(next, dest)
-					frontier.put(next)
-					came_from[next] = current
 					if next.isOnTeam():
-						army_count[next] = army_count[current] + (next.army - 1)
+						candidate_army = army_count[current] + (next.army - 1)
 					else:
-						army_count[next] = army_count[current] - (next.army + 1)
+						candidate_army = army_count[current] - (next.army + 1)
+
+					if next not in next_frontier or candidate_army > next_frontier[next][1]: # Prefer the equal-length route that picks up the most army
+						next_frontier[next] = (current, candidate_army)
+
+			for next, (prev, next_army) in next_frontier.items():
+				came_from[next] = prev
+				army_count[next] = next_army
+
+			frontier = list(next_frontier.keys())
 
 		if dest not in came_from: # Did not find dest
 			if includeCities:
