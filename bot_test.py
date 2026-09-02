@@ -28,10 +28,11 @@ def make_move(currentBot, currentMap):
 	start_time = time.time()
 
 	if not move_priority():
-		if _map.isCollecting or _map.autoCollectActive:
+		if _map.isCollecting:
 			move_collect()
-		elif _map.turn < 42 or not move_outward():
-			move_toward()
+		elif not move_defend_general():
+			if _map.turn < 42 or not move_outward():
+				move_toward()
 
 	if PRINT_TIMING:
 		move_time = time.time() - start_time
@@ -64,6 +65,15 @@ def move_outward():
 
 def move_collect():
 	(source, dest) = bot_moves.move_collect_to_general(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Defend General #########################
+
+def move_defend_general():
+	(source, dest) = bot_moves.move_defend_general(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

@@ -44,8 +44,7 @@ class Map(object):
 		self.do_not_attack_players = []													# List of player IDs not to attack
 		self.isCollecting = False														# If True, bot gathers all armies onto its general instead of playing normally
 		self.generalKnownToEnemy = False												# Sticky: True once any enemy has ever seen our general
-		self.last_tile_lost_turn = -1													# Turn we last lost a tile to an enemy capture
-		self.autoCollectActive = False													# True while auto-defense collect is currently engaged
+		self.defendingGeneral = False													# True while we are reinforcing our general against a visible threat
 	
 	################################ Game Updates ################################
 
@@ -57,26 +56,18 @@ class Map(object):
 		self.scores = self._getScores(data)
 		self.turn = data['turn']
 
+		general = self.generals[self.player_index]
+
 		for x in range(self.cols): # Update Each Tile
 			for y in range(self.rows):
 				tile_type = self._tile_grid[y][x]
 				army_count = self._army_grid[y][x]
 				isCity = (y,x) in self._visible_cities
 				isGeneral = (y,x) in self._visible_generals
-				tile = self.grid[y][x]
-				tile.update(self, tile_type, army_count, isCity, isGeneral)
-				if tile.tile >= 0 and tile.tile != self.player_index and tile.turn_captured == self.turn and tile.turn_held == self.turn - 1: # We just lost this tile to an enemy
-					self.last_tile_lost_turn = self.turn
+				self.grid[y][x].update(self, tile_type, army_count, isCity, isGeneral)
 
-		general = self.generals[self.player_index]
 		if general is not None and not self.generalKnownToEnemy and general.visibleToEnemy():
 			self.generalKnownToEnemy = True
-
-		recently_attacked = self.last_tile_lost_turn >= 0 and (self.turn - self.last_tile_lost_turn) <= AUTO_COLLECT_ATTACK_MEMORY_TURNS
-		shouldAutoCollect = self.generalKnownToEnemy and recently_attacked
-		if self.autoCollectActive != shouldAutoCollect:
-			self.autoCollectActive = shouldAutoCollect
-			logging.debug(f"DEBUG: Auto colletion changed to {self.autoCollectActive}")
 
 		return self
 

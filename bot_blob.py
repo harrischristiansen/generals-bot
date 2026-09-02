@@ -22,8 +22,11 @@ def make_move(currentBot, currentMap):
 	if move_priority():
 		return
 
-	if _map.isCollecting or _map.autoCollectActive:
+	if _map.isCollecting:
 		move_collect()
+		return
+
+	if move_defend_general():
 		return
 
 	if _map.turn % 3 == 0:
@@ -49,6 +52,15 @@ def move_priority():
 
 def move_collect():
 	(source, dest) = bot_moves.move_collect_to_general(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Defend General #########################
+
+def move_defend_general():
+	(source, dest) = bot_moves.move_defend_general(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

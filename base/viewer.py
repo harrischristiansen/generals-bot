@@ -183,7 +183,7 @@ class GeneralsViewer(object):
 		collect_btn_left = TOGGLE_GRID_BTN_WIDTH + TOGGLE_EXIT_BTN_WIDTH
 		if self._map.isCollecting:
 			collect_color = GREEN
-		elif self._map.autoCollectActive:
+		elif self._map.defendingGeneral:
 			collect_color = YELLOW
 		else:
 			collect_color = RED

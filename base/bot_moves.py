@@ -57,6 +57,46 @@ def move_collect_to_general(gamemap):
 
 	return move_path(source.path_to(general))
 
+######################### Move Defend General #########################
+
+def general_threat(gamemap): # Estimated enemy army that could converge on our general
+	general = gamemap.generals[gamemap.player_index]
+	if general == None or not gamemap.generalKnownToEnemy: # They can only come for it if they know where it is
+		return 0
+
+	threat = 0
+	for dx in range(-DEFEND_GENERAL_RADIUS, DEFEND_GENERAL_RADIUS + 1):
+		for dy in range(-DEFEND_GENERAL_RADIUS, DEFEND_GENERAL_RADIUS + 1):
+			if abs(dx) + abs(dy) > DEFEND_GENERAL_RADIUS:
+				continue
+			x = general.x + dx
+			y = general.y + dy
+			if not gamemap.isValidPosition(x, y):
+				continue
+			tile = gamemap.grid[y][x]
+			if tile.tile >= 0 and not tile.isSelf() and not tile.tile in gamemap.do_not_attack_players:
+				threat += tile.army
+
+	return threat
+
+def move_defend_general(gamemap):
+	general = gamemap.generals[gamemap.player_index]
+	if general == None:
+		return (False, False)
+
+	threat = general_threat(gamemap)
+	if threat == 0 or general.army > threat + DEFEND_GENERAL_MARGIN: # Garrison already covers what they could throw at us
+		gamemap.defendingGeneral = False
+		return (False, False)
+
+	gamemap.defendingGeneral = True
+
+	source = gamemap.find_largest_tile() # Excludes the general itself, so the rest of the army keeps doing normal work
+	if source == None or source.army < 2:
+		return (False, False)
+
+	return move_path(source.path_to(general))
+
 ######################### Move Path Forward #########################
 
 def move_path(path):

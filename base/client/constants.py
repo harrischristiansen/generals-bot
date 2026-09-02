@@ -65,7 +65,8 @@ OPP_GENERAL = 3
 
 MAX_NUM_TEAMS = 8
 
-AUTO_COLLECT_ATTACK_MEMORY_TURNS = 3   # How many turns of "no captures" before auto-collect stands down
+DEFEND_GENERAL_RADIUS = 8              # Enemy army within this distance of our general counts toward the incoming threat
+DEFEND_GENERAL_MARGIN = 2              # Keep the garrison this far above the estimated threat
 
 
 PRE_HELP_TEXT = [
