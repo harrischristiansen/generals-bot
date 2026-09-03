@@ -73,6 +73,36 @@ def move_collect_to_general(gamemap):
 
 	return move_path(source.path_to(general))
 
+######################### Move Gather To Nearest Holding #########################
+
+def nearest_holding(gamemap, source): # Closest city or general we own
+	nearest = None
+	nearest_distance = 0
+
+	holdings = [t for t in gamemap.cities if t.isSelf()]
+	general = gamemap.generals[gamemap.player_index]
+	if general != None:
+		holdings.append(general)
+
+	for tile in holdings:
+		distance = source.distance_to(tile)
+		if nearest == None or distance < nearest_distance:
+			nearest = tile
+			nearest_distance = distance
+
+	return nearest
+
+def move_gather_to_holding(gamemap):
+	source = gamemap.find_largest_tile(excludeCities=True) # Field army only - leave cities and our general holding what they have
+	if source == None or source.army < 2:
+		return (False, False)
+
+	dest = nearest_holding(gamemap, source)
+	if dest == None or dest == source:
+		return (False, False)
+
+	return move_path(source.path_to(dest), gamemap)
+
 ######################### Move Defend General #########################
 
 def _tiles_near_general(gamemap, general): # Tiles within threat range of our general

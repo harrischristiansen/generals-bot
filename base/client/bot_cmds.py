@@ -235,10 +235,17 @@ class BotCommands(object):
 		elif "resume" in base_command:
 			if "_map" in dir(self):
 				self._map.isCollecting = False
+				self._map.isGathering = False
 			return True
 		elif "collect" in base_command:
 			if "_map" in dir(self):
 				self._map.isCollecting = True
+				self._map.isGathering = False
+			return True
+		elif "gather" in base_command:
+			if "_map" in dir(self):
+				self._map.isGathering = True
+				self._map.isCollecting = False
 			return True
 
 		return False

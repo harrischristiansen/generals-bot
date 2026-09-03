@@ -67,6 +67,7 @@ MAX_NUM_TEAMS = 8
 
 DEFEND_GENERAL_RADIUS = 8              # Enemy army within this distance of our general counts toward the incoming threat
 DEFEND_GENERAL_MARGIN = 2              # Keep the garrison this far above the estimated threat
+DEFEND_GENERAL_MAX_SHARE = 0.5         # Never commit more than this share of our total army to the garrison
 
 
 PRE_HELP_TEXT = [
@@ -88,7 +89,8 @@ GAME_HELP_TEXT = [
 	"| pause: pause army movement",
 	"| unpause: unpause army movement",
 	"| collect: gather all armies onto your general",
-	"| resume: resume normal play after collect",
+	"| gather: gather field armies onto the nearest city/general",
+	"| resume: resume normal play after collect/gather",
 	"| Code available at: git.io/myssix",
 ]
 HELLO_TEXT = [

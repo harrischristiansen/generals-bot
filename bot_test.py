@@ -30,6 +30,8 @@ def make_move(currentBot, currentMap):
 	if not move_priority():
 		if _map.isCollecting:
 			move_collect()
+		elif _map.isGathering:
+			move_gather()
 		elif not move_defend_general():
 			if _map.turn < 42 or not move_outward():
 				move_toward()
@@ -65,6 +67,15 @@ def move_outward():
 
 def move_collect():
 	(source, dest) = bot_moves.move_collect_to_general(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Gather #########################
+
+def move_gather():
+	(source, dest) = bot_moves.move_gather_to_holding(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

@@ -26,6 +26,10 @@ def make_move(currentBot, currentMap):
 		move_collect()
 		return
 
+	if _map.isGathering:
+		move_gather()
+		return
+
 	if move_defend_general():
 		return
 
@@ -52,6 +56,15 @@ def move_priority():
 
 def move_collect():
 	(source, dest) = bot_moves.move_collect_to_general(_map)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
+######################### Move Gather #########################
+
+def move_gather():
+	(source, dest) = bot_moves.move_gather_to_holding(_map)
 	if source and dest:
 		place_move(source, dest)
 		return True

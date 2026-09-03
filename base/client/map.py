@@ -43,6 +43,7 @@ class Map(object):
 		self.exit_on_game_over = True													# Controls if bot exits after game over
 		self.do_not_attack_players = []													# List of player IDs not to attack
 		self.isCollecting = False														# If True, bot gathers all armies onto its general instead of playing normally
+		self.isGathering = False														# If True, bot gathers field armies onto the nearest city/general we hold
 		self.generalKnownToEnemy = False												# Sticky: True once any enemy has ever seen our general
 		self.defendingGeneral = False													# True while we are reinforcing our general against a visible threat
 	
@@ -101,7 +102,7 @@ class Map(object):
 
 		return found_city
 
-	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
+	def find_largest_tile(self, ofType=None, notInPath=[], includeGeneral=False, excludeCities=False): # ofType = Integer, notInPath = [Tile], includeGeneral = False|True|Int Acceptable Largest|0.1->0.9 Ratio
 		if ofType == None:
 			ofType = self.player_index
 		general = self.generals[ofType]
@@ -111,6 +112,8 @@ class Map(object):
 		largest = None
 		for tile in self.tiles[ofType]: # Check each ofType tile
 			if largest == None or largest.army < tile.army: # New largest
+				if excludeCities and tile.isCity: # Exclude cities when gathering field armies
+					continue
 				if not tile.isGeneral and tile not in notInPath: # Exclude general and path
 					largest = tile
 

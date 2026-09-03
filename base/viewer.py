@@ -31,6 +31,7 @@ ACTIONBAR_ROW_HEIGHT = 25
 TOGGLE_GRID_BTN_WIDTH = 75
 TOGGLE_EXIT_BTN_WIDTH = 65
 TOGGLE_COLLECT_BTN_WIDTH = 65
+TOGGLE_GATHER_BTN_WIDTH = 65
 TEAM_DOT_RADIUS = 9
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
@@ -118,6 +119,12 @@ class GeneralsViewer(object):
 				self._map.exit_on_game_over = not self._map.exit_on_game_over
 			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH+TOGGLE_COLLECT_BTN_WIDTH: # Toggle Manual Collecting
 				self._map.isCollecting = not self._map.isCollecting
+				if self._map.isCollecting:
+					self._map.isGathering = False
+			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH+TOGGLE_COLLECT_BTN_WIDTH+TOGGLE_GATHER_BTN_WIDTH: # Toggle Gathering
+				self._map.isGathering = not self._map.isGathering
+				if self._map.isGathering:
+					self._map.isCollecting = False
 			self._receivedUpdate = True
 		elif pos[1] >= (self._window_size[1] - SCORES_ROW_HEIGHT): # Click on Scores Row - team/unteam with that player
 			self._toggleTeam(pos)
@@ -213,6 +220,11 @@ class GeneralsViewer(object):
 			collect_color = RED
 		pygame.draw.rect(self._screen, collect_color, [collect_btn_left, 0, TOGGLE_COLLECT_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
 		self._screen.blit(self._font.render("Collect", True, WHITE), (collect_btn_left+10, 5))
+
+		# Toggle Gather Button
+		gather_btn_left = collect_btn_left + TOGGLE_COLLECT_BTN_WIDTH
+		pygame.draw.rect(self._screen, GREEN if self._map.isGathering else RED, [gather_btn_left, 0, TOGGLE_GATHER_BTN_WIDTH, ACTIONBAR_ROW_HEIGHT])
+		self._screen.blit(self._font.render("Gather", True, WHITE), (gather_btn_left+10, 5))
 
 		# Info Text
 		self._screen.blit(self._fontLrg.render("Turn: %d" % self._map.turn, True, WHITE), (self._window_size[0]-200, 5))
