@@ -31,7 +31,20 @@ def move_priority(gamemap):
 
 ######################### Move Outward #########################
 
+def path_targets_capture(gamemap): # Is our active movement path a run at a general or city worth committing to?
+	if len(gamemap.path) < 2:
+		return False
+
+	target = gamemap.path[-1]
+	if target.isSelf(): # Gathering to something we already hold - keep expanding
+		return False
+
+	return target.isGeneral or target.isCity
+
 def move_outward(gamemap, path=[]):
+	if path_targets_capture(gamemap): # Committed to a run at a general or city - don't peel army off to expand
+		return (False, False)
+
 	move_swamp = (False, False)
 	hold_general = garrison_needed(gamemap) > 0 # Don't march the garrison back off our general
 
