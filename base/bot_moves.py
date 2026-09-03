@@ -92,6 +92,8 @@ def general_threat(gamemap): # Largest single enemy stack near our general - an 
 
 	threat = 0
 	for tile in _tiles_near_general(gamemap, general):
+		if tile.isGeneral or tile.isCity: # Their garrison sits at home growing every turn - it isn't the force walking at us
+			continue
 		if tile.tile >= 0 and not tile.isSelf() and not tile.tile in gamemap.do_not_attack_players:
 			if tile.army > threat:
 				threat = tile.army
@@ -102,7 +104,18 @@ def garrison_needed(gamemap): # Army our general must hold back to survive the v
 	threat = general_threat(gamemap)
 	if threat == 0:
 		return 0
-	return threat + DEFEND_GENERAL_MARGIN
+
+	needed = threat + DEFEND_GENERAL_MARGIN
+	cap = _total_army(gamemap) * DEFEND_GENERAL_MAX_SHARE # Never sink our whole economy into defense - keep army free to fight with
+	if cap > 0 and needed > cap:
+		return cap
+
+	return needed
+
+def _total_army(gamemap):
+	if len(gamemap.scores) > gamemap.player_index:
+		return gamemap.scores[gamemap.player_index]['total']
+	return 0
 
 def _retake_near_general(gamemap, general): # Push the intruders back out, sourcing from anywhere but the garrison
 	source = gamemap.find_largest_tile() # Never returns the general, so the garrison stays put
