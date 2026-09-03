@@ -79,7 +79,7 @@ def move_outward():
 
 def move_toward():
 	_map.path = bot_moves.path_proximity_target(_map)
-	(move_from, move_to) = bot_moves.move_path(_map.path)
+	(move_from, move_to) = bot_moves.move_path(_map.path, _map)
 	if move_from and move_to:
 		place_move(move_from, move_to)
 		return True
