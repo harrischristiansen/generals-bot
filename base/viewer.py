@@ -31,6 +31,7 @@ ACTIONBAR_ROW_HEIGHT = 25
 TOGGLE_GRID_BTN_WIDTH = 75
 TOGGLE_EXIT_BTN_WIDTH = 65
 TOGGLE_COLLECT_BTN_WIDTH = 65
+TEAM_DOT_RADIUS = 9
 ABOVE_GRID_HEIGHT = ACTIONBAR_ROW_HEIGHT
 
 class GeneralsViewer(object):
@@ -118,11 +119,34 @@ class GeneralsViewer(object):
 			elif pos[0] < TOGGLE_GRID_BTN_WIDTH+TOGGLE_EXIT_BTN_WIDTH+TOGGLE_COLLECT_BTN_WIDTH: # Toggle Manual Collecting
 				self._map.isCollecting = not self._map.isCollecting
 			self._receivedUpdate = True
+		elif pos[1] >= (self._window_size[1] - SCORES_ROW_HEIGHT): # Click on Scores Row - team/unteam with that player
+			self._toggleTeam(pos)
+			self._receivedUpdate = True
 		elif self._showGrid and pos[1] > ABOVE_GRID_HEIGHT and pos[1] < (self._window_size[1] - SCORES_ROW_HEIGHT): # Click inside Grid
 			column = pos[0] // (CELL_WIDTH + CELL_MARGIN)
 			row = (pos[1] - ABOVE_GRID_HEIGHT) // (CELL_HEIGHT + CELL_MARGIN)
 			self._clicked = (column, row)
 			logging.debug("Click %s, Grid Coordinates: %s" % (pos, self._clicked))
+
+	def _toggleTeam(self, pos):
+		if not "_scores" in dir(self) or len(self._scores) == 0:
+			return
+
+		score_width = self._window_size[0] / len(self._scores)
+		index = int(pos[0] // score_width)
+		if index < 0 or index >= len(self._scores):
+			return
+
+		player_index = int(self._scores[index]['i'])
+		if player_index == self._map.player_index: # Can't team with yourself
+			return
+
+		if player_index in self._map.do_not_attack_players:
+			self._map.do_not_attack_players.remove(player_index)
+			logging.info("Unteamed with %s" % self._map.usernames[player_index])
+		else:
+			self._map.do_not_attack_players.append(player_index)
+			logging.info("Teamed with %s" % self._map.usernames[player_index])
 
 	def _toggleGrid(self):
 		self._showGrid = not self._showGrid
@@ -204,6 +228,13 @@ class GeneralsViewer(object):
 			pygame.draw.rect(self._screen, score_color, [score_width*i, pos_top, score_width, SCORES_ROW_HEIGHT])
 			self._screen.blit(self._font.render(self._map.usernames[int(score['i'])], True, WHITE), (score_width*i+3, pos_top+1))
 			self._screen.blit(self._font.render(str(score['total'])+" on "+str(score['tiles']), True, WHITE), (score_width*i+3, pos_top+1+self._font.get_height()))
+
+			if int(score['i']) in self._map.do_not_attack_players: # Teamed with this player
+				dot_x = int(score_width*(i+1) - TEAM_DOT_RADIUS - 4)
+				dot_y = int(pos_top + SCORES_ROW_HEIGHT/2)
+				pygame.draw.circle(self._screen, BLACK, [dot_x, dot_y], TEAM_DOT_RADIUS)
+				team_text = self._font.render("T", True, WHITE)
+				self._screen.blit(team_text, (dot_x - team_text.get_width()//2, dot_y - team_text.get_height()//2))
 
 	def _drawGrid(self):
 		for row in range(self._map.rows):
