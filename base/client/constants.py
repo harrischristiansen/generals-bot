@@ -69,6 +69,9 @@ DEFEND_GENERAL_RADIUS = 8              # Enemy army within this distance of our 
 DEFEND_GENERAL_MARGIN = 2              # Keep the garrison this far above the estimated threat
 DEFEND_GENERAL_MAX_SHARE = 0.5         # Never commit more than this share of our total army to the garrison
 
+GATHER_CANDIDATES = 12                 # How many of our largest tiles to evaluate as gather sources
+GATHER_MOVE_COST = 1                   # Army-per-move penalty, so a longer route must collect more to win
+
 
 PRE_HELP_TEXT = [
 	"| Hi, I am Myssix - a generals.io bot",

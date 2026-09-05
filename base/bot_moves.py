@@ -60,6 +60,64 @@ def move_outward(gamemap, path=[]):
 
 	return move_swamp
 
+######################### Gather Path Selection #########################
+
+def _gather_candidates(gamemap, excludeCities=False, includeGeneral=False, exclude=[]):
+	candidates = []
+	for tile in gamemap.tiles[gamemap.player_index]:
+		if tile.army < 2 or tile in exclude:
+			continue
+		if tile.isGeneral and not includeGeneral:
+			continue
+		if excludeCities and tile.isCity:
+			continue
+		candidates.append(tile)
+
+	candidates.sort(key=lambda tile: tile.army, reverse=True)
+	return candidates[:GATHER_CANDIDATES]
+
+def _gather_score(path, dest): # Army this path delivers, less what it costs in moves
+	gathered = 0
+	for tile in path:
+		if tile is dest: # Already home - it isn't collected by the trip
+			continue
+		if tile.isSelf():
+			gathered += tile.army - 1
+
+	return gathered - (len(path) - 1) * GATHER_MOVE_COST
+
+def move_gather_step(path, gamemap=None): # Step the far end of the chain inward, so each tile absorbs the one behind it
+	if len(path) < 2:
+		return (False, False)
+
+	source = path[0]
+	if source.army < 2:
+		return (False, False)
+	if gamemap != None and _holds_garrison(source, garrison_needed(gamemap) > 0):
+		return (False, False)
+
+	return (source, path[1])
+
+def best_gather_path(gamemap, candidates, dest_for): # Pick the source whose route sweeps up the most army on the way in
+	best_path = None
+	best_score = None
+
+	for source in candidates:
+		dest = dest_for(source)
+		if dest == None or dest is source:
+			continue
+
+		path = source.path_to(dest)
+		if len(path) < 2:
+			continue
+
+		score = _gather_score(path, dest)
+		if best_score == None or score > best_score:
+			best_score = score
+			best_path = path
+
+	return best_path
+
 ######################### Move Collect To General #########################
 
 def move_collect_to_general(gamemap):
@@ -67,11 +125,11 @@ def move_collect_to_general(gamemap):
 	if general == None:
 		return (False, False)
 
-	source = gamemap.find_largest_tile()
-	if source == None or source.army < 2:
+	path = best_gather_path(gamemap, _gather_candidates(gamemap), lambda source: general)
+	if path == None:
 		return (False, False)
 
-	return move_path(source.path_to(general))
+	return move_gather_step(path)
 
 ######################### Move Gather To Nearest Holding #########################
 
@@ -93,15 +151,12 @@ def nearest_holding(gamemap, source): # Closest city or general we own
 	return nearest
 
 def move_gather_to_holding(gamemap):
-	source = gamemap.find_largest_tile(excludeCities=True) # Field army only - leave cities and our general holding what they have
-	if source == None or source.army < 2:
+	candidates = _gather_candidates(gamemap, excludeCities=True) # Field army only - leave cities and our general holding what they have
+	path = best_gather_path(gamemap, candidates, lambda source: nearest_holding(gamemap, source))
+	if path == None:
 		return (False, False)
 
-	dest = nearest_holding(gamemap, source)
-	if dest == None or dest == source:
-		return (False, False)
-
-	return move_path(source.path_to(dest), gamemap)
+	return move_gather_step(path, gamemap)
 
 ######################### Move Defend General #########################
 
@@ -273,12 +328,17 @@ def path_proximity_target(gamemap):
 	return path
 
 def path_gather(gamemap, elsoDo=[]):
-	includeGeneral = 0.5 if garrison_needed(gamemap) == 0 else False # Leave the garrison on our general alone
+	includeGeneral = garrison_needed(gamemap) == 0 # Leave the garrison on our general alone
 	target = gamemap.find_largest_tile()
-	source = gamemap.find_largest_tile(notInPath=[target], includeGeneral=includeGeneral)
-	if source and target and source != target:
-		return source.path_to(target)
-	return elsoDo
+	if target == None:
+		return elsoDo
+
+	candidates = _gather_candidates(gamemap, includeGeneral=includeGeneral, exclude=[target])
+	path = best_gather_path(gamemap, candidates, lambda source: target)
+	if path == None:
+		return elsoDo
+
+	return path
 
 ######################### Helpers #########################
 
