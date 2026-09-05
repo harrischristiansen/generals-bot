@@ -76,7 +76,7 @@ def _gather_candidates(gamemap, excludeCities=False, includeGeneral=False, exclu
 	candidates.sort(key=lambda tile: tile.army, reverse=True)
 	return candidates[:GATHER_CANDIDATES]
 
-def _gather_score(path, dest): # Army this path delivers, less what it costs in moves
+def _gather_score(path, dest, urgency=1.0): # Army this path delivers, discounted by how long it takes to arrive
 	gathered = 0
 	for tile in path:
 		if tile is dest: # Already home - it isn't collected by the trip
@@ -84,7 +84,10 @@ def _gather_score(path, dest): # Army this path delivers, less what it costs in 
 		if tile.isSelf():
 			gathered += tile.army - 1
 
-	return gathered - (len(path) - 1) * GATHER_MOVE_COST
+	# Discounting (rather than subtracting a flat per-move cost) makes the delay cost scale with the
+	# army being delayed: detouring to add 7 is worth it on a stack of 50, but not on a stack of 500.
+	moves = len(path) - 1
+	return gathered / (1.0 + moves * GATHER_DELAY_FACTOR * urgency)
 
 def move_gather_step(path, gamemap=None): # Step the far end of the chain inward, so each tile absorbs the one behind it
 	if len(path) < 2:
@@ -98,9 +101,15 @@ def move_gather_step(path, gamemap=None): # Step the far end of the chain inward
 
 	return (source, path[1])
 
+def gather_urgency(gamemap): # Army in transit is worth much less when something is coming for our general
+	if garrison_needed(gamemap) > 0:
+		return GATHER_URGENT_MULTIPLIER
+	return 1.0
+
 def best_gather_path(gamemap, candidates, dest_for): # Pick the source whose route sweeps up the most army on the way in
 	best_path = None
 	best_score = None
+	urgency = gather_urgency(gamemap)
 
 	for source in candidates:
 		dest = dest_for(source)
@@ -111,7 +120,7 @@ def best_gather_path(gamemap, candidates, dest_for): # Pick the source whose rou
 		if len(path) < 2:
 			continue
 
-		score = _gather_score(path, dest)
+		score = _gather_score(path, dest, urgency)
 		if best_score == None or score > best_score:
 			best_score = score
 			best_path = path

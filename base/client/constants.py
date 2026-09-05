@@ -70,7 +70,8 @@ DEFEND_GENERAL_MARGIN = 2              # Keep the garrison this far above the es
 DEFEND_GENERAL_MAX_SHARE = 0.5         # Never commit more than this share of our total army to the garrison
 
 GATHER_CANDIDATES = 12                 # How many of our largest tiles to evaluate as gather sources
-GATHER_MOVE_COST = 1                   # Army-per-move penalty, so a longer route must collect more to win
+GATHER_DELAY_FACTOR = 0.05             # How steeply a longer route is discounted, so big stacks head home instead of detouring
+GATHER_URGENT_MULTIPLIER = 3.0         # Delay hurts this much more when our general is under threat
 
 
 PRE_HELP_TEXT = [
