@@ -4,6 +4,7 @@
 	Tile: Objects for representing Generals IO Tiles
 '''
 
+from queue import Queue
 import time
 import logging
 
@@ -95,10 +96,16 @@ class Tile(object):
 	def neighbors8(self): # Precomputed 8-directional (king-move) adjacency, matching generals.io's vision/discovery rule (self.neighbors() is the 4-directional move graph)
 		return self._neighbors8
 
+	def config(self):
+		return self._map.config
+
 	def isValidTarget(self): # Check tile to verify it's known/reachable
 		if self.tile < TILE_EMPTY:
 			return False
-		for tile in self.neighbors8():
+		# discover8: generals.io reveals all 8 neighbours, so a target is reachable once any of them
+		# is held. Legacy only looked at the 4 move directions.
+		adjacent = self.neighbors8() if self.config().discover8 else self.neighbors(includeSwamps=True)
+		for tile in adjacent:
 			if tile.turn_held > 0:
 				return True
 		return False
@@ -143,7 +150,7 @@ class Tile(object):
 		target = None
 		for neighbor in self.neighbors(includeSwamps=True):
 			if (neighbor.shouldAttack() and self.army > neighbor.army + 1) or neighbor in path: # Move into caputurable target Tiles
-				if neighbor.isCity and neighbor.isEmpty() and neighbor not in path and neighbor.visibleToEnemy(): # Don't opportunistically take a neutral city an enemy can see (an already enemy-owned city is always worth taking)
+				if self.config().stealth_neutral_cities and neighbor.isCity and neighbor.isEmpty() and neighbor not in path and neighbor.visibleToEnemy(): # Don't opportunistically take a neutral city an enemy can see (an already enemy-owned city is always worth taking)
 					continue
 				if not neighbor.isSwamp:
 					if target == None:
@@ -219,9 +226,40 @@ class Tile(object):
 
 	################################ Pathfinding ################################
 
+	def _path_to_first(self, dest, includeCities=False): # Legacy pathfinding: no army tie-break between equal-length routes
+		frontier = Queue()
+		frontier.put(self)
+		came_from = {self: None}
+		army_count = {self: self.army}
+
+		while not frontier.empty():
+			current = frontier.get()
+
+			if current == dest: # Found Destination
+				break
+
+			for next in current.neighbors(includeSwamps=True, includeCities=includeCities):
+				if next not in came_from and (next.isOnTeam() or next == dest or next.army < army_count[current]):
+					frontier.put(next)
+					came_from[next] = current
+					if next.isOnTeam():
+						army_count[next] = army_count[current] + (next.army - 1)
+					else:
+						army_count[next] = army_count[current] - (next.army + 1)
+
+		if dest not in came_from: # Did not find dest
+			if includeCities:
+				return []
+			return self._path_to_first(dest, includeCities=True)
+
+		return _path_reconstruct(came_from, dest)
+
 	def path_to(self, dest, includeCities=False):
 		if dest == None:
 			return []
+
+		if not self.config().gather_paths: # Legacy: plain FIFO BFS, first route found to each tile wins
+			return self._path_to_first(dest, includeCities)
 
 		came_from = {self: None}
 		army_count = {self: self.army}

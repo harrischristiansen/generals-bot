@@ -6,6 +6,7 @@
 
 import logging
 
+from .config import BotConfig
 from .constants import *
 from .tile import Tile
 
@@ -46,6 +47,7 @@ class Map(object):
 		self.isGathering = False														# If True, bot gathers field armies onto the nearest city/general we hold
 		self.generalKnownToEnemy = False												# Sticky: True once any enemy has ever seen our general
 		self.defendingGeneral = False													# True while we are reinforcing our general against a visible threat
+		self.config = BotConfig.strong()												# Which behaviours are enabled (see base/client/config.py)
 	
 	################################ Game Updates ################################
 

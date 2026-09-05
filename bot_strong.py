@@ -1,12 +1,11 @@
 '''
 	@ Harris Christiansen (code@HarrisChristiansen.com)
 	Generals.io Automated Client - https://github.com/harrischristiansen/generals-bot
-	bot_test: Used for testing various move methods
+	bot_strong: bot_test with every improvement enabled
 
-	Plays the original (pre-2026) behaviour: no general defense, no capture commitment,
-	4-directional discovery, plain pathfinding, largest-tile gathering.
-	See bot_strong.py for the same bot with every improvement enabled, and
-	base/client/config.py for the individual toggles.
+	8-directional discovery, stealth neutral-city capture, army-aware pathfinding,
+	commitment to general/city runs, reactive general defense, and scored gathering.
+	Flip individual behaviours off in CONFIG below - see base/client/config.py.
 '''
 
 import logging
@@ -19,7 +18,7 @@ PRINT_MOVES = False
 # Show all logging
 logging.basicConfig(level=logging.DEBUG)
 
-CONFIG = BotConfig.legacy()
+CONFIG = BotConfig.strong()
 
 ######################### Move Making #########################
 
@@ -37,12 +36,13 @@ def make_move(currentBot, currentMap):
 	start_time = time.time()
 
 	if not move_priority():
-		if _map.isCollecting: # Manual chat/viewer commands still work
+		if _map.isCollecting:
 			move_collect()
 		elif _map.isGathering:
 			move_gather()
-		elif _map.turn < 42 or not move_outward():
-			move_toward()
+		elif not move_defend_general():
+			if _map.turn < 42 or not move_outward():
+				move_toward()
 
 	if PRINT_TIMING:
 		move_time = time.time() - start_time
@@ -89,6 +89,15 @@ def move_gather():
 		return True
 	return False
 
+######################### Move Defend General #########################
+
+def move_defend_general():
+	(source, dest) = bot_moves.move_defend_general(_map, CONFIG)
+	if source and dest:
+		place_move(source, dest)
+		return True
+	return False
+
 ######################### Move Toward #########################
 
 def move_toward():
@@ -104,4 +113,4 @@ def move_toward():
 # Start Game
 import startup
 if __name__ == '__main__':
-	startup.startup(make_move, botName="PurdueBot-T")
+	startup.startup(make_move, botName="PurdueBot-S")
