@@ -68,6 +68,7 @@ MAX_NUM_TEAMS = 8
 DEFEND_GENERAL_RADIUS = 8              # Enemy army within this distance of our general counts toward the incoming threat
 DEFEND_GENERAL_MARGIN = 2              # Keep the garrison this far above the estimated threat
 DEFEND_GENERAL_MAX_SHARE = 0.5         # Never commit more than this share of our total army to the garrison
+DEFEND_GENERAL_ARRIVAL_SLACK = 2       # Extra moves a reinforcement may take and still count as arriving in time
 
 GATHER_CANDIDATES = 12                 # How many of our largest tiles to evaluate as gather sources
 GATHER_DELAY_FACTOR = 0.05             # How steeply a longer route is discounted, so big stacks head home instead of detouring

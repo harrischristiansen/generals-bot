@@ -179,20 +179,25 @@ def _tiles_near_general(gamemap, general): # Tiles within threat range of our ge
 			if gamemap.isValidPosition(x, y):
 				yield gamemap.grid[y][x]
 
-def general_threat(gamemap): # Largest single enemy stack near our general - an attack arrives as one travelling stack, not as every nearby tile at once
+def general_threat_info(gamemap): # (largest enemy stack near our general, how many moves away it is)
 	general = gamemap.generals[gamemap.player_index]
 	if general == None or not gamemap.generalKnownToEnemy: # They can only come for it if they know where it is
-		return 0
+		return (0, None)
 
 	threat = 0
+	distance = None
 	for tile in _tiles_near_general(gamemap, general):
 		if tile.isGeneral or tile.isCity: # Their garrison sits at home growing every turn - it isn't the force walking at us
 			continue
 		if tile.tile >= 0 and not tile.isSelf() and not tile.tile in gamemap.do_not_attack_players:
 			if tile.army > threat:
 				threat = tile.army
+				distance = tile.distance_to(general)
 
-	return threat
+	return (threat, distance)
+
+def general_threat(gamemap): # Largest single enemy stack near our general - an attack arrives as one travelling stack, not as every nearby tile at once
+	return general_threat_info(gamemap)[0]
 
 def garrison_needed(gamemap): # Army our general must hold back to survive the visible threat
 	threat = general_threat(gamemap)
@@ -210,6 +215,34 @@ def _total_army(gamemap):
 	if len(gamemap.scores) > gamemap.player_index:
 		return gamemap.scores[gamemap.player_index]['total']
 	return 0
+
+def _defense_path(gamemap, general, shortfall): # Reinforcement that can arrive before the attack lands AND actually cover it
+	threat, threat_distance = general_threat_info(gamemap)
+	deadline = None
+	if threat_distance != None:
+		deadline = threat_distance + DEFEND_GENERAL_ARRIVAL_SLACK
+
+	best_path, best_moves = None, None		# Covers the shortfall and gets here in time - soonest wins
+	fallback_path, fallback_score = None, None	# Nothing sufficient is close enough - take the best army/distance tradeoff
+	urgency = gather_urgency(gamemap)
+
+	for source in _gather_candidates(gamemap):
+		path = source.path_to(general)
+		if len(path) < 2:
+			continue
+
+		moves = len(path) - 1
+		delivered = _gather_score(path, general, 0) # Raw army delivered, no delay discount
+
+		if deadline != None and moves <= deadline and delivered >= shortfall:
+			if best_moves == None or moves < best_moves: # Secure the general as early as we can
+				best_moves, best_path = moves, path
+		else:
+			score = _gather_score(path, general, urgency)
+			if fallback_score == None or score > fallback_score:
+				fallback_score, fallback_path = score, path
+
+	return best_path if best_path != None else fallback_path
 
 def _retake_near_general(gamemap, general): # Push the intruders back out, sourcing from anywhere but the garrison
 	source = gamemap.find_largest_tile() # Never returns the general, so the garrison stays put
@@ -239,11 +272,11 @@ def move_defend_general(gamemap):
 
 	gamemap.defendingGeneral = True
 
-	if general.army <= needed: # Garrison is short - top it up from elsewhere
-		source = gamemap.find_largest_tile() # Excludes the general itself, so the rest of the army keeps doing normal work
-		if source != None and source.army >= 2:
-			return move_path(source.path_to(general), gamemap)
-		return (False, False)
+	if general.army <= needed: # Garrison is short - pull in whatever can actually get here in time
+		path = _defense_path(gamemap, general, needed - general.army)
+		if path == None:
+			return (False, False)
+		return move_gather_step(path)
 
 	return _retake_near_general(gamemap, general) # Garrison holds - go take our tiles back
 
