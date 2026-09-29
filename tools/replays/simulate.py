@@ -8,6 +8,8 @@
 	turns, and capturing a general transfers the loser's tiles at half army.
 '''
 
+from tools.replays.parser import Move
+
 TILE_EMPTY = -1
 TILE_MOUNTAIN = -2
 DEAD_GENERAL = -1
@@ -111,7 +113,9 @@ class SimulatedGame(object):
 	def step(self): # Advance exactly one turn
 		for move in self._moves_by_turn.get(self.turn, []):
 			self._apply_move(move)
+		self.step_growth()
 
+	def step_growth(self): # End the turn: advance the counter and grow armies
 		self.turn += 1
 
 		if self.turn % RECRUIT_RATE == 0:

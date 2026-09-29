@@ -16,6 +16,7 @@ from websocket import create_connection, WebSocketConnectionClosedException
 from .constants import *
 from . import bot_cmds
 from . import map
+from .update_profiler import UpdateProfiler
 
 class Generals(object):
 	def __init__(self, userid, username, mode="1v1", gameid=None, public_server=False, start_command=""):
@@ -34,6 +35,7 @@ class Generals(object):
 		self._cities = []
 		self._messagesToSave = []
 		self._numberPlayers = 0
+		self._profiler = UpdateProfiler()
 
 		self._connect_and_join(userid, username, mode, gameid, self._should_forcestart)
 		_spawn(self._send_start_msg_cmd)
@@ -46,11 +48,14 @@ class Generals(object):
 
 	def get_updates(self):
 		while True:
+			recv_started = time.monotonic()
 			try:
 				msg = self._ws.recv()
 			except WebSocketConnectionClosedException:
 				logging.info("Connection Closed")
+				self._finish_profiling()
 				break
+			arrival = time.monotonic() # Taken before any parsing, so it reflects when the socket delivered it
 			
 			# logging.info("Received message type: {}".format(msg))
 
@@ -82,10 +87,13 @@ class Generals(object):
 			elif msg[0] == "game_start":
 				self._messagesToSave.append(msg)
 				self._start_data = msg[1]
+				self._profiler.reset()
 			elif msg[0] == "game_update":
 				#self._messagesToSave.append(msg)
+				self._profiler.record(msg[1]['turn'], arrival, arrival - recv_started)
 				yield self._make_update(msg[1])
 			elif msg[0] in ["game_won", "game_lost"]:
+				self._finish_profiling()
 				yield self._make_result(msg[0], msg[1])
 			elif msg[0] == "chat_message":
 				self._handle_chat(msg[2])
@@ -99,6 +107,11 @@ class Generals(object):
 				None
 			else:
 				logging.info("Unknown message type: {}".format(msg))
+
+	def _finish_profiling(self):
+		self._profiler.log_summary()
+		replay_id = self._start_data.get('replay_id', 'unknown') if self._start_data else 'unknown'
+		self._profiler.save_csv("games/game_timing_%s.csv" % replay_id)
 
 	######################### Make Moves #########################
 

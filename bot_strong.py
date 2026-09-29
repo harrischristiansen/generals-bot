@@ -51,7 +51,7 @@ def make_move(currentBot, currentMap):
 def place_move(source, dest):
 	if PRINT_MOVES:
 		logging.info("Move: %s -> %s" % (source, dest))
-	_bot.place_move(source, dest)
+	_bot.place_move(source, dest, move_half=bot_moves.general_move_half(_map, source, CONFIG))
 
 ######################### Move Priority #########################
 

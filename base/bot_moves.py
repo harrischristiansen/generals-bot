@@ -53,7 +53,7 @@ def move_outward(gamemap, path=[], config=None):
 		return (False, False)
 
 	move_swamp = (False, False)
-	hold_general = garrison_needed(gamemap, cfg) > 0 # Don't march the garrison back off our general
+	hold_general = general_locked(gamemap, cfg) # Don't march the garrison back off our general
 	active_path = gamemap.path if cfg.hold_active_path else [] # Legacy freely displaced tiles the path needed
 
 	for source in gamemap.tiles[gamemap.player_index]: # Check Each Owned Tile
@@ -105,7 +105,7 @@ def move_gather_step(path, gamemap=None, config=None): # Step the far end of the
 	source = path[0]
 	if source.army < 2:
 		return (False, False)
-	if gamemap != None and _holds_garrison(source, garrison_needed(gamemap, config) > 0):
+	if gamemap != None and _holds_garrison(source, general_locked(gamemap, config)):
 		return (False, False)
 
 	return (source, path[1])
@@ -277,22 +277,58 @@ def _defense_path(gamemap, general, shortfall, config=None): # Reinforcement tha
 
 	return best_path if best_path != None else fallback_path
 
-def _retake_near_general(gamemap, general, config=None): # Push the intruders back out, sourcing from anywhere but the garrison
+def _retake_near_general(gamemap, general, config=None): # Knock out an intruder near our general, but only if one move does it
+	# Walking a stack across the map to clear a 3-army tile costs far more than the tile is worth, and
+	# hijacks the turn from normal play. Anything we can't take in one move is left to move_outward/move_toward.
 	cfg = _config(gamemap, config)
-	source = gamemap.find_largest_tile() # Never returns the general, so the garrison stays put
-	if source == None or source.army < 2:
-		return (False, False)
-
-	target = None
+	best = (False, False)
 	for tile in _tiles_near_general(gamemap, general, cfg.defend_general_radius):
-		if tile.tile >= 0 and not tile.isSelf() and tile.shouldAttack() and tile.army < source.army:
-			if target == None or tile.distance_to(general) < target.distance_to(general): # Clear the closest intruder first
-				target = tile
+		if tile.tile < 0 or tile.isSelf() or not tile.shouldAttack():
+			continue
+		for neighbor in tile.neighbors(includeSwamps=True):
+			if not neighbor.isSelf() or neighbor.army <= tile.army + 1 or _is_locked_general(gamemap, neighbor, cfg):
+				continue
+			if best[0] == False or tile.distance_to(general) < best[1].distance_to(general): # Clear the closest intruder first
+				best = (neighbor, tile)
+	return best
 
-	if target == None:
+def _retake_city_near_general(gamemap, general, config=None): # Split the general's surplus off to recapture a nearby city
+	cfg = _config(gamemap, config)
+	best_path = None
+	for city in gamemap.cities:
+		if city.tile < 0 or city.isSelf() or not city.shouldAttack(): # Enemy-held cities only
+			continue
+		if city.distance_to(general) > cfg.defend_general_radius:
+			continue
+
+		path = general.path_to(city)
+		if len(path) < 2 or not _can_take_with_split(gamemap, path, cfg):
+			continue
+		if best_path == None or len(path) < len(best_path): # Closest city first
+			best_path = path
+
+	if best_path == None:
 		return (False, False)
 
-	return move_path(source.path_to(target), gamemap, cfg)
+	return _move_path_capture(best_path, general_locked(gamemap, cfg))
+
+def _can_take_with_split(gamemap, path, config=None): # Would half the general, plus our army along the way, take the target?
+	general = path[0]
+	army = 0
+	for tile in path:
+		if tile.isSwamp:
+			army -= 1
+		if tile is general:
+			if general_locked(gamemap, config):
+				return False
+			army += general.army // 2 # Only ever split half off - the rest stays home
+		elif tile.isSelf():
+			army += tile.army - 1
+		elif tile.army + 1 > army:
+			return False
+		else:
+			army -= tile.army + 1
+	return True
 
 def move_defend_general(gamemap, config=None):
 	cfg = _config(gamemap, config)
@@ -304,19 +340,23 @@ def move_defend_general(gamemap, config=None):
 		return (False, False)
 
 	needed = garrison_needed(gamemap, cfg)
-	if needed == 0: # Nothing visible is coming for us
-		gamemap.defendingGeneral = False
-		return (False, False)
+	gamemap.defendingGeneral = needed > 0
 
-	gamemap.defendingGeneral = True
-
-	if general.army <= needed: # Garrison is short - pull in whatever can actually get here in time
+	if needed > 0 and general.army <= needed: # Garrison is short - pull in whatever can actually get here in time
 		path = _defense_path(gamemap, general, needed - general.army, cfg)
 		if path == None:
 			return (False, False)
 		return move_gather_step(path, config=cfg)
 
-	return _retake_near_general(gamemap, general, cfg) # Garrison holds - go take our tiles back
+	if gamemap.generalKnownToEnemy:
+		retake = _retake_city_near_general(gamemap, general, cfg) # Our general's surplus takes back cities they grabbed next to it
+		if retake[0] != False:
+			return retake
+
+	if needed == 0: # Nothing visible is coming for us
+		return (False, False)
+
+	return _retake_near_general(gamemap, general, cfg) # Garrison holds - knock out intruders we can take in one move
 
 ######################### Move Path Forward #########################
 
@@ -324,7 +364,7 @@ def move_path(path, gamemap=None, config=None): # Pass gamemap to keep the move 
 	if len(path) < 2:
 		return (False, False)
 
-	hold_general = gamemap != None and garrison_needed(gamemap, config) > 0
+	hold_general = gamemap != None and general_locked(gamemap, config)
 
 	source = path[0]
 	target = path[-1]
@@ -338,6 +378,21 @@ def move_path(path, gamemap=None, config=None): # Pass gamemap to keep the move 
 		return _move_path_largest(path, hold_general)
 
 	return move_capture
+
+def general_locked(gamemap, config=None): # Would even a half-move off our general leave it short of what it needs?
+	needed = garrison_needed(gamemap, config)
+	general = gamemap.generals[gamemap.player_index]
+	if needed == 0 or general == None:
+		return False
+	return general.army - general.army // 2 <= needed # A half-move leaves ceil(army/2) behind
+
+def _is_locked_general(gamemap, tile, config=None):
+	return tile.isGeneral and tile.isSelf() and general_locked(gamemap, config)
+
+def general_move_half(gamemap, source, config=None): # Once our general is found, never empty it - moves off it only send half
+	if not source.isGeneral or not source.isSelf():
+		return False
+	return gamemap.generalKnownToEnemy or garrison_needed(gamemap, config) > 0
 
 def _holds_garrison(tile, hold_general):
 	return hold_general and tile.isGeneral and tile.isSelf() # Our general, needed where it is
@@ -395,7 +450,7 @@ def should_move_half(gamemap, source, dest=None):
 def path_proximity_target(gamemap, config=None):
 	cfg = _config(gamemap, config)
 	# Find path from largest tile to closest target
-	includeGeneral = 0.5 if garrison_needed(gamemap, cfg) == 0 else False # Leave the garrison on our general alone
+	includeGeneral = 0.5 if not general_locked(gamemap, cfg) else False # Leave the garrison on our general alone
 	source = gamemap.find_largest_tile(includeGeneral=includeGeneral)
 	if source == None:
 		return []
@@ -410,7 +465,7 @@ def path_proximity_target(gamemap, config=None):
 
 def path_gather(gamemap, elsoDo=[], config=None):
 	cfg = _config(gamemap, config)
-	includeGeneral = garrison_needed(gamemap, cfg) == 0 # Leave the garrison on our general alone
+	includeGeneral = not general_locked(gamemap, cfg) # Leave the garrison on our general alone
 	target = gamemap.find_largest_tile()
 	if target == None:
 		return elsoDo

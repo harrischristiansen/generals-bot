@@ -129,3 +129,36 @@ def rerun(replay, player, on_turn=None, until_turn=None, move_method=None):
 		game.step()
 
 	return game
+
+
+def counterfactual(replay, player, move_method, start_turn=0, until_turn=None, on_turn=None):
+	'''Replay the real game until start_turn, then let our bot choose our moves while every
+	other player keeps playing their recorded moves. Opponents don't react to the difference,
+	so this is optimistic - but it answers "would this change have saved that position?"'''
+	game = simulate.SimulatedGame(replay)
+	view = BotView(replay, player)
+	stub = StubBot()
+
+	if until_turn is None:
+		until_turn = max(m.turn for m in replay.moves) + 1 if replay.moves else 0
+
+	while game.turn < start_turn and game.alive[player]:
+		game.step()
+
+	while game.turn <= until_turn and game.alive[player] and sum(1 for a in game.alive if a) > 1:
+		gamemap = view.sync(game)
+		stub.pending_move = None
+		move_method(stub, gamemap)
+		if on_turn:
+			on_turn(game, gamemap, stub)
+
+		if stub.pending_move:
+			source, dest, move_half = stub.pending_move
+			game._apply_move(simulate.Move([player, source.y * game.width + source.x,
+											dest.y * game.width + dest.x, move_half, game.turn]))
+		for move in game._moves_by_turn.get(game.turn, []):
+			if move.index != player:
+				game._apply_move(move)
+		game.step_growth()
+
+	return game
